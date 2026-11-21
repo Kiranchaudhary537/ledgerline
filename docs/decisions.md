@@ -6,7 +6,8 @@ Full design: [system-design.md](system-design.md)
 
 | Area | Chose | Over | Why |
 |---|---|---|---|
-| Runtime | Node 24 LTS (`tsx` dev, `tsc` build) | Bun, Deno | Stable, supported by every host |
+| Runtime | Node 26 LTS, runs `.ts` directly (type stripping) | Node 24 + `tsx` + build step | No build step for backend; 26 is current LTS |
+| TypeScript | 6.0 (pinned) | 7.x | typescript-eslint supports < 6.1 |
 | Language | Node.js + TypeScript | Python, Java | One language for API and UI; shared types |
 | API framework | Fastify | Express | Built-in validation, log redaction, in-memory test requests |
 | Database | PostgreSQL | SQLite, MongoDB | Relational data, real transactions, median in SQL, managed backups |

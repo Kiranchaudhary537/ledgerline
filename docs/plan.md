@@ -9,10 +9,10 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 ## M0 – Scaffold
 
-- [ ] pnpm workspace, `tsconfig.base.json` (strict), ESLint + Prettier, root Vitest
-- [ ] `docker-compose.yml` (Postgres), `.env.example`, `.gitignore`
-- [ ] Empty `apps/api`, `apps/web`, `packages/db`, `packages/shared`, each with one smoke test
-- [ ] README: how to run
+- [x] pnpm workspace, `tsconfig.base.json` (strict), ESLint + Prettier, root Vitest
+- [x] `docker-compose.yml` (Postgres), `.env.example`, `.gitignore`
+- [x] README: how to run
+- Each package is created when its milestone starts (no empty placeholder tests)
 
 ## M1 – Shared (`packages/shared`)
 
