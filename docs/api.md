@@ -46,6 +46,7 @@ Validation: `packages/shared/src/validation/list-query.ts`
 | `DELETE /api/employees/:id` | `204` (soft delete), or `404` |
 | `POST /api/employees/:id/salary-changes` `{ newSalaryMinor, reason, version }` | `Employee`; writes a history row in the same transaction. Stale → `409`, missing → `404` |
 | `GET /api/employees/:id/salary-history` | `SalaryChange[]`, newest first; `404` if the employee does not exist |
+| `GET /api/employees/facets` | Same filters as the list (no sort or paging). `{ country, department, jobTitle, level, employmentType, gender }`, each `{ value, count }[]`. Every dimension counts with all other filters and `q` applied but not its own, so a selected value never hides its siblings. Only active employees; only values with count > 0, plus selected values at 0. Level by seniority, others by count desc then name |
 | `GET /api/employees/export.csv` | Same filters and `sort` as the list, no paging |
 | `GET /api/meta/filters` | Departments and job titles come from the database, countries from the ISO list. `{ countries: [{ code, name, currency }], departments: [{ name, jobTitles }], levels, employmentTypes, genders }` |
 

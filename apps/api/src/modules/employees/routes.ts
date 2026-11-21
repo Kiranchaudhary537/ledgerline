@@ -2,6 +2,7 @@ import {
   config,
   employeeCreateSchema,
   employeeUpdateSchema,
+  filtersSchema,
   listQuerySchema,
   salaryChangeSchema,
 } from '@acme/shared';
@@ -25,6 +26,10 @@ export function employeeRoutes(
   { employees }: { employees: EmployeeService },
 ) {
   app.get('/api/employees', (request) => employees.list(listQuerySchema.parse(request.query)));
+
+  app.get('/api/employees/facets', (request) =>
+    employees.facets(filtersSchema.parse(request.query)),
+  );
 
   // Static path, so find-my-way picks it over `/api/employees/:id`.
   app.get('/api/employees/export.csv', async (request, reply) => {

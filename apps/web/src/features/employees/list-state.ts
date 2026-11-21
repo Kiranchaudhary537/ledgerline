@@ -51,6 +51,14 @@ export function listToApiParams(state: ListState) {
   return params;
 }
 
+/** The filters only: facets are not sorted or paged. */
+export function listToFacetParams(state: ListState) {
+  const params = listToParams(state, { page: false });
+  params.delete('sort');
+  if (state.q.length < 2) params.delete('q');
+  return params;
+}
+
 export function exportParams(state: ListState) {
   const params = listToParams(state, { page: false });
   if (state.q.length < 2) params.delete('q');

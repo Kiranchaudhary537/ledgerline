@@ -1,4 +1,4 @@
-import type { FilterOptions } from '@acme/shared';
+import type { EmployeeFacets, Facet, FilterOptions } from '@acme/shared';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,28 +13,25 @@ interface Props {
   update: UpdateList;
   clear: () => void;
   options: FilterOptions | undefined;
-  countryOptions: Option[];
+  facets: EmployeeFacets | undefined;
 }
 
-const plain = (values: string[] | undefined): Option[] =>
-  (values ?? []).map((v) => ({ value: v, label: label(v) }));
+const toOptions = (facet: Facet[] | undefined, labelOf: (v: string) => string): Option[] =>
+  (facet ?? []).map(({ value, count }) => ({ value, label: labelOf(value), count }));
 
-export function EmployeesToolbar({ state, update, clear, options, countryOptions }: Props) {
+export function EmployeesToolbar({ state, update, clear, options, facets }: Props) {
   const [moreOpen, setMoreOpen] = useState(
     state.employmentType.length > 0 || state.gender.length > 0,
   );
   const [text, setText] = useSearchText(state.q, (q) => update({ q }, true));
 
-  const departments = options?.departments ?? [];
-  const titleOptions: Option[] = departments
-    .filter((d) => state.department.length === 0 || state.department.includes(d.name))
-    .flatMap((d) => d.jobTitles)
-    .map((t) => ({ value: t, label: t }));
+  const countryName = (code: string) =>
+    options?.countries.find((c) => c.code === code)?.name ?? code;
 
-  const filter = (key: MultiKey, name: string, opts: Option[]) => (
+  const filter = (key: MultiKey, name: string, labelOf: (v: string) => string = label) => (
     <MultiSelect
       name={name}
-      options={opts}
+      options={toOptions(facets?.[key], labelOf)}
       selected={state[key]}
       onChange={(next) => update({ [key]: next })}
     />
@@ -55,14 +52,10 @@ export function EmployeesToolbar({ state, update, clear, options, countryOptions
             onChange={(e) => setText(e.target.value)}
           />
         </div>
-        {filter('country', 'Country', countryOptions)}
-        {filter(
-          'department',
-          'Department',
-          departments.map((d) => ({ value: d.name, label: d.name })),
-        )}
-        {filter('jobTitle', 'Job title', titleOptions)}
-        {filter('level', 'Level', plain(options?.levels))}
+        {filter('country', 'Country', countryName)}
+        {filter('department', 'Department', String)}
+        {filter('jobTitle', 'Job title', String)}
+        {filter('level', 'Level')}
         <Button
           variant="ghost"
           aria-expanded={moreOpen}
@@ -81,8 +74,8 @@ export function EmployeesToolbar({ state, update, clear, options, countryOptions
       )}
       {moreOpen && (
         <div className="flex flex-wrap items-center gap-2">
-          {filter('employmentType', 'Employment type', plain(options?.employmentTypes))}
-          {filter('gender', 'Gender', plain(options?.genders))}
+          {filter('employmentType', 'Employment type')}
+          {filter('gender', 'Gender')}
         </div>
       )}
     </div>
