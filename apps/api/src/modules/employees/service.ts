@@ -3,6 +3,7 @@ import {
   config,
   type Employee,
   type EmployeeCreate,
+  type EmployeeFacets,
   type EmployeeList,
   type EmployeeUpdate,
   type Filters,
@@ -18,7 +19,15 @@ import { csvRow, formatMajor } from './csv.ts';
 /** What the service needs from the repository (a class with private fields cannot be faked). */
 export type EmployeeStore = Pick<
   EmployeeRepository,
-  'list' | 'get' | 'create' | 'update' | 'softDelete' | 'changeSalary' | 'history' | 'export'
+  | 'list'
+  | 'facets'
+  | 'get'
+  | 'create'
+  | 'update'
+  | 'softDelete'
+  | 'changeSalary'
+  | 'history'
+  | 'export'
 >;
 
 const CSV_HEADER = [
@@ -64,6 +73,10 @@ export class EmployeeService {
   async list(query: ListQuery): Promise<EmployeeList> {
     const { data, total } = await this.employees.list(query);
     return { data: data.map(toEmployee), page: query.page, pageSize: query.pageSize, total };
+  }
+
+  facets(filters: Filters): Promise<EmployeeFacets> {
+    return this.employees.facets(filters);
   }
 
   async get(id: number): Promise<Employee> {

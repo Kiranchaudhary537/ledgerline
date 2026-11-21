@@ -38,7 +38,12 @@ const add = async (over: Partial<EmployeeCreate>) =>
 async function seed() {
   await add({ email: 'a@x.example', level: 'senior' });
   await add({ email: 'b@x.example', level: 'junior', countryCode: 'DE' });
-  await add({ email: 'c@x.example', level: 'junior', jobTitle: 'Data Analyst' });
+  await add({
+    email: 'c@x.example',
+    level: 'junior',
+    department: 'Data',
+    jobTitle: 'Data Analyst',
+  });
 }
 
 describe('EmployeeRepository.facets', () => {

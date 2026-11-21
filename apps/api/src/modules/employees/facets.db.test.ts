@@ -29,7 +29,10 @@ describe('GET /api/employees/facets', () => {
     const user = await db.selectFrom('users').select('id').executeTakeFirstOrThrow();
     const repo = new EmployeeRepository(db);
     await repo.create({ ...base, email: 'a@x.example' }, user.id);
-    await repo.create({ ...base, email: 'b@x.example', countryCode: 'DE', level: 'junior' }, user.id);
+    await repo.create(
+      { ...base, email: 'b@x.example', countryCode: 'DE', level: 'junior' },
+      user.id,
+    );
 
     const res = await app.inject({ url: '/api/employees/facets?country=IN', headers });
     expect(res.statusCode).toBe(200);

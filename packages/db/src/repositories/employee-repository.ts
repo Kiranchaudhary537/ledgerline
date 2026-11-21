@@ -1,6 +1,8 @@
 import {
   config,
   type EmployeeCreate,
+  type EmployeeFacets,
+  type Facet,
   type EmployeeUpdate,
   type Filters,
   type ListQuery,
@@ -48,6 +50,15 @@ const SORT_COLUMNS = {
   level: 'employees.level', // enum: Postgres sorts by declaration order, which is seniority
   salary: 'employees.salaryMinor',
   compaRatio: 'compaRatio',
+} as const;
+
+const FACET_COLUMNS = {
+  country: 'countryCode',
+  department: 'department',
+  jobTitle: 'jobTitle',
+  level: 'level',
+  employmentType: 'employmentType',
+  gender: 'gender',
 } as const;
 
 const QUALIFIED = COLUMNS.map((c) => `employees.${c}` as const);
@@ -126,6 +137,31 @@ export class EmployeeRepository {
         .executeTakeFirstOrThrow(),
     ]);
     return { data, total: count.total };
+  }
+
+  /** Counts per value; each dimension applies every filter except its own. */
+  async facets(filters: Filters): Promise<EmployeeFacets> {
+    const dimensions = Object.keys(FACET_COLUMNS) as (keyof EmployeeFacets)[];
+    const lists = await Promise.all(dimensions.map((d) => this.facet(d, filters)));
+    return Object.fromEntries(dimensions.map((d, i) => [d, lists[i]])) as unknown as EmployeeFacets;
+  }
+
+  private async facet(dimension: keyof EmployeeFacets, filters: Filters): Promise<Facet[]> {
+    const column = `employees.${FACET_COLUMNS[dimension]}` as const;
+    const rows = await this.db
+      .selectFrom('employees')
+      .select([`${column} as value`, (eb) => eb.fn.countAll<number>().as('count')])
+      .where((eb) => employeeFilters(eb, { ...filters, [dimension]: undefined }))
+      .groupBy(column)
+      .$call((qb) =>
+        dimension === 'level'
+          ? qb.orderBy(column) // enum: declaration order is seniority
+          : qb.orderBy('count', 'desc').orderBy(column),
+      )
+      .execute();
+    const facets = rows.map((r) => ({ value: String(r.value), count: Number(r.count) }));
+    const missing = (filters[dimension] ?? []).filter((v) => !facets.some((f) => f.value === v));
+    return [...facets, ...missing.map((value) => ({ value, count: 0 }))];
   }
 
   get(id: number): Promise<Employee | undefined> {
