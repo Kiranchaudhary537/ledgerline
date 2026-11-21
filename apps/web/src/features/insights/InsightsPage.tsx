@@ -1,15 +1,16 @@
-import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { EmptyState, Failed, QueryBoundary, RowsSkeleton } from '@/components/ui/states';
 import { useFilterOptions } from '@/features/employees/shared/api/filter-options';
-import { CountriesSection } from '@/features/insights/components/CountriesSection';
-import { DistributionSection } from '@/features/insights/components/DistributionSection';
-import { GenderGapSection } from '@/features/insights/components/GenderGapSection';
-import { AttentionSection } from '@/features/insights/components/AttentionSection';
-import { InsightsFilters } from '@/features/insights/components/InsightsFilters';
-import { Failed, Section, Skeleton } from '@/features/insights/components/Section';
-import { PayByRole } from '@/features/insights/components/PayByRole';
-import { Scorecard } from '@/features/insights/components/Scorecard';
-import { useDistribution, useGenderGap, useStats } from '@/features/insights/api/queries';
-import { useInsightsUrl } from '@/features/insights/hooks/use-insights-url';
+import { useDistribution, useGenderGap, useStats } from './api/queries';
+import { CountriesTable } from './components/CountriesTable';
+import { DistributionChart } from './components/DistributionChart';
+import { GenderGapPlot } from './components/GenderGapPlot';
+import { InsightCard } from './components/InsightCard';
+import { InsightsToolbar } from './components/InsightsToolbar';
+import { PayByRoleTable } from './components/PayByRoleTable';
+import { SummaryCard } from './components/SummaryCard';
+import { useInsightsUrl } from './hooks/use-insights-url';
+import { config } from '@acme/shared';
 
 export function InsightsPage() {
   const { state, set, overview } = useInsightsUrl();
@@ -24,59 +25,93 @@ export function InsightsPage() {
 
   const countryName = (code: string) =>
     options.data?.countries.find((c) => c.code === code)?.name ?? code;
-  const clearFilters = () => set({ department: [], level: [] });
+  const total = summary.data?.[0];
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-3">
-        <h1 className="text-2xl font-semibold">Insights</h1>
-        <InsightsFilters state={state} options={options.data} set={set} />
-        <Scorecard total={summary.data?.[0]} country={country} />
-      </div>
+    <div className="space-y-5">
+      <h1 className="text-2xl font-semibold">Insights</h1>
+      <InsightsToolbar state={state} options={options.data} set={set} />
+      <SummaryCard total={total} country={country} countryName={countryName(country)} />
 
       {roles.isError ? (
-        <Failed error={roles.error} retry={() => void roles.refetch()} />
+        <Card>
+          <Failed error={roles.error} retry={() => void roles.refetch()} />
+        </Card>
       ) : roles.data?.length === 0 ? (
-        <div className="space-y-3 py-6">
-          <p className="text-lg font-semibold">No people match these filters</p>
-          <Button variant="secondary" onClick={clearFilters}>
-            Clear filters
-          </Button>
-        </div>
+        <Card>
+          <EmptyState
+            title="No people match these filters"
+            action={{ label: 'Clear filters', onClick: () => set({ department: [], level: [] }) }}
+          />
+        </Card>
       ) : (
         <>
-          <AttentionSection state={state} ready={ready} />
-          <Section title="Pay by role">
-            <p className="text-muted-foreground">
-              Every rail uses the same scale. Compa spread is the p75 minus the p25 of compa-ratio
-              in the widest level; wider than 0.20 needs an explanation. Open a role to see its
-              people.
-            </p>
-            {!ready || roles.isPending ? (
-              <>
-                <Skeleton rows={8} cols={5} />
-                <p className="sr-only">Loading pay by role…</p>
-              </>
+          <InsightCard
+            title="Pay by role"
+            description="Every ladder uses the same scale. Open a role to see its levels."
+          >
+            {ready && roles.data ? (
+              <PayByRoleTable rows={roles.data} country={country} />
             ) : (
-              <PayByRole rows={roles.data ?? []} country={country} />
+              <RowsSkeleton rows={8} cols={4} />
             )}
-          </Section>
-          <GenderGapSection gap={gap} country={country} />
-          <DistributionSection
-            dist={dist}
-            country={country}
-            countryName={countryName(country)}
-            spread={summary.data?.[0]}
-          />
+          </InsightCard>
+          <InsightCard
+            title="Salary distribution"
+            description="The shaded band is the middle half of salaries (p25 to p75); the line is the median."
+          >
+            <QueryBoundary
+              error={dist.error}
+              onRetry={() => void dist.refetch()}
+              ready={!!dist.data && dist.data.buckets.length > 0}
+              skeleton={
+                <div
+                  aria-hidden
+                  className="mx-5 mb-5 h-44 rounded-md bg-muted motion-safe:animate-pulse"
+                />
+              }
+            >
+              {dist.data && (
+                <DistributionChart
+                  data={dist.data}
+                  country={country}
+                  countryName={countryName(country)}
+                  spread={total}
+                />
+              )}
+            </QueryBoundary>
+          </InsightCard>
+          <InsightCard
+            title="Gender gap by role"
+            description={`The gap is the men’s median minus the women’s, as a share of the men’s. Roles with fewer than ${config.insights.genderGapMinGroupSize} women or men are not plotted.`}
+          >
+            <QueryBoundary
+              error={gap.error}
+              onRetry={() => void gap.refetch()}
+              ready={!!gap.data}
+              skeleton={<RowsSkeleton rows={5} cols={3} />}
+            >
+              <GenderGapPlot rows={gap.data ?? []} country={country} />
+            </QueryBoundary>
+          </InsightCard>
         </>
       )}
 
-      <CountriesSection
-        overview={overview}
-        countryName={countryName}
-        selected={country}
-        onSelect={(code) => set({ country: code })}
-      />
+      <InsightCard title="Countries" description="Pick a country to switch the page to it.">
+        <QueryBoundary
+          error={overview.error}
+          onRetry={() => void overview.refetch()}
+          ready={!!overview.data}
+          skeleton={<RowsSkeleton rows={5} cols={4} />}
+        >
+          <CountriesTable
+            rows={overview.data ?? []}
+            countryName={countryName}
+            selected={country}
+            onSelect={(code) => set({ country: code })}
+          />
+        </QueryBoundary>
+      </InsightCard>
     </div>
   );
 }

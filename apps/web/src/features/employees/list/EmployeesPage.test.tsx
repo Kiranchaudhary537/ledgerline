@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { renderApp, stubFetch } from '@/test/render-app';
 import { employee, filterOptions, session } from '@/features/employees/shared/fixtures';
@@ -11,7 +12,7 @@ function stubApi() {
     if (url === '/api/meta/filters') return Response.json(filterOptions);
     if (url.startsWith('/api/employees?')) {
       return Response.json({
-        data: [employee, { ...employee, id: 8, fullName: 'Low Payer', compaRatio: 0.8 }],
+        data: [employee, { ...employee, id: 8, fullName: 'Low Payer' }],
         page: 1,
         pageSize: 25,
         total: 2812,
@@ -27,10 +28,13 @@ const listCalls = (fetch: ReturnType<typeof stubApi>) =>
 describe('employees page', () => {
   test('asks the API for the URL filters and renders the rows', async () => {
     const fetch = stubApi();
-    renderApp('/employees?country=IN&level=mid,senior&sort=compaRatio:desc&page=2');
+    renderApp('/employees?country=IN&level=mid,senior&sort=hireDate:desc&page=2');
 
     const link = await screen.findByRole('link', { name: 'Sandeep Singh' });
-    expect(link).toHaveAttribute('href', '/employees/7');
+    expect(link).toHaveAttribute(
+      'href',
+      '/employees/7?country=IN&level=mid%2Csenior&sort=hireDate%3Adesc&page=2',
+    );
     expect(screen.getAllByText('₹17,90,000')).toHaveLength(2);
     expect(screen.getByText('2,812 employees')).toBeInTheDocument();
 
@@ -38,7 +42,7 @@ describe('employees page', () => {
     expect(Object.fromEntries(params)).toEqual({
       country: 'IN',
       level: 'mid,senior',
-      sort: 'compaRatio:desc',
+      sort: 'hireDate:desc',
       page: '2',
       pageSize: '25',
     });
@@ -51,12 +55,27 @@ describe('employees page', () => {
     expect(link).toHaveAttribute('href', '/api/employees/export.csv?country=IN&sort=salary%3Aasc');
   });
 
-  test('marks a low compa-ratio with text, not colour alone', async () => {
+  test('rows show department and level as pills, and a menu with the four actions', async () => {
     stubApi();
     renderApp('/employees');
     const row = (await screen.findByRole('link', { name: 'Low Payer' })).closest('tr')!;
-    expect(within(row).getByText('Below range:')).toBeInTheDocument();
-    expect(within(row).getByText(/0\.80/)).toBeInTheDocument();
+    expect(within(row).getByText('Engineering')).toBeInTheDocument();
+    expect(within(row).getByText('Mid')).toBeInTheDocument();
+    await userEvent.click(within(row).getByRole('button', { name: 'Actions for Low Payer' }));
+    for (const name of ['View', 'Edit', 'Change salary', 'Delete']) {
+      expect(await screen.findByRole('menuitem', { name })).toBeInTheDocument();
+    }
+  });
+
+  test('the row menu opens the salary dialog for that person', async () => {
+    stubApi();
+    renderApp('/employees');
+    const row = (await screen.findByRole('link', { name: 'Low Payer' })).closest('tr')!;
+    await userEvent.click(within(row).getByRole('button', { name: 'Actions for Low Payer' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Change salary' }));
+    expect(await screen.findByRole('dialog', { name: 'Change salary' })).toHaveTextContent(
+      'Low Payer earns',
+    );
   });
 
   test('salary sort is disabled without exactly one country', async () => {
@@ -65,9 +84,7 @@ describe('employees page', () => {
     const salary = await screen.findByRole('button', { name: /^Salary/ });
     expect(salary).toHaveAttribute('aria-disabled', 'true');
     expect(salary).toHaveAttribute('title', 'Filter to one country to sort by salary');
-    expect(screen.getByRole('button', { name: /^Compa-ratio/ })).not.toHaveAttribute(
-      'aria-disabled',
-    );
+    expect(screen.getByRole('button', { name: /^Name/ })).not.toHaveAttribute('aria-disabled');
   });
 
   test('salary sort works with one country and updates the URL', async () => {

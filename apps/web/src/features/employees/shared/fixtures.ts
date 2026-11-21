@@ -11,7 +11,7 @@ export const filterOptions: FilterOptions = {
   genders: ['female', 'male'],
 };
 
-export const employee: Employee = {
+export const employee = {
   id: 7,
   employeeCode: 'ACME-00022',
   fullName: 'Sandeep Singh',
@@ -25,11 +25,10 @@ export const employee: Employee = {
   gender: 'male',
   hireDate: '2022-08-08',
   salaryMinor: 179000000,
-  compaRatio: 1.02,
   version: 3,
   createdAt: '2022-08-08T00:00:00.000Z',
   updatedAt: '2025-08-08T00:00:00.000Z',
-};
+} as Employee;
 
 export const bandRow: StatsRow = {
   group: { level: 'mid' },

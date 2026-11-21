@@ -3,7 +3,11 @@ import { ChevronRight } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Table, Td, Th, rowHover } from '@/components/ui/table';
-import { railPosition, railScale, type RailScale } from '@/features/employees/shared/model/band-geometry';
+import {
+  railPosition,
+  railScale,
+  type RailScale,
+} from '@/features/employees/shared/model/band-geometry';
 import { BandRail } from '@/features/employees/shared/components/BandRail';
 import { groupByRole, type RoleGroup } from '@/features/insights/model/pay-roles';
 import { formatCount, label, money } from '@/lib/format';

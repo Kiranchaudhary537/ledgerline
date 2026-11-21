@@ -42,6 +42,11 @@ function stubApi(onWrite?: (url: string, init?: RequestInit) => Response) {
   });
 }
 
+async function openMenu(user: ReturnType<typeof userEvent.setup>, item: string) {
+  await user.click(await screen.findByRole('button', { name: 'More actions' }));
+  await user.click(await screen.findByRole('menuitem', { name: item }));
+}
+
 async function openSalaryDialog() {
   const user = userEvent.setup();
   renderApp('/employees/7');
@@ -50,14 +55,33 @@ async function openSalaryDialog() {
 }
 
 describe('employee detail', () => {
-  test('shows the person, the band and the history', async () => {
-    const fetch = stubApi();
+  test('header shows the person, status and key facts', async () => {
+    stubApi();
     renderApp('/employees/7');
     expect(await screen.findByRole('heading', { name: 'Sandeep Singh' })).toBeInTheDocument();
-    expect(screen.getAllByText('₹17,90,000').length).toBeGreaterThan(0);
-    expect(await screen.findByRole('img', { name: /Pay band: middle half/ })).toBeInTheDocument();
-    expect(await screen.findByText('Starting salary')).toBeInTheDocument();
-    expect(screen.getByText('Imported')).toBeInTheDocument();
+    expect(screen.getByText('Active')).toBeInTheDocument();
+    const header = screen
+      .getByRole('heading', { name: 'Sandeep Singh' })
+      .closest('div[class*="flex-wrap"]')!;
+    for (const text of ['ACME-00022', 'Engineering', 'India']) {
+      expect(await within(header as HTMLElement).findByText(text)).toBeInTheDocument();
+    }
+    expect(screen.getByRole('link', { name: 'Back to employees' })).toHaveAttribute(
+      'href',
+      '/employees',
+    );
+  });
+
+  test('salary tab shows the salary and the band values with the person placed in it', async () => {
+    const fetch = stubApi();
+    renderApp('/employees/7');
+    expect((await screen.findAllByText('₹17,90,000')).length).toBeGreaterThan(0);
+    const band = await screen.findByLabelText('Pay band');
+    for (const term of ['Min', 'P25', 'Median', 'P75', 'Max']) {
+      expect(within(band).getByText(term)).toBeInTheDocument();
+    }
+    expect(within(band).getByText('₹16,80,000')).toBeInTheDocument();
+    expect(screen.getByText(/is in the upper middle of the band/)).toBeInTheDocument();
 
     const stats = fetch.mock.calls.map(([u]) => u).find((u) => u.startsWith('/api/insights/stats'));
     expect(Object.fromEntries(new URL(stats!, 'http://x').searchParams)).toEqual({
@@ -67,6 +91,33 @@ describe('employee detail', () => {
       employmentType: 'full_time',
       groupBy: 'level',
     });
+  });
+
+  test('history tab lists changes with reason pills, and sorts by a header', async () => {
+    stubApi();
+    const user = userEvent.setup();
+    renderApp('/employees/7');
+    await user.click(await screen.findByRole('tab', { name: 'History' }));
+    expect(await screen.findByText('Starting salary')).toBeInTheDocument();
+    expect(screen.getByText('Annual review')).toBeInTheDocument();
+    expect(screen.getByText('Imported')).toBeInTheDocument();
+    expect(screen.getByText('+6.5%')).toBeInTheDocument();
+
+    const firstDataRow = () => screen.getAllByRole('row')[1]!;
+    expect(firstDataRow()).toHaveTextContent('Annual review');
+    await user.click(screen.getByRole('button', { name: /^Date/ }));
+    expect(firstDataRow()).toHaveTextContent('Starting salary');
+  });
+
+  test('profile tab shows the fields and an Edit details button', async () => {
+    stubApi();
+    const user = userEvent.setup();
+    renderApp('/employees/7');
+    await user.click(await screen.findByRole('tab', { name: 'Profile' }));
+    expect(await screen.findByText('sandeep@acme.test')).toBeInTheDocument();
+    expect(screen.getByText('Full time')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Edit details' }));
+    expect(await screen.findByRole('dialog', { name: 'Edit details' })).toBeInTheDocument();
   });
 
   test('change salary: validates, previews the new position, then saves', async () => {
@@ -105,7 +156,7 @@ describe('employee detail', () => {
     const fetch = stubApi(() => Response.json(employee));
     const user = userEvent.setup();
     renderApp('/employees/7');
-    await user.click(await screen.findByRole('button', { name: 'Edit details' }));
+    await openMenu(user, 'Edit details');
     const dialog = await screen.findByRole('dialog', { name: 'Edit details' });
     expect(within(dialog).queryByRole('combobox', { name: 'Country' })).not.toBeInTheDocument();
     expect(within(dialog).getByText('India')).toBeInTheDocument();
@@ -138,7 +189,7 @@ describe('employee detail', () => {
     const fetch = stubApi();
     const user = userEvent.setup();
     const router = renderApp('/employees/7');
-    await user.click(await screen.findByRole('button', { name: 'Delete' }));
+    await openMenu(user, 'Delete');
     expect(fetch.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false);
 
     await user.click(await screen.findByRole('button', { name: 'Delete employee' }));
@@ -152,9 +203,42 @@ describe('employee detail', () => {
     const fetch = stubApi();
     const user = userEvent.setup();
     const router = renderApp('/employees/7');
-    await user.click(await screen.findByRole('button', { name: 'Delete' }));
+    await openMenu(user, 'Delete');
     await user.click(await screen.findByRole('button', { name: 'Cancel' }));
     expect(router.state.location.pathname).toBe('/employees/7');
     expect(fetch.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false);
+  });
+
+  test('pager shows the position in the list the user came from and keeps its filters', async () => {
+    stubFetch((url) => {
+      if (url === '/api/auth/me') return Response.json(session);
+      if (url === '/api/meta/filters') return Response.json(filterOptions);
+      if (url === '/api/employees/7') return Response.json(employee);
+      if (url === '/api/employees/7/salary-history') return Response.json(history);
+      if (url.startsWith('/api/insights/stats?')) return Response.json([bandRow]);
+      if (url.startsWith('/api/employees?')) {
+        return Response.json({
+          data: [{ ...employee, id: 6 }, employee, { ...employee, id: 8 }],
+          page: 2,
+          pageSize: 25,
+          total: 2818,
+        });
+      }
+      return Response.json({ code: 'ROUTE_NOT_FOUND', message: 'nope' }, { status: 404 });
+    });
+    renderApp('/employees/7?country=IN&page=2');
+    expect(await screen.findByText('27 of 2,818')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Previous employee' })).toHaveAttribute(
+      'href',
+      '/employees/6?country=IN&page=2',
+    );
+    expect(screen.getByRole('link', { name: 'Next employee' })).toHaveAttribute(
+      'href',
+      '/employees/8?country=IN&page=2',
+    );
+    expect(screen.getByRole('link', { name: 'Back to employees' })).toHaveAttribute(
+      'href',
+      '/employees?country=IN&page=2',
+    );
   });
 });

@@ -1,8 +1,7 @@
-import { config, type GenderGapRow } from '@acme/shared';
-import { formatCount, money } from '@/lib/format';
+import type { GenderGapRow } from '@acme/shared';
+import { Table, Td, Th } from '@/components/ui/table';
 import { gapLimit, gapPosition, sortByGap } from '@/features/insights/model/gap-geometry';
-import { Failed, Section, Skeleton, td, th } from '@/features/insights/components/Section';
-import type { useGenderGap } from '@/features/insights/api/queries';
+import { formatCount, money } from '@/lib/format';
 
 /** The number and its direction in words, so colour and position never carry the meaning alone. */
 const gapParts = (pct: number) =>
@@ -55,7 +54,7 @@ const rowGrid = 'grid grid-cols-[minmax(8rem,15rem)_1fr_minmax(10rem,13rem)] ite
 function GapDotPlot({ rows, country }: { rows: GenderGapRow[]; country: string }) {
   const limit = gapLimit(rows);
   return (
-    <div className="max-w-4xl">
+    <div className="px-5">
       <div
         aria-hidden
         className={`${rowGrid} border-b border-border pb-1 text-xs text-muted-foreground`}
@@ -73,7 +72,7 @@ function GapDotPlot({ rows, country }: { rows: GenderGapRow[]; country: string }
           <li
             key={r.group.jobTitle}
             title={medians(r, country)}
-            className={`${rowGrid} border-b border-border`}
+            className={`${rowGrid} border-b border-border last:border-b-0`}
           >
             <span className="truncate">{r.group.jobTitle}</span>
             <Track pct={r.gapPct} limit={limit} />
@@ -98,73 +97,48 @@ function GapTable({ rows, country }: { rows: GenderGapRow[]; country: string }) 
       </>
     );
   return (
-    <details className="mt-2">
-      <summary className="cursor-pointer text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+    <details className="border-t border-border">
+      <summary className="cursor-pointer px-5 py-3 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
         View as table
       </summary>
       <div className="overflow-x-auto">
-        <table aria-label="Gender gap by role" className="tnum mt-2 w-full border-collapse">
+        <Table aria-label="Gender gap by role">
           <thead>
             <tr>
-              <th scope="col" className={th}>
-                Role
-              </th>
-              <th scope="col" className={`${th} text-right`}>
-                Women, median (people)
-              </th>
-              <th scope="col" className={`${th} text-right`}>
-                Men, median (people)
-              </th>
-              <th scope="col" className={`${th} pr-0 text-right`}>
-                Gap
-              </th>
+              <Th>Role</Th>
+              <Th align="right">Women, median (people)</Th>
+              <Th align="right">Men, median (people)</Th>
+              <Th align="right">Gap</Th>
             </tr>
           </thead>
           <tbody>
             {sortByGap(rows).map((r) => (
               <tr key={r.group.jobTitle}>
-                <td className={td}>{r.group.jobTitle}</td>
-                <td className={`${td} text-right`}>{side(r.femaleCount, r.femaleMedian)}</td>
-                <td className={`${td} text-right`}>{side(r.maleCount, r.maleMedian)}</td>
-                <td className={`${td} pr-0 text-right`}>
+                <Td>{r.group.jobTitle}</Td>
+                <Td align="right">{side(r.femaleCount, r.femaleMedian)}</Td>
+                <Td align="right">{side(r.maleCount, r.maleMedian)}</Td>
+                <Td align="right">
                   <GapText pct={r.gapPct} />
-                </td>
+                </Td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       </div>
     </details>
   );
 }
 
-export function GenderGapSection({
-  gap,
-  country,
-}: {
-  gap: ReturnType<typeof useGenderGap>;
-  country: string;
-}) {
+export function GenderGapPlot({ rows, country }: { rows: GenderGapRow[]; country: string }) {
+  if (rows.length === 0) {
+    return (
+      <p className="px-5 pb-5 text-muted-foreground">No roles to compare for these filters.</p>
+    );
+  }
   return (
-    <Section title="Gender gap by role">
-      <p className="max-w-2xl text-muted-foreground">
-        The gap is the men’s median minus the women’s, as a share of the men’s. Roles with fewer
-        than {config.insights.genderGapMinGroupSize} women or men are not plotted.
-      </p>
-      {gap.isError ? (
-        <Failed error={gap.error} retry={() => void gap.refetch()} />
-      ) : gap.data ? (
-        gap.data.length === 0 ? (
-          <p className="py-4 text-muted-foreground">No roles to compare for these filters.</p>
-        ) : (
-          <>
-            <GapDotPlot rows={gap.data} country={country} />
-            <GapTable rows={gap.data} country={country} />
-          </>
-        )
-      ) : (
-        <Skeleton rows={5} cols={3} />
-      )}
-    </Section>
+    <>
+      <GapDotPlot rows={rows} country={country} />
+      <GapTable rows={rows} country={country} />
+    </>
   );
 }

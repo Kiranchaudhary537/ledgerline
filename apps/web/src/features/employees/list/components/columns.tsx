@@ -1,10 +1,28 @@
 import type { Employee } from '@acme/shared';
 import { createColumnHelper } from '@tanstack/react-table';
+import { MoreHorizontal } from 'lucide-react';
 import { Link } from 'react-router';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, DotPill } from '@/components/ui/pill';
+import { SortButton } from '@/components/ui/table';
+import { initials } from '@/features/employees/shared/model/people';
 import { label, money } from '@/lib/format';
-import { CompaRatioCell } from '@/features/employees/list/components/CompaRatioCell';
-import type { ListState } from '@/features/employees/list/model/list-state';
-import { SortHeader } from '@/features/employees/list/components/SortHeader';
+import { toneOf } from '@/lib/tone';
+import {
+  COLUMNS,
+  nextSort,
+  parseSort,
+  sortDisabledHint,
+  type ColumnId,
+  type ColumnSpec,
+} from '@/features/employees/list/model/columns';
+import { employeeLink, type ListState } from '@/features/employees/list/model/list-state';
 import type { UpdateList } from '@/features/employees/list/hooks/use-list-url';
 
 declare module '@tanstack/react-table' {
@@ -12,80 +30,125 @@ declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
     align?: 'right';
     /** The API sort field this column's header controls. */
-    sortField?: string;
+    sortField?: string | undefined;
   }
 }
 
-const SALARY_SORT_HINT = 'Filter to one country to sort by salary';
-const col = createColumnHelper<Employee>();
+export type RowAction = 'edit' | 'salary' | 'delete';
 
-export function employeeColumns(
-  state: ListState,
-  update: UpdateList,
-  countryName: (code: string) => string,
-) {
-  const sortHeader = (
-    field: string,
-    text: string,
-    extra: { hint?: string; right?: boolean } = {},
-  ) => (
-    <SortHeader
-      field={field}
-      sort={state.sort}
-      onSort={(sort) => update({ sort }, false)}
-      disabledHint={extra.hint}
-      alignRight={extra.right ?? false}
-    >
-      {text}
-    </SortHeader>
+const col = createColumnHelper<Employee>();
+const spec = (id: ColumnId) => COLUMNS.find((c) => c.id === id) as ColumnSpec;
+const linkClass =
+  'font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+
+interface Ctx {
+  state: ListState;
+  update: UpdateList;
+  countryName: (code: string) => string;
+  onAction: (employee: Employee, action: RowAction) => void;
+}
+
+function RowMenu({
+  employee,
+  state,
+  onAction,
+}: Pick<Ctx, 'state' | 'onAction'> & { employee: Employee }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        aria-label={`Actions for ${employee.fullName}`}
+        className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring data-[state=open]:bg-muted"
+      >
+        <MoreHorizontal aria-hidden className="size-4" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem asChild>
+          <Link to={employeeLink(employee.id, state)}>View</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => onAction(employee, 'edit')}>Edit</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => onAction(employee, 'salary')}>
+          Change salary
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem destructive onSelect={() => onAction(employee, 'delete')}>
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
-  const salaryHint = state.country.length === 1 ? undefined : SALARY_SORT_HINT;
+}
+
+export function employeeColumns({ state, update, countryName, onAction }: Ctx) {
+  const header = (id: ColumnId) => () => {
+    const { label: text, sortField, align } = spec(id);
+    if (!sortField) return text;
+    const current = parseSort(state.sort);
+    return (
+      <SortButton
+        direction={current.field === sortField ? current.dir : null}
+        onClick={() => update({ sort: nextSort(state.sort, sortField) }, false)}
+        disabledHint={sortDisabledHint(state, sortField)}
+        alignRight={align === 'right'}
+      >
+        {text}
+      </SortButton>
+    );
+  };
+  const meta = (id: ColumnId) => ({ align: spec(id).align, sortField: spec(id).sortField });
 
   return [
     col.accessor('employeeCode', {
-      header: 'Code',
+      id: 'code',
+      meta: meta('code'),
+      header: header('code'),
       cell: (c) => <span className="text-muted-foreground">{c.getValue()}</span>,
     }),
     col.accessor('fullName', {
       id: 'name',
-      meta: { sortField: 'name' },
-      header: () => sortHeader('name', 'Name'),
+      meta: meta('name'),
+      header: header('name'),
       cell: (c) => (
-        <Link
-          to={`/employees/${c.row.original.id}`}
-          className="font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        >
-          {c.getValue()}
-        </Link>
+        <span className="flex items-center gap-2.5">
+          <Avatar initials={initials(c.getValue())} tone={toneOf(c.getValue())} size="sm" />
+          <Link to={employeeLink(c.row.original.id, state)} className={linkClass}>
+            {c.getValue()}
+          </Link>
+        </span>
       ),
     }),
-    col.display({
-      id: 'role',
-      meta: { sortField: 'level' },
-      header: () => sortHeader('level', 'Role'),
-      cell: (c) => (
-        <>
-          {c.row.original.jobTitle}
-          <span className="block text-xs leading-tight text-muted-foreground">
-            {label(c.row.original.level)}
-          </span>
-        </>
-      ),
+    col.accessor('department', {
+      id: 'department',
+      meta: meta('department'),
+      header: header('department'),
+      cell: (c) => <DotPill tone={toneOf(c.getValue())}>{c.getValue()}</DotPill>,
+    }),
+    col.accessor('jobTitle', {
+      id: 'jobTitle',
+      meta: meta('jobTitle'),
+      header: header('jobTitle'),
+    }),
+    col.accessor('level', {
+      id: 'level',
+      meta: meta('level'),
+      header: header('level'),
+      cell: (c) => <DotPill tone={toneOf(c.getValue())}>{label(c.getValue())}</DotPill>,
     }),
     col.accessor('countryCode', {
-      header: 'Country',
+      id: 'country',
+      meta: meta('country'),
+      header: header('country'),
       cell: (c) => countryName(c.getValue()),
     }),
     col.accessor('salaryMinor', {
       id: 'salary',
-      meta: { align: 'right', sortField: 'salary' },
-      header: () => sortHeader('salary', 'Salary', { hint: salaryHint, right: true }),
+      meta: meta('salary'),
+      header: header('salary'),
       cell: (c) => money(c.getValue(), c.row.original.countryCode),
     }),
-    col.accessor('compaRatio', {
-      meta: { align: 'right', sortField: 'compaRatio' },
-      header: () => sortHeader('compaRatio', 'Compa-ratio', { right: true }),
-      cell: (c) => <CompaRatioCell value={c.getValue()} />,
+    col.display({
+      id: 'actions',
+      header: () => <span className="sr-only">Actions</span>,
+      cell: (c) => <RowMenu employee={c.row.original} state={state} onAction={onAction} />,
     }),
   ];
 }

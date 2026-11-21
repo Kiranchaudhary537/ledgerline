@@ -4,7 +4,7 @@ import type { UseFormReturn } from 'react-hook-form';
 import { Input, Select } from '@/components/ui/input';
 import { label } from '@/lib/format';
 import type { FormValues } from '@/features/employees/forms/model/employee-form';
-import { Field, fieldProps } from '@/features/employees/forms/components/form-parts';
+import { Field, fieldProps } from '@/components/ui/field';
 
 type Form = UseFormReturn<FormValues>;
 type Name = keyof FormValues;

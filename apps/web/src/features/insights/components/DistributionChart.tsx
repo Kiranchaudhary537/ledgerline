@@ -1,32 +1,25 @@
-import { Histogram, type Spread } from '@/features/insights/components/Histogram';
-import { Failed, Section } from '@/features/insights/components/Section';
-import type { useDistribution } from '@/features/insights/api/queries';
+import type { Distribution } from '@acme/shared';
+import { Histogram, type Spread } from './Histogram';
 
-export function DistributionSection({
-  dist,
+export function DistributionChart({
+  data,
   country,
   countryName,
   spread,
 }: {
-  dist: ReturnType<typeof useDistribution>;
+  data: Distribution;
   country: string;
   countryName: string;
   spread: Spread | undefined;
 }) {
   return (
-    <Section title="Salary distribution">
-      {dist.isError ? (
-        <Failed error={dist.error} retry={() => void dist.refetch()} />
-      ) : dist.data && dist.data.buckets.length > 0 ? (
-        <Histogram
-          data={dist.data}
-          countryCode={country}
-          name={`Salaries in ${countryName}`}
-          spread={spread}
-        />
-      ) : (
-        <div aria-hidden className="h-44 max-w-2xl rounded-sm bg-muted motion-safe:animate-pulse" />
-      )}
-    </Section>
+    <div className="px-5 pb-5">
+      <Histogram
+        data={data}
+        countryCode={country}
+        name={`Salaries in ${countryName}`}
+        spread={spread}
+      />
+    </div>
   );
 }

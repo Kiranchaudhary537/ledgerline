@@ -1,5 +1,9 @@
 import { money } from '@/lib/format';
-import { railLayout, type Band, type RailScale } from '@/features/employees/shared/model/band-geometry';
+import {
+  railLayout,
+  type Band,
+  type RailScale,
+} from '@/features/employees/shared/model/band-geometry';
 
 export interface RailMarker {
   value: number;

@@ -1,67 +1,28 @@
-import { salaryChangeSchema, type Employee, type StatsRow } from '@acme/shared';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Employee, StatsRow } from '@acme/shared';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import { DialogClose } from '@/components/ui/dialog';
+import { Field, fieldProps } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { api } from '@/lib/api';
-import { formatPercent, money, parseMoney } from '@/lib/format';
-import { bandPosition, percentChange, POSITION_TEXT } from '@/features/employees/shared/model/band-geometry';
+import type { SaveErrorHandlers } from '@/features/employees/forms/api/save-error';
+import {
+  buildSalaryChangeBody,
+  EMPTY_SALARY_VALUES,
+  proposalText,
+  proposedMinor,
+  salaryFieldOf,
+  type SalaryFormValues,
+} from '@/features/employees/forms/model/salary-change';
 import { BandRail } from '@/features/employees/shared/components/BandRail';
-import { Field, fieldProps, handleSaveError, parseAmount, StaleBanner } from '@/features/employees/forms/components/form-parts';
-import { employeeKey, employeesKey, fetchEmployee } from '@/features/employees/shared/api/employee';
+import { StaleBanner } from './StaleBanner';
 
-interface FormValues {
-  /** Major units as typed. */
-  newSalary: string;
-  reason: string;
-}
-
-export function SalaryChangeDialog({
-  employee,
-  band,
-  open,
-  onOpenChange,
-}: {
+interface Props {
   employee: Employee;
-  band: Band;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        title="Change salary"
-        description={`${employee.fullName} earns ${money(employee.salaryMinor, employee.countryCode)} a year.`}
-      >
-        <SalaryChangeForm employee={employee} band={band} onDone={() => onOpenChange(false)} />
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-type Band = StatsRow | undefined;
-
-function useChangeSalary(
-  employee: Employee,
-  onDone: () => void,
-  fieldError: (name: string, message: string) => boolean,
-  onStale: () => void,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (body: unknown) =>
-      api<Employee>(`/api/employees/${employee.id}/salary-changes`, { method: 'POST', body }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: employeesKey });
-      await queryClient.invalidateQueries({ queryKey: ['insights'] });
-      toast.success('Salary changed');
-      onDone();
-    },
-    onError: (error) => handleSaveError(error, fieldError, onStale),
-  });
+  band: StatsRow | undefined;
+  pending: boolean;
+  onSave: (body: unknown, handlers: SaveErrorHandlers) => void;
+  onReload: () => Promise<Employee>;
 }
 
 function ProposalSummary({
@@ -70,10 +31,9 @@ function ProposalSummary({
   proposed,
 }: {
   employee: Employee;
-  band: Band;
+  band: StatsRow | undefined;
   proposed: number | null;
 }) {
-  const valid = proposed !== null && proposed > 0;
   return (
     <div className="space-y-1">
       {band && (
@@ -82,30 +42,18 @@ function ProposalSummary({
           countryCode={employee.countryCode}
           markers={[
             { value: employee.salaryMinor, kind: 'current' },
-            ...(valid ? [{ value: proposed, kind: 'proposed' as const }] : []),
+            ...(proposed === null ? [] : [{ value: proposed, kind: 'proposed' as const }]),
           ]}
         />
       )}
       <p className="tnum text-xs text-muted-foreground" aria-live="polite">
-        {valid
-          ? `${formatPercent(percentChange(employee.salaryMinor, proposed))} from today` +
-            (band ? `, ${POSITION_TEXT[bandPosition(proposed, band)]}` : '')
-          : 'Type the new salary to see where it lands in the band.'}
+        {proposalText(employee.salaryMinor, proposed, band)}
       </p>
     </div>
   );
 }
 
-function SalaryChangeForm({
-  employee,
-  band,
-  onDone,
-}: {
-  employee: Employee;
-  band: Band;
-  onDone: () => void;
-}) {
-  const queryClient = useQueryClient();
+export function SalaryChangeForm({ employee, band, pending, onSave, onReload }: Props) {
   const [stale, setStale] = useState(false);
   const {
     register,
@@ -113,41 +61,22 @@ function SalaryChangeForm({
     setError,
     watch,
     formState: { errors },
-  } = useForm<FormValues>({ defaultValues: { newSalary: '', reason: '' } });
-  const { countryCode, currency } = employee;
+  } = useForm<SalaryFormValues>({ defaultValues: EMPTY_SALARY_VALUES });
 
-  const fieldError = (name: string, message: string) => {
-    const field = name === 'newSalaryMinor' ? 'newSalary' : name;
+  const onFieldError = (name: string, message: string) => {
+    const field = salaryFieldOf(name);
     if (field !== 'newSalary' && field !== 'reason') return false;
     setError(field, { message });
     return true;
   };
-  const change = useChangeSalary(employee, onDone, fieldError, () => setStale(true));
 
-  function submit(v: FormValues) {
-    const newSalaryMinor = parseAmount(v.newSalary, countryCode, (message) =>
-      setError('newSalary', { message }),
-    );
-    if (newSalaryMinor === null) return;
-    const parsed = salaryChangeSchema.safeParse({
-      newSalaryMinor,
-      reason: v.reason,
-      version: employee.version,
-    });
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) fieldError(String(issue.path[0]), issue.message);
+  function submit(values: SalaryFormValues) {
+    const built = buildSalaryChangeBody(values, employee);
+    if (!built.ok) {
+      for (const [name, message] of Object.entries(built.errors)) onFieldError(name, message);
       return;
     }
-    change.mutate(parsed.data);
-  }
-
-  async function reload() {
-    await queryClient.fetchQuery({
-      queryKey: employeeKey(String(employee.id)),
-      queryFn: () => fetchEmployee(String(employee.id)),
-      staleTime: 0,
-    });
-    setStale(false);
+    onSave(built.body, { onFieldError, onStale: () => setStale(true) });
   }
 
   const salaryError = errors.newSalary?.message;
@@ -155,8 +84,14 @@ function SalaryChangeForm({
 
   return (
     <form noValidate onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
-      {stale && <StaleBanner onReload={() => void reload()} />}
-      <Field id="newSalary" label={`New annual salary (${currency})`} error={salaryError}>
+      {stale && (
+        <StaleBanner
+          onReload={() => {
+            void onReload().then(() => setStale(false));
+          }}
+        />
+      )}
+      <Field id="newSalary" label={`New annual salary (${employee.currency})`} error={salaryError}>
         <Input
           {...fieldProps('newSalary', salaryError)}
           inputMode="decimal"
@@ -170,11 +105,11 @@ function SalaryChangeForm({
       <ProposalSummary
         employee={employee}
         band={band}
-        proposed={parseMoney(watch('newSalary'), countryCode)}
+        proposed={proposedMinor(watch('newSalary'), employee.countryCode)}
       />
       <div className="flex gap-2">
-        <Button type="submit" disabled={change.isPending}>
-          {change.isPending ? 'Saving…' : 'Change salary'}
+        <Button type="submit" disabled={pending}>
+          {pending ? 'Saving…' : 'Change salary'}
         </Button>
         <DialogClose asChild>
           <Button type="button" variant="secondary">
