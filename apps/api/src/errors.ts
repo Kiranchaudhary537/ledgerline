@@ -14,18 +14,33 @@ export class AppError extends Error {
   }
 }
 
-// Node network errors and Postgres "connection" / "server shutting down" SQLSTATEs.
+// Postgres SQLSTATE codes.
+const UNIQUE_VIOLATION = '23505';
+const FOREIGN_KEY_VIOLATION = '23503';
+const ADMIN_SHUTDOWN = '57P01';
+const CANNOT_CONNECT_NOW = '57P03';
+const CONNECTION_EXCEPTION = '08000';
+const UNABLE_TO_ESTABLISH_CONNECTION = '08001';
+const CONNECTION_DOES_NOT_EXIST = '08003';
+const CONNECTION_FAILURE = '08006';
+
+// Constraint names from the initial migration.
+const EMAIL_UNIQUE_INDEX = 'employees_email_active';
+const JOB_TITLE_FK = 'employees_department_job_title_fkey';
+const COUNTRY_FK = 'employees_country_code_fkey';
+
+// Node network errors and the "connection" / "server shutting down" SQLSTATEs.
 const CONNECTION_ERRORS = new Set([
   'ECONNREFUSED',
   'ECONNRESET',
   'ETIMEDOUT',
   'ENOTFOUND',
-  '57P01',
-  '57P03',
-  '08000',
-  '08001',
-  '08003',
-  '08006',
+  ADMIN_SHUTDOWN,
+  CANNOT_CONNECT_NOW,
+  CONNECTION_EXCEPTION,
+  UNABLE_TO_ESTABLISH_CONNECTION,
+  CONNECTION_DOES_NOT_EXIST,
+  CONNECTION_FAILURE,
 ]);
 
 type ErrorLike = Partial<FastifyError> & { constraint?: string };
@@ -33,16 +48,16 @@ type ErrorLike = Partial<FastifyError> & { constraint?: string };
 function classify(err: ErrorLike): { code: ErrorCode; fields?: Record<string, string> } {
   if (err instanceof AppError) return { code: err.code, ...(err.fields && { fields: err.fields }) };
   if (err instanceof ZodError) return { code: 'VALIDATION_FAILED', fields: fieldErrors(err) };
-  if (err.code === '23505' && err.constraint === 'employees_email_active') {
+  if (err.code === UNIQUE_VIOLATION && err.constraint === EMAIL_UNIQUE_INDEX) {
     return { code: 'EMAIL_TAKEN', fields: { email: 'Already in use' } };
   }
-  if (err.code === '23503' && err.constraint === 'employees_department_job_title_fkey') {
+  if (err.code === FOREIGN_KEY_VIOLATION && err.constraint === JOB_TITLE_FK) {
     return {
       code: 'VALIDATION_FAILED',
       fields: { jobTitle: 'Choose a job title in this department' },
     };
   }
-  if (err.code === '23503' && err.constraint === 'employees_country_code_fkey') {
+  if (err.code === FOREIGN_KEY_VIOLATION && err.constraint === COUNTRY_FK) {
     return { code: 'VALIDATION_FAILED', fields: { countryCode: 'Choose a country' } };
   }
   if (err.code && CONNECTION_ERRORS.has(err.code)) return { code: 'SERVICE_UNAVAILABLE' };
