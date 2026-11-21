@@ -11,6 +11,7 @@ export default defineConfig({
         },
       },
       {
+        resolve: { alias: { '@': new URL('./apps/web/src', import.meta.url).pathname } },
         test: {
           name: 'web',
           include: ['apps/web/src/**/*.test.{ts,tsx}'],

@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { vi } from 'vitest';
 import { createQueryClient } from '@/lib/query-client';
-import { routes } from '@/router';
+import { goToLogin, routes } from '@/router';
 
 type Handler = (url: string, init?: RequestInit) => Response | Promise<Response>;
 
@@ -16,9 +16,7 @@ export function stubFetch(handler: Handler) {
 
 export function renderApp(path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
-  const client = createQueryClient((from) =>
-    router.navigate(`/login?next=${encodeURIComponent(from)}`, { replace: true }),
-  );
+  const client = createQueryClient(() => goToLogin(router));
   render(
     <QueryClientProvider client={client}>
       <RouterProvider router={router} />

@@ -18,9 +18,7 @@ describe('protected layout', () => {
   });
 
   test('shows the shell and user name when logged in', async () => {
-    stubFetch(() =>
-      Response.json({ user: { id: 'u1', email: 'hr@acme.test', name: 'Hana HR' } }),
-    );
+    stubFetch(() => Response.json({ user: { id: 'u1', email: 'hr@acme.test', name: 'Hana HR' } }));
     renderApp('/employees');
     expect(await screen.findByText('Hana HR')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Employees' })).toBeInTheDocument();
