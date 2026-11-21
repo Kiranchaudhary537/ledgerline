@@ -2,7 +2,7 @@
 // Render and Vercel auto-deploy `main`; optional deploy hooks cover auto-deploy being off.
 import { execSync, spawnSync } from 'node:child_process';
 
-const WEB_URL = process.env.SHIP_WEB_URL ?? 'https://ledgerline.vercel.app';
+const WEB_URL = process.env.SHIP_WEB_URL ?? 'https://ledgerline-theta-bice.vercel.app';
 const POLL_INTERVAL_MS = 10_000;
 // Free Render instances build slowly and cold-start in about a minute.
 const DEPLOY_TIMEOUT_MS = 15 * 60_000;
