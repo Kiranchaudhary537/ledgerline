@@ -32,7 +32,7 @@ const statements = [
 
   `CREATE TABLE employees (
     id               int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    employee_code    text GENERATED ALWAYS AS ('ACME-' || lpad(id::text, 5, '0')) STORED UNIQUE,
+    employee_code    text GENERATED ALWAYS AS ('ACME-' || lpad(id::text, 5, '0')) STORED NOT NULL UNIQUE,
     full_name        text NOT NULL,
     email            text NOT NULL,
     department       text NOT NULL,

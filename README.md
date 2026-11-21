@@ -12,5 +12,8 @@ Needs Node 26+, pnpm, and Docker (or OrbStack).
 cp .env.example .env
 docker compose up -d db
 pnpm install
-pnpm check        # typecheck + lint + format + tests
+pnpm --filter @acme/db migrate
+pnpm check        # typecheck + lint + format + DB types up to date + tests
 ```
+
+After changing a migration: `pnpm --filter @acme/db migrate && pnpm --filter @acme/db db:types`.

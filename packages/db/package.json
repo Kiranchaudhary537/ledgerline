@@ -9,10 +9,13 @@
   "scripts": {
     "typecheck": "tsc -p .",
     "migrate": "node --env-file-if-exists=../../.env src/migrate.ts",
-    "seed": "node --env-file-if-exists=../../.env src/seed/index.ts"
+    "seed": "node --env-file-if-exists=../../.env src/seed/index.ts",
+    "db:types": "kysely-codegen",
+    "db:types:check": "kysely-codegen --verify"
   },
   "devDependencies": {
-    "@types/pg": "^8.23.1"
+    "@types/pg": "^8.23.1",
+    "kysely-codegen": "^0.20.0"
   },
   "dependencies": {
     "@acme/shared": "workspace:*",

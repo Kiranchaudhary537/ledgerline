@@ -2,15 +2,13 @@ import type { CountryCode } from '@acme/shared';
 import type { Insertable } from 'kysely';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb, resetDb } from './testing.ts';
-import type { EmployeesTable } from './types.ts';
+import type { Employees } from './types.ts';
 
 const db = createTestDb();
 beforeEach(() => resetDb(db));
 afterAll(() => db.destroy());
 
-const employee = (
-  overrides: Partial<Insertable<EmployeesTable>> = {},
-): Insertable<EmployeesTable> => ({
+const employee = (overrides: Partial<Insertable<Employees>> = {}): Insertable<Employees> => ({
   fullName: 'Priya Sharma',
   email: 'priya.sharma@acme.example',
   department: 'Engineering',
@@ -24,7 +22,7 @@ const employee = (
   ...overrides,
 });
 
-const insert = (values: Insertable<EmployeesTable>) =>
+const insert = (values: Insertable<Employees>) =>
   db.insertInto('employees').values(values).returningAll().executeTakeFirstOrThrow();
 
 describe('employees table', () => {

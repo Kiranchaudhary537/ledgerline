@@ -1,0 +1,24 @@
+{
+  "dialect": "postgres",
+  "url": "env(DATABASE_URL)",
+  "envFile": "../../.env",
+  "outFile": "src/types.ts",
+  "camelCase": true,
+  "dateParser": "string",
+  "numericParser": "number",
+  "excludePattern": "kysely_*",
+  "typeMapping": { "int8": "number" },
+  "customImports": {
+    "CountryCode": "@acme/shared#CountryCode",
+    "Department": "@acme/shared#Department",
+    "JobTitle": "@acme/shared#JobTitle"
+  },
+  "overrides": {
+    "columns": {
+      "countries.code": "CountryCode",
+      "employees.country_code": "CountryCode",
+      "employees.department": "Department",
+      "employees.job_title": "JobTitle"
+    }
+  }
+}
