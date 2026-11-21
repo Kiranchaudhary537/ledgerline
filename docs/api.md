@@ -1,6 +1,18 @@
 # API
 
-Errors: see [error-handling.md](error-handling.md). All routes need a session except login.
+Errors: see [error-handling.md](error-handling.md). All routes need a session except `POST /api/auth/login` and `GET /api/health`. Protection is the default: a new route is
+protected unless added to `PUBLIC_ROUTES` in `apps/api/src/plugins/auth.ts`.
+
+## Auth
+
+| Endpoint | Result |
+|---|---|
+| `POST /api/auth/login` `{ email, password }` | `200 { user: { id, email, name } }` and sets the cookie. Wrong password and unknown email both give `401 INVALID_CREDENTIALS`. |
+| `POST /api/auth/logout` | `204`; deletes the session and clears the cookie |
+| `GET /api/auth/me` | `200 { user }`, or `401 UNAUTHENTICATED` |
+
+- Cookie `session`: random 32-byte token (base64url), `httpOnly`, `SameSite=Lax`, `Path=/`, 8 h, `Secure` in production. Only its SHA-256 is stored in `sessions.id`.
+- Rate limits (per minute, in memory, one API process): login 5 per IP + email; everything else 300 per user (per IP before login). Over the limit: `429 RATE_LIMITED` with a `Retry-After` header.
 
 ## `GET /api/employees` – list filters
 
