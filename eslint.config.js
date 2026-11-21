@@ -8,6 +8,7 @@ export default defineConfig([
   js.configs.recommended,
   tseslint.configs.recommended,
   { languageOptions: { globals: globals.node } },
+  { files: ['apps/web/**'], languageOptions: { globals: globals.browser } },
   {
     rules: {
       // `_name` marks an intentionally unused variable (e.g. omitting a key when destructuring).
