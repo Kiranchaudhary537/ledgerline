@@ -1,8 +1,14 @@
-import type { Employee, EmployeeList, FilterOptions, SalaryChange } from '@acme/shared';
+import type {
+  Employee,
+  EmployeeFacets,
+  EmployeeList,
+  FilterOptions,
+  SalaryChange,
+} from '@acme/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useStatsQuery } from '@/lib/stats-query';
-import { listToApiParams, type ListState } from './list-state';
+import { listToApiParams, listToFacetParams, type ListState } from './list-state';
 
 /** Everything under ['employees'] is refreshed together after a write. */
 export const employeesKey = ['employees'] as const;
@@ -22,6 +28,15 @@ export const useEmployeeList = (state: ListState) => {
   return useQuery({
     queryKey: ['employees', 'list', query],
     queryFn: () => api<EmployeeList>(`/api/employees?${query}`),
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useFacets = (state: ListState) => {
+  const query = listToFacetParams(state).toString();
+  return useQuery({
+    queryKey: ['employees', 'facets', query],
+    queryFn: () => api<EmployeeFacets>(`/api/employees/facets?${query}`),
     placeholderData: keepPreviousData,
   });
 };

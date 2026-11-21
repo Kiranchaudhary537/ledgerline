@@ -7,7 +7,7 @@ import { EmployeesResults } from './employees-table';
 import { exportParams } from './list-state';
 import type { Option } from './multi-select';
 import { Pagination } from './pagination';
-import { useEmployeeList, useFilterOptions } from './queries';
+import { useEmployeeList, useFacets, useFilterOptions } from './queries';
 import { useListUrl } from './use-list-url';
 
 function EmployeesHeader({ total, exportHref }: { total: number | undefined; exportHref: string }) {
@@ -35,6 +35,7 @@ export function EmployeesPage() {
   const { state, update, clear } = useListUrl();
   const options = useFilterOptions();
   const list = useEmployeeList(state);
+  const facets = useFacets(state);
 
   const countryOptions: Option[] = (options.data?.countries ?? []).map((c) => ({
     value: c.code,
@@ -59,7 +60,7 @@ export function EmployeesPage() {
         update={update}
         clear={clear}
         options={options.data}
-        countryOptions={countryOptions}
+        facets={facets.data}
       />
       <EmployeesResults
         list={list}

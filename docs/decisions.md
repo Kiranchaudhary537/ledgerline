@@ -115,4 +115,4 @@ The hardest parts (insights, special indexes) would be raw SQL in Prisma anyway,
 | Salary change via `PATCH` | Separate `salary-changes` endpoint | Simpler rules per endpoint |
 | Insights API fixed | Designed when we build it | Build employees first |
 | `services/` + `repositories/` folders | Feature modules in `api`, SQL in `packages/db` | Same layers, split by package |
-
+| Facets with counts | Static option lists | Only real values, narrows as you filter |

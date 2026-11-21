@@ -54,6 +54,7 @@ describe('toolbar facets', () => {
     );
     await userEvent.keyboard('{Escape}');
     await userEvent.click(screen.getByRole('button', { name: /^Country/ }));
-    expect(await screen.findByText('1')).toBeInTheDocument();
+    const menu = await screen.findByLabelText('Country filter');
+    expect(await within(menu).findByText('1')).toBeInTheDocument();
   });
 });
