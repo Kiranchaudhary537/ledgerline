@@ -9,12 +9,18 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground hover:brightness-110',
-        secondary: 'border border-border bg-transparent hover:border-muted-foreground',
-        destructive: 'bg-destructive text-background hover:brightness-110',
+        accent: 'bg-accent text-accent-foreground hover:brightness-95',
+        secondary: 'border border-border bg-card hover:bg-muted',
+        destructive: 'bg-destructive text-card hover:brightness-110',
         ghost: 'hover:bg-muted',
         link: 'underline-offset-4 hover:underline',
       },
-      size: { default: 'h-9 px-3.5', sm: 'h-8 px-3' },
+      size: {
+        default: 'h-9 px-3.5',
+        sm: 'h-8 px-3',
+        /** Round icon button: needs an aria-label. */
+        icon: 'size-9 rounded-full',
+      },
     },
     defaultVariants: { variant: 'default', size: 'default' },
   },

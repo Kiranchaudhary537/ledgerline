@@ -1,37 +1,35 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { useState } from 'react';
+import { Navigate, Outlet, useLocation, useMatch, useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { loginUrl, useSession } from '@/features/auth/api/session';
-import { ApiError, api } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { useLogout, useSession } from '@/features/auth/api/session';
+import { loginUrl } from '@/features/auth/model/redirect';
+import { useEmployee } from '@/features/employees/shared/api/employee';
+import { EmployeeDialogs } from '@/features/employees/forms/EmployeeDialogs';
+import { ApiError } from '@/lib/api';
+import { breadcrumbs } from './breadcrumbs';
+import { Sidebar } from './components/Sidebar';
+import { TopBar } from './components/TopBar';
 
-const navClass = ({ isActive }: { isActive: boolean }) =>
-  cn(
-    'border-b-2 border-transparent py-2 text-muted-foreground hover:text-foreground',
-    isActive && 'border-primary font-semibold text-foreground',
+function ShellSkeleton() {
+  return (
+    <div aria-busy="true">
+      <div className="h-14 bg-ink" />
+      <div className="m-6 h-8 w-48 motion-safe:animate-pulse rounded-md bg-muted" />
+      <span className="sr-only">Loading…</span>
+    </div>
   );
+}
 
 export function ProtectedLayout() {
   const session = useSession();
   const location = useLocation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const logout = useMutation({
-    mutationFn: () => api('/api/auth/logout', { method: 'POST' }),
-    onSettled: () => {
-      queryClient.clear();
-      void navigate('/login');
-    },
-  });
+  const logout = useLogout(() => void navigate('/login'));
+  const employeeId = useMatch('/employees/:id')?.params.id;
+  const employee = useEmployee(employeeId ?? '');
+  const [adding, setAdding] = useState(false);
 
-  if (session.isPending) {
-    return (
-      <div className="h-12 border-b border-border" aria-busy="true">
-        <div className="m-3 h-6 w-32 motion-safe:animate-pulse rounded-md bg-muted" />
-        <span className="sr-only">Loading…</span>
-      </div>
-    );
-  }
+  if (session.isPending) return <ShellSkeleton />;
   if (session.error instanceof ApiError && session.error.code === 'UNAUTHENTICATED') {
     return <Navigate to={loginUrl(location)} replace />;
   }
@@ -50,36 +48,24 @@ export function ProtectedLayout() {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:m-2 focus:bg-background focus:p-2"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-card focus:p-2"
       >
         Skip to content
       </a>
-      <header className="flex items-center gap-6 border-b border-border px-6 pt-2">
-        <span translate="no" className="py-2 font-semibold">
-          ACME&nbsp;Pay
-        </span>
-        <nav aria-label="Main" className="flex gap-5">
-          <NavLink to="/employees" className={navClass}>
-            Employees
-          </NavLink>
-          <NavLink to="/insights" className={navClass}>
-            Insights
-          </NavLink>
-        </nav>
-        <span className="ml-auto text-muted-foreground">{session.data.user.name}</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mb-1"
-          onClick={() => logout.mutate()}
-          disabled={logout.isPending}
-        >
-          Log out
-        </Button>
-      </header>
-      <main id="main" className="mx-auto max-w-[1200px] px-6 py-6">
-        <Outlet />
-      </main>
+      <TopBar
+        crumbs={breadcrumbs(location.pathname, employeeId ? employee.data?.fullName : undefined)}
+        user={session.data.user}
+        onAddEmployee={() => setAdding(true)}
+        onLogout={() => logout.mutate()}
+        loggingOut={logout.isPending}
+      />
+      <div className="flex">
+        <Sidebar />
+        <main id="main" className="mx-auto min-w-0 max-w-[1280px] flex-1 px-6 py-6">
+          <Outlet />
+        </main>
+      </div>
+      <EmployeeDialogs kind={adding ? 'create' : null} onClose={() => setAdding(false)} />
     </>
   );
 }

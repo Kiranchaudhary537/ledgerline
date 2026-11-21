@@ -1,10 +1,10 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
-import { ProtectedLayout } from '@/app/ProtectedLayout';
+import { loginUrl } from '@/features/auth/model/redirect';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
-import { loginUrl } from '@/features/auth/api/session';
 import { EmployeeDetailPage } from '@/features/employees/detail/EmployeeDetailPage';
 import { EmployeesPage } from '@/features/employees/list/EmployeesPage';
 import { InsightsPage } from '@/features/insights/InsightsPage';
+import { ProtectedLayout } from './ProtectedLayout';
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
