@@ -3,7 +3,10 @@ import { buildApp } from './app.ts';
 import { loadEnv } from './env.ts';
 
 const env = loadEnv();
-const db = createDb(env.DATABASE_URL);
+const db = createDb(env.DATABASE_URL, {
+  // Requests fail with 503 until Postgres is back; the pool reconnects on its own.
+  onPoolError: (error) => app.log.warn({ message: error.message }, 'postgres connection lost'),
+});
 const app = buildApp({
   db,
   logger: { level: 'info' },
