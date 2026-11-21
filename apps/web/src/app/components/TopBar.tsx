@@ -64,7 +64,12 @@ export function TopBar({ crumbs, user, onAddEmployee, onLogout, loggingOut }: Pr
           aria-label={`Account menu for ${user.name}`}
           className={`flex items-center gap-2 rounded-full py-1 pr-2 pl-1 hover:bg-white/10 ${onInk}`}
         >
-          <Avatar initials={initials(user.name)} tone={toneOf(user.name)} size="sm" />
+          <Avatar
+            initials={initials(user.name)}
+            tone={toneOf(user.name)}
+            size="sm"
+            className="bg-white/15 text-ink-foreground"
+          />
           <span className="hidden sm:inline">{user.name}</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

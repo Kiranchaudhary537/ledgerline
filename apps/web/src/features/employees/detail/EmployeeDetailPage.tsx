@@ -1,6 +1,6 @@
 import { History, User, Wallet } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSalaryHistory } from '@/features/employees/detail/api/salary-history';
@@ -17,6 +17,9 @@ import { EmployeeHeader } from './components/EmployeeHeader';
 import { HistoryCard } from './components/HistoryCard';
 import { ProfileCard } from './components/ProfileCard';
 import { SalaryCard } from './components/SalaryCard';
+
+const TABS = ['profile', 'salary', 'history'] as const;
+type Tab = (typeof TABS)[number];
 
 function DetailSkeleton() {
   const bar = 'rounded-sm bg-muted motion-safe:animate-pulse';
@@ -51,6 +54,7 @@ function DetailError({ error, retry }: { error: Error; retry: () => void }) {
 
 export function EmployeeDetailPage() {
   const { id = '' } = useParams();
+  const [params, setParams] = useSearchParams();
   const { state: listState } = useListUrl();
   const employee = useEmployee(id);
   const band = useBand(employee.data);
@@ -58,6 +62,18 @@ export function EmployeeDetailPage() {
   const options = useFilterOptions();
   const pager = useEmployeePager(Number(id), listState);
   const [dialog, setDialog] = useState<DialogKind | null>(null);
+
+  const tab = TABS.includes(params.get('tab') as Tab) ? (params.get('tab') as Tab) : 'salary';
+  // The tab lives in the URL so a link opens the same view; the list's own params are kept.
+  const onTab = (next: string) =>
+    setParams(
+      (prev) => {
+        const copy = new URLSearchParams(prev);
+        copy.set('tab', next);
+        return copy;
+      },
+      { replace: true },
+    );
 
   if (employee.isPending) return <DetailSkeleton />;
   if (employee.isError)
@@ -87,7 +103,7 @@ export function EmployeeDetailPage() {
         onDelete={() => setDialog('delete')}
         onChangeSalary={() => setDialog('salary')}
       />
-      <Tabs defaultValue="salary" className="space-y-5">
+      <Tabs value={tab} onValueChange={onTab} className="space-y-5">
         <TabsList aria-label="Employee sections">
           <TabsTrigger value="profile">
             <User aria-hidden className="size-4" />

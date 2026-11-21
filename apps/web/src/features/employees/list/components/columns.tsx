@@ -1,4 +1,4 @@
-import type { Employee } from '@acme/shared';
+import { LEVELS, type Employee } from '@acme/shared';
 import { createColumnHelper } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { Link } from 'react-router';
@@ -131,7 +131,7 @@ export function employeeColumns({ state, update, countryName, onAction }: Ctx) {
       id: 'level',
       meta: meta('level'),
       header: header('level'),
-      cell: (c) => <DotPill tone={toneOf(c.getValue())}>{label(c.getValue())}</DotPill>,
+      cell: (c) => <DotPill tone={LEVELS.indexOf(c.getValue())}>{label(c.getValue())}</DotPill>,
     }),
     col.accessor('countryCode', {
       id: 'country',

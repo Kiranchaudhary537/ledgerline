@@ -40,7 +40,7 @@ export function Histogram({
         viewBox={`0 0 ${W} ${H}`}
         role="img"
         aria-label={`${name}: ${formatCount(total)} people in ${buckets.length} salary ranges, most common ${range(tallest)}.${spread ? ` Median ${money(spread.median, countryCode)}, middle half ${money(spread.p25, countryCode)} to ${money(spread.p75, countryCode)}.` : ''}`}
-        className="block h-auto w-full max-w-2xl"
+        className="block h-auto w-full max-w-3xl"
       >
         {spread && (
           <SpreadMarks spread={spread} buckets={buckets} countryCode={countryCode} y0={y(0)} />

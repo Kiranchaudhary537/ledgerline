@@ -52,10 +52,12 @@ export function Avatar({
   initials,
   tone,
   size = 'md',
+  className,
 }: {
   initials: string;
   tone: number;
   size?: 'sm' | 'md' | 'lg';
+  className?: string;
 }) {
   return (
     <span
@@ -66,6 +68,7 @@ export function Avatar({
         size === 'sm' && 'size-7 text-xs',
         size === 'md' && 'size-9 text-sm',
         size === 'lg' && 'size-14 text-lg',
+        className,
       )}
     >
       {initials}

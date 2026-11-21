@@ -61,9 +61,10 @@ export function BandRail({
       ))}
       {showLabels &&
         [band.p25, band.p75].map((v, i) => (
+          // p25 hangs left of its mark and p75 right of its, so close marks never overlap labels.
           <span
             key={i}
-            className="absolute top-6 -translate-x-1/2 text-xs whitespace-nowrap text-muted-foreground"
+            className={`absolute top-6 text-xs whitespace-nowrap text-muted-foreground ${i ? '' : '-translate-x-full'}`}
             style={{ left: `${i ? layout.p75 : layout.p25}%` }}
           >
             {money(v, countryCode)}

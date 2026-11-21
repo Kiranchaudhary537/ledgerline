@@ -42,7 +42,7 @@ export function SegmentBar({
       {marker !== undefined && (
         <div
           className="absolute bottom-0 h-4 w-1 -translate-x-1/2 rounded-sm bg-foreground ring-2 ring-card"
-          style={{ left: `${marker}%` }}
+          style={{ left: `clamp(2px, ${marker}%, calc(100% - 2px))` }}
         />
       )}
     </div>

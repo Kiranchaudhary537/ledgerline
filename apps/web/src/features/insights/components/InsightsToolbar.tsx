@@ -28,7 +28,7 @@ export function InsightsToolbar({ state, options, set }: Props) {
         id="insights-country"
         value={state.country}
         onChange={(e) => set({ country: e.target.value })}
-        className="w-auto min-w-36"
+        className="w-48"
       >
         {state.country === '' && <option value="">Loading…</option>}
         {(options?.countries ?? []).map((c) => (

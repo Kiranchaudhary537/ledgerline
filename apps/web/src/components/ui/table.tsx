@@ -18,7 +18,7 @@ export function Th({
     <th
       scope="col"
       className={cn(
-        'h-10 bg-muted px-4 text-xs font-semibold whitespace-nowrap text-muted-foreground',
+        'h-10 bg-muted px-4 align-middle text-xs font-semibold whitespace-nowrap text-muted-foreground',
         align === 'right' ? 'text-right' : 'text-left',
         className,
       )}

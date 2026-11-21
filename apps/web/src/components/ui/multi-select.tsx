@@ -73,6 +73,7 @@ export function MultiSelect({ name, options, selected, onChange, searchable = fa
             />
             <input
               type="search"
+              name={`search-${name}`}
               aria-label={`Search ${name}`}
               placeholder={`Search ${name.toLowerCase()}…`}
               autoComplete="off"
@@ -99,7 +100,7 @@ export function MultiSelect({ name, options, selected, onChange, searchable = fa
           aria-activedescendant={searchable ? undefined : activeId}
           tabIndex={searchable ? -1 : 0}
           onKeyDown={searchable ? undefined : onKeyDown}
-          className="max-h-60 overflow-y-auto p-1 outline-none"
+          className="max-h-60 overflow-y-auto p-1 focus-visible:outline-2 focus-visible:outline-ring"
         >
           {shown.length === 0 && (
             <li role="presentation" className="px-2 py-2 text-muted-foreground">
