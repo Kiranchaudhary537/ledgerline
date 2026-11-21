@@ -1,5 +1,6 @@
 import { config, loginSchema } from '@acme/shared';
 import type { FastifyInstance } from 'fastify';
+import { rateLimiter } from '../../plugins/rate-limit.ts';
 import type { AuthService } from './service.ts';
 
 export function authRoutes(
@@ -9,16 +10,15 @@ export function authRoutes(
   app.post(
     '/api/auth/login',
     {
-      config: {
-        rateLimit: {
-          max: config.rateLimit.loginMax,
-          timeWindow: config.rateLimit.windowMs,
-          keyGenerator: (request: { ip: string; body?: unknown }) => {
-            const email = (request.body as { email?: unknown } | undefined)?.email;
-            return `${request.ip}|${typeof email === 'string' ? email.trim().toLowerCase() : ''}`;
-          },
+      // preHandler, not onRequest: the key needs the parsed body.
+      preHandler: rateLimiter(app, {
+        max: config.rateLimit.loginMax,
+        timeWindow: config.rateLimit.windowMs,
+        keyGenerator: (request) => {
+          const login = loginSchema.safeParse(request.body);
+          return `${request.ip}|${login.success ? login.data.email.toLowerCase() : ''}`;
         },
-      },
+      }),
     },
     async (request, reply) => {
       const { email, password } = loginSchema.parse(request.body);
