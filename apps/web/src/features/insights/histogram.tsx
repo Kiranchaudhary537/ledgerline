@@ -110,7 +110,7 @@ function SpreadMarks({
       <line x1={median} x2={median} y1={TOP - 4} y2={y0} className="stroke-foreground" />
       <text
         x={median + (flip ? -5 : 5)}
-        y={TOP + 2}
+        y={TOP - 6}
         textAnchor={flip ? 'end' : 'start'}
         className="tnum fill-foreground text-[11px] font-semibold"
       >

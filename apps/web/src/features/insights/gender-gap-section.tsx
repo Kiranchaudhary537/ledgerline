@@ -49,7 +49,7 @@ function Track({ pct, limit }: { pct: number | null; limit: number }) {
   );
 }
 
-const rowGrid = 'grid grid-cols-[minmax(8rem,12rem)_1fr_minmax(10rem,13rem)] items-center gap-4';
+const rowGrid = 'grid grid-cols-[minmax(8rem,15rem)_1fr_minmax(10rem,13rem)] items-center gap-4';
 
 /** One dot per role on a shared axis. Zero is the centre; right of it women are paid less. */
 function GapDotPlot({ rows, country }: { rows: GenderGapRow[]; country: string }) {
