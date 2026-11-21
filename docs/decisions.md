@@ -19,7 +19,7 @@ Full design: [system-design.md](system-design.md)
 | UI kit | shadcn/ui + TanStack Table + Recharts | MUI, Mantine | Light, own the components, flexible table |
 | Repo | pnpm monorepo | Separate repos | One place, shared code; no Turborepo (not needed) |
 | Hosting – UI | Vercel | Netlify, Render | Free, auto-detects Vite |
-| Hosting – API + DB | Render (same region) | Fly + Neon, Railway | API and DB close together, one provider |
+| Hosting – API + DB | Render, Singapore region (same region for both) | Fly + Neon, Railway | API and DB close together, one provider |
 | Same origin | Vercel rewrite `/api/*` → Render | CORS + cross-site cookies | Browsers block third-party cookies |
 | Auth | Session cookie in Postgres, argon2id | JWT in localStorage | Safe from XSS, can log out for real |
 | Money | Integer minor units, local currency | Floats, FX conversion | No rounding errors; no external rates |

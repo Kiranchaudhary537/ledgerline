@@ -2,7 +2,7 @@
 databases:
   - name: ledgerline-db
     plan: free # expires 30 days after creation (14-day grace); use a paid plan to keep data
-    region: oregon # must match the API service; cannot be changed later
+    region: singapore # closest Render region to India (~300 ms faster than oregon); cannot be changed later
     postgresMajorVersion: '18'
 
 services:
@@ -10,7 +10,7 @@ services:
     name: ledgerline-api # URL becomes https://ledgerline-api-teue.onrender.com (use it in apps/web/vercel.json)
     runtime: node
     plan: free # sleeps after 15 min idle; no shell; no preDeployCommand
-    region: oregon
+    region: singapore
     buildCommand: npm install -g pnpm@12.16.1 && pnpm install --frozen-lockfile
     # Free plans have no preDeployCommand, so migrations run before each start. Move
     # `pnpm --filter @acme/db migrate` to preDeployCommand when on a paid plan.

@@ -4,7 +4,7 @@ Web on Vercel, API + Postgres on Render (same region). Vercel proxies `/api/*` t
 
 ## 1. Render (API + database)
 
-1. Render dashboard, New, Blueprint, pick this repo. It reads `render.yaml` and creates `ledgerline-db` (Postgres) and `ledgerline-api` (web service), both in `oregon`.
+1. Render dashboard, New, Blueprint, pick this repo. It reads `render.yaml` and creates `ledgerline-db` (Postgres) and `ledgerline-api` (web service), both in `singapore`.
 2. Wait for the first deploy. Each start runs migrations, then the API. Check `https://<service>.onrender.com/api/health`.
 3. Note the real service host (Render adds a suffix if the name is taken).
 
