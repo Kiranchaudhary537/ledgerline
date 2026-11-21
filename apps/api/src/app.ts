@@ -8,6 +8,7 @@ import { authRoutes } from './modules/auth/routes.ts';
 import { employeeRoutes } from './modules/employees/routes.ts';
 import { healthRoutes } from './modules/health/routes.ts';
 import { metaRoutes } from './modules/meta/routes.ts';
+import { insightsRoutes } from './modules/insights/routes.ts';
 import { authPlugin } from './plugins/auth.ts';
 
 export interface AppOptions {
@@ -72,6 +73,7 @@ export function buildApp({ db, logger = true, cookieSecure = false }: AppOptions
     authRoutes(routes, { db, cookieSecure });
     employeeRoutes(routes, { db });
     metaRoutes(routes);
+    insightsRoutes(routes, { db });
   });
   return app;
 }
