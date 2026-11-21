@@ -11,14 +11,21 @@ afterAll(() => db.destroy());
 const options = { adminEmail: 'hr@acme.example', adminPassword: 'a-long-password', count: 50 };
 
 const countRows = async (table: 'employees' | 'salaryChanges' | 'users') =>
-  (await db.selectFrom(table).select((eb) => eb.fn.countAll<number>().as('n')).executeTakeFirstOrThrow()).n;
+  (
+    await db
+      .selectFrom(table)
+      .select((eb) => eb.fn.countAll<number>().as('n'))
+      .executeTakeFirstOrThrow()
+  ).n;
 
 describe('seedDatabase', () => {
   it('inserts employees with their full salary history', async () => {
     await seedDatabase(db, options);
     const expected = generateEmployees({ seed: 42, count: 50 });
     expect(await countRows('employees')).toBe(50);
-    expect(await countRows('salaryChanges')).toBe(expected.reduce((n, e) => n + e.history.length, 0));
+    expect(await countRows('salaryChanges')).toBe(
+      expected.reduce((n, e) => n + e.history.length, 0),
+    );
 
     const latest = await db
       .selectFrom('employees as e')

@@ -19,7 +19,7 @@
 - Core logic shows TDD: a `test:` commit (new test fails) followed by a `feat:` commit (it passes).
 - Apart from a `test:` red step, every commit passes typecheck, lint and tests.
 - Never commit secrets or `.env`.
-- AI-assisted commits end with a `Co-Authored-By:` trailer.
+- No `Co-Authored-By` AI trailers; how AI was used is documented in `docs/ai-prompts.md`.
 
 ## Examples
 

@@ -25,8 +25,8 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 - [x] Kysely client, migration runner, test helper (tables reset before each DB test)
 - [x] Migrations: `users`, `sessions`, `countries`, `employees`, `salary_changes`, indexes, partial unique
-- [ ] 🔴 Seed generator (pure): deterministic, salaries inside bands, history ends at current salary, unique emails, uneven headcount
-- [ ] Seed writer: batch insert 10k + HR user from env; re-run = truncate + reseed
+- [x] 🔴 Seed generator (pure): deterministic, salaries inside bands, history ends at current salary, unique emails, uneven headcount
+- [x] Seed writer: batch insert 10k + HR user from env; re-run = truncate + reseed
 
 ## M3 – API base (`apps/api`)
 
