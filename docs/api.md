@@ -56,7 +56,7 @@ Types (`packages/shared/src/api/employees.ts`):
 
 ### CSV export
 
-`text/csv; charset=utf-8`, `Content-Disposition: attachment; filename="employees.csv"`, CRLF rows.
+`text/csv; charset=utf-8`, `Content-Disposition: attachment; filename="employees.csv"`, CRLF rows. Streamed: rows are read from the database with a cursor and written to the response as they arrive, so memory stays flat and `Server-Timing` covers only the time to the first byte.
 Columns: Code, Name, Email, Department, Job title, Level, Country, Employment type, Gender, Hire date, Annual salary, Currency.
 
 - Salary is in major units as a plain decimal (`3800000.00`; JPY has no decimals).

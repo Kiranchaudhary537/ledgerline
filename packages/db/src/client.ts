@@ -1,6 +1,7 @@
 import { config } from '@acme/shared';
 import { CamelCasePlugin, Kysely, PostgresDialect, sql } from 'kysely';
 import pg from 'pg';
+import Cursor from 'pg-cursor';
 import type { DB } from './types.ts';
 
 // shortcut: BIGINT/NUMERIC parsed as JS numbers; safe while values stay below 2^53 (salaries, counts do).
@@ -26,7 +27,7 @@ export function createDb(
   // The pool discards that client and opens a new one on the next query.
   pool.on('error', onPoolError);
   return new Kysely<DB>({
-    dialect: new PostgresDialect({ pool }),
+    dialect: new PostgresDialect({ pool, cursor: Cursor }),
     plugins: [new CamelCasePlugin()],
   });
 }

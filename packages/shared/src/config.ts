@@ -66,6 +66,7 @@ export const config = deepFreeze({
 
   csv: {
     filename: 'employees.csv', // name offered by the browser when exporting
+    streamBatchRows: 2000, // rows per cursor fetch: few round trips, small memory, and the first bytes go out early
   },
 
   ui: {

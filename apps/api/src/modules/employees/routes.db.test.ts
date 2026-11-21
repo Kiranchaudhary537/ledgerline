@@ -272,14 +272,7 @@ describe('GET /api/employees/export.csv streaming', () => {
       .execute();
     const header = ['Code', 'Name', 'Email', 'Department', 'Job title', 'Level', 'Country'];
     const expected =
-      csvRow([
-        ...header,
-        'Employment type',
-        'Gender',
-        'Hire date',
-        'Annual salary',
-        'Currency',
-      ]) +
+      csvRow([...header, 'Employment type', 'Gender', 'Hire date', 'Annual salary', 'Currency']) +
       rows
         .map((e) =>
           csvRow([

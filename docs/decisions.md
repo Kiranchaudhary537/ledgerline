@@ -31,7 +31,7 @@ Full design: [system-design.md](system-design.md)
 | Gender | `female`, `male` (required) | More options | Kept simple for v1 |
 | List filters | Contract in [api.md](api.md) | Ad hoc params | One schema for API and UI |
 | Salary change | Own endpoint `POST /employees/:id/salary-changes` | Inside `PATCH /employees/:id` | Reason + history rules stay in one place |
-| Search | `ILIKE '%q%'` + offset paging (max 100) | Full-text, `pg_trgm`, cursors | 10k rows → a few ms |
+| Search | `ILIKE '%q%'` + offset paging (max 100) | Full-text, cursors | 10k rows → a few ms; trigram index since migration 003 (next row) |
 | Uniqueness | Partial unique index (active rows only) | Plain unique | Rehired person can reuse email |
 | Seed | Realistic, connected data, fixed random seed | Random fake data | Insights must make sense; same data every run |
 | Rate limit | `@fastify/rate-limit`, in memory | Redis | One server; counts are correct |
@@ -118,3 +118,6 @@ The hardest parts (insights, special indexes) would be raw SQL in Prisma anyway,
 | Insights API fixed | Designed when we build it | Build employees first |
 | `services/` + `repositories/` folders | Feature modules in `api`, SQL in `packages/db` | Same layers, split by package |
 | Facets with counts | Static option lists | Only real values, narrows as you filter |
+| One-scan facets | One grouped query per dimension | `GROUPING SETS` + per-dimension `FILTER` scans the rows once instead of six times; same "all other filters" rule |
+| Trigram index on search | `pg_trgm` GIN on full name, email, code (partial on active rows) | Seq scan per search | Contains search on ILIKE uses the index for 3+ characters; 2 characters fall back to a scan |
+| Streamed CSV | Cursor (`pg-cursor`) piped to the response | Build the whole file in memory | Flat memory and early first bytes at 100k+ rows; same bytes out |
