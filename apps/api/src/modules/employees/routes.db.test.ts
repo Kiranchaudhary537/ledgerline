@@ -118,6 +118,17 @@ describe('writes', () => {
     await app.close();
   });
 
+  it('rejects a country change, which would leave the salary in the wrong currency', async () => {
+    const { app, send, seed } = await setup();
+    const e = await seed();
+    const res = await send('PATCH', `/api/employees/${e.id}`, { countryCode: 'DE', version: 1 });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().fields.countryCode).toBe(
+      "Country can't be changed; add a new record for a relocation",
+    );
+    await app.close();
+  });
+
   it('patches, bumps the version, and 409s when stale', async () => {
     const { app, send, seed } = await setup();
     const e = await seed();

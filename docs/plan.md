@@ -66,8 +66,8 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 **Loop for every screen:** design (`frontend-design`) → build → audit (`web-design-guidelines`) → fix findings → screenshot + check against the anti-slop checklist → remove one unneeded element → commit.
 
-- [ ] `docs/ui-design.md`: brief (user, one job per screen), tokens (4–6 colours, one typeface with tabular figures, type scale, radius by hierarchy), ASCII wireframes, anti-slop checklist
-- [ ] Style tile in 2 directions with real seed rows (table row, salary form, one chart) → **user picks one**
+- [x] `docs/ui-design.md`: brief (user, one job per screen), tokens (4–6 colours, one typeface with tabular figures, type scale, radius by hierarchy), ASCII wireframes, anti-slop checklist
+- [x] Style tile in 2 directions with real seed rows (table row, salary form, one chart) → **user picks one**
 - [x] Replace shadcn defaults with the chosen tokens
 - [x] App shell, router, `lib/api.ts`, error handling (toast, inline fields, 401 → login, 409 banner)
 - [x] Login page

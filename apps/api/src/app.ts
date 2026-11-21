@@ -8,7 +8,6 @@ import {
 } from '@acme/db';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
-import { config } from '@acme/shared';
 import Fastify, { type FastifyServerOptions, LogController } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { errorHandler, sendError } from './errors.ts';
@@ -51,7 +50,7 @@ export function buildApp({
     genReqId: () => randomUUID(),
     // Behind Vercel → Render: use X-Forwarded-For so rate limits see the real client IP.
     trustProxy,
-    // Replaced by the single line below.
+    // The onResponse hook below logs one line per request instead of Fastify's two.
     logController: new LogController({ disableRequestLogging: true }),
   });
 
@@ -80,21 +79,15 @@ export function buildApp({
     }
   });
 
-  app.register(cookie);
-  // Per user (IP before login); the login route sets its own, stricter limit.
-  app.register(rateLimit, {
-    max: config.rateLimit.apiMax,
-    timeWindow: config.rateLimit.windowMs,
-    hook: 'preHandler', // after onRequest auth and body parsing, so keys can use both
-    keyGenerator: (request) => String(request.user?.id ?? request.ip),
-  });
   const auth = new AuthService(new UserRepository(db), new SessionRepository(db));
   const employees = new EmployeeService(new EmployeeRepository(db));
   const insights = new InsightsService(new InsightsRepository(db));
   const meta = new MetaService(new DepartmentRepository(db));
   const health = new HealthService(db);
 
-  authPlugin(app, { auth });
+  app.register(cookie);
+  app.register(rateLimit, { global: false }); // limits are applied by authPlugin and the login route
+  app.after(() => authPlugin(app, { auth }));
   // Registered after the plugins above load, so they apply to every route.
   app.register(async (routes) => {
     healthRoutes(routes, { health });

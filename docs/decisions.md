@@ -61,6 +61,7 @@ Full design: [system-design.md](system-design.md)
 | Level column | Postgres enum | Text | Sorts by seniority, not A–Z |
 | Architecture | Modular monolith | Microservices | One team, ~5 req/s |
 | Commits | Conventional Commits on `main` | Feature branches + PRs | Solo dev; history easy to read |
+| Dark mode | Built on the design tokens | Light only | Colours are CSS variables, so a second set cost little |
 
 ## Why Kysely over Prisma
 
@@ -101,7 +102,8 @@ The hardest parts (insights, special indexes) would be raw SQL in Prisma anyway,
 | End-to-end browser tests (Playwright) | Heavy; unit + API tests cover the logic |
 | Full audit log (non-salary edits) | Salary history covers the core need |
 | Restore deleted employee | Rare; data is kept, can be added later |
-| Mobile layout, dark mode | HR works on desktop |
+| Mobile layout | HR works on desktop |
+| Relocating an employee to another country (currency change) | Salary is stored in the country's minor units, so editing the country would corrupt it; a relocation needs an FX decision and a salary-history entry. Add a new record instead (country is rejected on edit) |
 | Manager / org chart | Not needed for pay questions |
 | Screen to edit departments / job titles | Seeded once; rare changes can be a migration or seed |
 

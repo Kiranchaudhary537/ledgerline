@@ -27,13 +27,21 @@ const employeeFields = {
   hireDate: z.iso.date({ error: 'Enter a date as YYYY-MM-DD' }),
 };
 
+const { countryCode: _locked, ...editableFields } = employeeFields;
+
 export const employeeCreateSchema = z.object({ ...employeeFields, salaryMinor: salaryMinorSchema });
 
-/** Edits everything except salary (salary changes have their own endpoint). */
+/** Edits everything except salary (own endpoint) and country (see below). */
 export const employeeUpdateSchema = z
-  .object(employeeFields)
+  .object(editableFields)
   .partial()
-  .extend({ version: versionSchema });
+  .extend({
+    version: versionSchema,
+    // Salary stays in the old currency's minor units, so a country edit would corrupt it.
+    countryCode: z
+      .undefined({ error: "Country can't be changed; add a new record for a relocation" })
+      .optional(),
+  });
 
 export type EmployeeCreate = z.infer<typeof employeeCreateSchema>;
 export type EmployeeUpdate = z.infer<typeof employeeUpdateSchema>;

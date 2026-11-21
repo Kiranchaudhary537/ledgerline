@@ -12,7 +12,7 @@ protected unless added to `PUBLIC_ROUTES` in `apps/api/src/plugins/auth.ts`.
 | `GET /api/auth/me` | `200 { user }`, or `401 UNAUTHENTICATED` |
 
 - Cookie `session`: random 32-byte token (base64url), `httpOnly`, `SameSite=Lax`, `Path=/`, 8 h, `Secure` in production. Only its SHA-256 is stored in `sessions.id`.
-- Rate limits (per minute, in memory, one API process): login 5 per IP + email; everything else 300 per user (per IP before login). Over the limit: `429 RATE_LIMITED` with a `Retry-After` header.
+- Rate limits (per minute, in memory, one API process), values in `config.rateLimit`. Every request is counted before auth can reject it: logged-in requests per user, anonymous ones (including rejected 401s and forged cookies) per IP, 300 each. Login adds a stricter limit: 5 per IP + lowercased email. Over the limit: `429 RATE_LIMITED` with a `Retry-After` header.
 
 ## `GET /api/employees` – list filters
 

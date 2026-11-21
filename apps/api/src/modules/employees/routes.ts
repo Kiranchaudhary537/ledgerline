@@ -8,15 +8,16 @@ import {
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { AppError } from '../../errors.ts';
+import { requireUser } from '../../plugins/auth.ts';
 import type { EmployeeService } from './service.ts';
 
-const idSchema = z.coerce.number().int().positive();
+const paramsSchema = z.object({ id: z.coerce.number().int().positive() });
 
 /** A bad id is "not found", not a validation error. */
 function parseId(params: unknown): number {
-  const result = idSchema.safeParse((params as { id?: unknown }).id);
+  const result = paramsSchema.safeParse(params);
   if (!result.success) throw new AppError('NOT_FOUND');
-  return result.data;
+  return result.data.id;
 }
 
 export function employeeRoutes(
@@ -39,7 +40,7 @@ export function employeeRoutes(
 
   app.post('/api/employees', async (request, reply) => {
     const input = employeeCreateSchema.parse(request.body);
-    const employee = await employees.create(input, request.user!.id);
+    const employee = await employees.create(input, requireUser(request).id);
     return reply.status(201).send(employee);
   });
 
@@ -56,7 +57,7 @@ export function employeeRoutes(
     employees.changeSalary(
       parseId(request.params),
       salaryChangeSchema.parse(request.body),
-      request.user!.id,
+      requireUser(request).id,
     ),
   );
 
