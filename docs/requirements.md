@@ -20,12 +20,7 @@ ACME's HR team manages salaries for 10,000 employees across 8 countries in Excel
 | 6 | Concurrent edits | Two HR users editing the same record → second one gets "reload" instead of overwriting |
 | 7 | CSV export | Exports the current filtered list |
 | 8 | Seed | 10,000 realistic, connected employees; same data every run |
-
-## Next (after v1 is deployed)
-
-| Feature | Note |
-|---|---|
-| Pay insights | Min, max, average, median, distribution by country and job title, local currency. Designed when built |
+| 9 | Pay insights | Answer "how does the org pay people" – local currency; details in [api.md](api.md) once designed |
 
 ## Deliberately not built
 

@@ -18,6 +18,7 @@ v1 first, then deploy. Each step = a few small commits. Tests first on logic (re
 | 7 | Employees write: create, edit (version), soft delete, salary change + history | api, db | duplicate → 409; stale version → 409; failed history insert → salary unchanged |
 | 8 | CSV export of current filter | api | header + rows match filter |
 | 9 | Web v1: login, list, detail/edit, salary change, history (**UI design discussed first**) | web | form validation, conflict message |
+| 9b | Insights: API + screen (**designed first**) | api, db, web | stats match a hand-computed small dataset |
 | 10 | Deploy: Render (API + Postgres, same region), Vercel (web + `/api` rewrite), run seed | – | smoke check on live URL |
 
 ## Seed: realistic and connected
@@ -34,6 +35,5 @@ v1 first, then deploy. Each step = a few small commits. Tests first on logic (re
 
 ## After v1
 
-- Pay insights (API + UI) – design when we start it.
 - Hardening against edge cases in [system-design.md §9](system-design.md).
 - Demo video.

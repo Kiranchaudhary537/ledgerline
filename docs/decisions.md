@@ -21,7 +21,9 @@ Full design: [system-design.md](system-design.md)
 | Auth | Session cookie in Postgres, argon2id | JWT in localStorage | Safe from XSS, can log out for real |
 | Money | Integer minor units, local currency | Floats, FX conversion | No rounding errors; no external rates |
 | Salary type | `BIGINT`, annual gross base, minor units | `INTEGER` | Some currencies overflow 2.1 billion |
-| Job title, department | Plain text, validated against existing list | Lookup tables | Fewer tables; still no typo groups |
+| Job title, department, level | Fixed lists in `shared/constants.ts` | Free text, lookup tables | Simple check, no typo groups; can move to a table later |
+| Gender | `female`, `male` (required) | More options | Kept simple for v1 |
+| List filters | Contract in [api.md](api.md) | Ad hoc params | One schema for API and UI |
 | Salary change | Own endpoint `POST /employees/:id/salary-changes` | Inside `PATCH /employees/:id` | Reason + history rules stay in one place |
 | Search | `ILIKE '%q%'` + offset paging (max 100) | Full-text, `pg_trgm`, cursors | 10k rows → a few ms |
 | Uniqueness | Partial unique index (active rows only) | Plain unique | Rehired person can reuse email |
