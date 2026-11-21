@@ -3,8 +3,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 import { Toaster } from '@/components/ui/sonner';
-import { createQueryClient } from '@/lib/query-client';
-import { goToLogin, router } from '@/router';
+import { createQueryClient } from '@/app/query-client';
+import { goToLogin, router } from '@/app/router';
 import './index.css';
 
 const root = document.getElementById('root');

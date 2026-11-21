@@ -1,0 +1,170 @@
+import { config, type GenderGapRow } from '@acme/shared';
+import { formatCount, money } from '@/lib/format';
+import { gapLimit, gapPosition, sortByGap } from '@/features/insights/model/gap-geometry';
+import { Failed, Section, Skeleton, td, th } from '@/features/insights/components/Section';
+import type { useGenderGap } from '@/features/insights/api/queries';
+
+/** The number and its direction in words, so colour and position never carry the meaning alone. */
+const gapParts = (pct: number) =>
+  pct > 0
+    ? { value: `${pct}%`, note: 'women paid less' }
+    : pct < 0
+      ? { value: `${Math.abs(pct)}%`, note: 'women paid more' }
+      : { value: '0%', note: 'no gap' };
+
+const medians = (r: GenderGapRow, country: string) =>
+  `Women ${r.femaleMedian === null ? 'none' : money(r.femaleMedian, country)} (${formatCount(r.femaleCount)}), ` +
+  `men ${r.maleMedian === null ? 'none' : money(r.maleMedian, country)} (${formatCount(r.maleCount)})`;
+
+function GapText({ pct }: { pct: number | null }) {
+  if (pct === null) return <span className="text-muted-foreground">Not enough data</span>;
+  const { value, note } = gapParts(pct);
+  return (
+    <>
+      <span className="font-semibold">{value}</span>{' '}
+      <span className="text-muted-foreground">{note}</span>
+    </>
+  );
+}
+
+function Track({ pct, limit }: { pct: number | null; limit: number }) {
+  const at = pct === null ? 50 : gapPosition(limit, pct);
+  return (
+    <div aria-hidden className="relative h-8">
+      <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
+      <div className="absolute inset-y-1 left-1/2 w-px bg-muted-foreground" />
+      {pct !== null && (
+        <>
+          <div
+            className="absolute top-1/2 h-0.5 -translate-y-1/2 bg-band-soft"
+            style={{ left: `${Math.min(50, at)}%`, width: `${Math.abs(at - 50)}%` }}
+          />
+          <div
+            className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary"
+            style={{ left: `${at}%` }}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+const rowGrid = 'grid grid-cols-[minmax(8rem,15rem)_1fr_minmax(10rem,13rem)] items-center gap-4';
+
+/** One dot per role on a shared axis. Zero is the centre; right of it women are paid less. */
+function GapDotPlot({ rows, country }: { rows: GenderGapRow[]; country: string }) {
+  const limit = gapLimit(rows);
+  return (
+    <div className="max-w-4xl">
+      <div
+        aria-hidden
+        className={`${rowGrid} border-b border-border pb-1 text-xs text-muted-foreground`}
+      >
+        <span />
+        <span className="tnum flex justify-between">
+          <span>{limit}% women paid more</span>
+          <span>0</span>
+          <span>{limit}% women paid less</span>
+        </span>
+        <span />
+      </div>
+      <ul aria-label="Gender gap by role">
+        {sortByGap(rows).map((r) => (
+          <li
+            key={r.group.jobTitle}
+            title={medians(r, country)}
+            className={`${rowGrid} border-b border-border`}
+          >
+            <span className="truncate">{r.group.jobTitle}</span>
+            <Track pct={r.gapPct} limit={limit} />
+            <span className="tnum text-right">
+              <GapText pct={r.gapPct} />
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function GapTable({ rows, country }: { rows: GenderGapRow[]; country: string }) {
+  const side = (n: number, median: number | null) =>
+    n === 0 || median === null ? (
+      <span className="text-muted-foreground">No one</span>
+    ) : (
+      <>
+        {money(median, country)}
+        <span className="text-xs text-muted-foreground"> ({formatCount(n)})</span>
+      </>
+    );
+  return (
+    <details className="mt-2">
+      <summary className="cursor-pointer text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+        View as table
+      </summary>
+      <div className="overflow-x-auto">
+        <table aria-label="Gender gap by role" className="tnum mt-2 w-full border-collapse">
+          <thead>
+            <tr>
+              <th scope="col" className={th}>
+                Role
+              </th>
+              <th scope="col" className={`${th} text-right`}>
+                Women, median (people)
+              </th>
+              <th scope="col" className={`${th} text-right`}>
+                Men, median (people)
+              </th>
+              <th scope="col" className={`${th} pr-0 text-right`}>
+                Gap
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortByGap(rows).map((r) => (
+              <tr key={r.group.jobTitle}>
+                <td className={td}>{r.group.jobTitle}</td>
+                <td className={`${td} text-right`}>{side(r.femaleCount, r.femaleMedian)}</td>
+                <td className={`${td} text-right`}>{side(r.maleCount, r.maleMedian)}</td>
+                <td className={`${td} pr-0 text-right`}>
+                  <GapText pct={r.gapPct} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  );
+}
+
+export function GenderGapSection({
+  gap,
+  country,
+}: {
+  gap: ReturnType<typeof useGenderGap>;
+  country: string;
+}) {
+  return (
+    <Section title="Gender gap by role">
+      <p className="max-w-2xl text-muted-foreground">
+        The gap is the men’s median minus the women’s, as a share of the men’s. Roles with fewer
+        than {config.insights.genderGapMinGroupSize} women or men are not plotted.
+      </p>
+      {gap.isError ? (
+        <Failed error={gap.error} retry={() => void gap.refetch()} />
+      ) : gap.data ? (
+        gap.data.length === 0 ? (
+          <p className="py-4 text-muted-foreground">No roles to compare for these filters.</p>
+        ) : (
+          <>
+            <GapDotPlot rows={gap.data} country={country} />
+            <GapTable rows={gap.data} country={country} />
+          </>
+        )
+      ) : (
+        <Skeleton rows={5} cols={3} />
+      )}
+    </Section>
+  );
+}

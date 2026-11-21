@@ -2,8 +2,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { vi } from 'vitest';
-import { createQueryClient } from '@/lib/query-client';
-import { goToLogin, routes } from '@/router';
+import { createQueryClient } from '@/app/query-client';
+import { goToLogin, routes } from '@/app/router';
 
 type Handler = (url: string, init?: RequestInit) => Response | Promise<Response>;
 
