@@ -1,5 +1,12 @@
 import { describe, expect, test } from 'vitest';
-import { bandPosition, percentChange, railLayout, railPosition, railScale } from '@/features/employees/shared/model/band-geometry';
+import {
+  bandPosition,
+  bandSegments,
+  percentChange,
+  railLayout,
+  railPosition,
+  railScale,
+} from '@/features/employees/shared/model/band-geometry';
 
 const band = { min: 100, p25: 140, median: 150, p75: 170, max: 200 };
 
@@ -47,6 +54,23 @@ describe('bandPosition', () => {
     [170, 'upper'],
     [171, 'above'],
   ])('%i is %s', (value, expected) => expect(bandPosition(value, band)).toBe(expected));
+});
+
+describe('bandSegments', () => {
+  test('four segments that add up to 100, sized by the range they cover', () => {
+    const { segments, marker } = bandSegments(band, 150);
+    expect(segments.map((s) => s.from)).toEqual(['min', 'p25', 'median', 'p75']);
+    expect(segments.map((s) => s.pct)).toEqual([40, 10, 20, 30]);
+    expect(marker).toBe(50);
+  });
+
+  test('clamps a value outside the band and survives a flat band', () => {
+    expect(bandSegments(band, 500).marker).toBe(100);
+    expect(bandSegments(band, 1).marker).toBe(0);
+    const flat = { min: 5, p25: 5, median: 5, p75: 5, max: 5 };
+    expect(bandSegments(flat, 5)).toMatchObject({ marker: 50 });
+    expect(bandSegments(flat).segments.every((s) => s.pct === 25)).toBe(true);
+  });
 });
 
 test('percentChange is a fraction rounded to 0.1%', () => {

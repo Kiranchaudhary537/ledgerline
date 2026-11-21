@@ -1,7 +1,21 @@
+import type { StatsRow } from '@acme/shared';
 import { describe, expect, test } from 'vitest';
-import { insightsApiParams, insightsToParams, parseInsightsState } from '@/features/insights/model/insights-state';
+import {
+  biggestCountry,
+  insightsApiParams,
+  insightsToParams,
+  parseInsightsState,
+} from '@/features/insights/model/insights-state';
 
 const parse = (qs: string) => parseInsightsState(new URLSearchParams(qs));
+
+test('biggestCountry picks the country with the most people', () => {
+  const row = (country: string, count: number) =>
+    ({ group: { country }, count }) as unknown as StatsRow;
+  expect(biggestCountry([row('DE', 10), row('IN', 50), row('US', 50)])).toBe('IN');
+  expect(biggestCountry([])).toBeUndefined();
+  expect(biggestCountry(undefined)).toBeUndefined();
+});
 
 describe('insights state', () => {
   test('empty URL has no country yet', () => {

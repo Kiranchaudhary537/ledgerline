@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { listToParams, parseListState } from '@/features/employees/list/model/list-state';
+import {
+  employeeLink,
+  listToParams,
+  parseListState,
+} from '@/features/employees/list/model/list-state';
 
 const parse = (qs: string) => parseListState(new URLSearchParams(qs));
 
@@ -19,7 +23,7 @@ describe('list state', () => {
   });
 
   test('round-trips filters, sort and page', () => {
-    const qs = 'q=dee&country=IN,DE&level=mid,senior&gender=female&sort=compaRatio:desc&page=3';
+    const qs = 'q=dee&country=IN,DE&level=mid,senior&gender=female&sort=hireDate:desc&page=3';
     const state = parse(qs);
     expect(state.country).toEqual(['IN', 'DE']);
     expect(state.page).toBe(3);
@@ -33,6 +37,13 @@ describe('list state', () => {
   test('can leave the page out (CSV export)', () => {
     const params = listToParams(parse('country=IN&page=4'), { page: false });
     expect(params.toString()).toBe('country=IN');
+  });
+
+  test('employeeLink keeps the list query on the detail URL, and is plain for a plain list', () => {
+    expect(employeeLink(7, parse(''))).toBe('/employees/7');
+    expect(employeeLink(7, parse('country=IN&sort=salary:asc&page=2'))).toBe(
+      '/employees/7?country=IN&sort=salary%3Aasc&page=2',
+    );
   });
 
   test('ignores unknown sort and bad page', () => {

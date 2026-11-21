@@ -39,6 +39,32 @@ export function railLayout(
   };
 }
 
+export const BAND_MARKS = ['min', 'p25', 'median', 'p75', 'max'] as const;
+export type BandMark = (typeof BAND_MARKS)[number];
+
+/** Category colour (0..5, see lib/tone.ts) of each band mark, shared by every band display. */
+export const MARK_TONE: Record<BandMark, number> = { min: 1, p25: 5, median: 0, p75: 2, max: 3 };
+
+/**
+ * The band as four consecutive segments (min→p25, p25→median, median→p75, p75→max), each as a share
+ * of the full range, plus the 0..100 position of `value` when given. Equal widths when the band is flat.
+ */
+export function bandSegments(band: Band, value?: number) {
+  const span = band.max - band.min;
+  const marks = BAND_MARKS.map((m) => band[m]);
+  const segments = BAND_MARKS.slice(0, -1).map((from, i) => ({
+    from,
+    pct: span > 0 ? ((marks[i + 1]! - marks[i]!) / span) * 100 : 100 / (BAND_MARKS.length - 1),
+  }));
+  const marker =
+    value === undefined
+      ? undefined
+      : span > 0
+        ? Math.min(100, Math.max(0, ((value - band.min) / span) * 100))
+        : 50;
+  return { segments, marker };
+}
+
 export type BandPosition = 'below' | 'lower' | 'upper' | 'above';
 
 export function bandPosition(value: number, band: Band): BandPosition {

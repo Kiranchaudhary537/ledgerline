@@ -1,17 +1,18 @@
 import type { FilterOptions } from '@acme/shared';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { MultiSelect, type Option } from '@/components/ui/multi-select';
+import { Select } from '@/components/ui/input';
 import { label } from '@/lib/format';
 import type { InsightsState } from '@/features/insights/model/insights-state';
 
-interface FiltersProps {
+interface Props {
   state: InsightsState;
   options: FilterOptions | undefined;
   set: (patch: Partial<InsightsState>) => void;
 }
 
-export function InsightsFilters({ state, options, set }: FiltersProps) {
-  const { country } = state;
+export function InsightsToolbar({ state, options, set }: Props) {
   const departments: Option[] = (options?.departments ?? []).map((d) => ({
     value: d.name,
     label: d.name,
@@ -19,25 +20,26 @@ export function InsightsFilters({ state, options, set }: FiltersProps) {
   const levels: Option[] = (options?.levels ?? []).map((v) => ({ value: v, label: label(v) }));
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <Card className="flex flex-wrap items-center gap-2 p-4">
       <label htmlFor="insights-country" className="text-muted-foreground">
         Pay in
       </label>
-      <select
+      <Select
         id="insights-country"
-        value={country}
+        value={state.country}
         onChange={(e) => set({ country: e.target.value })}
-        className="h-9 rounded-md border border-border bg-background px-2 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="w-auto min-w-36"
       >
-        {country === '' && <option value="">Loading…</option>}
+        {state.country === '' && <option value="">Loading…</option>}
         {(options?.countries ?? []).map((c) => (
           <option key={c.code} value={c.code}>
             {c.name}
           </option>
         ))}
-      </select>
+      </Select>
       <MultiSelect
         name="Department"
+        searchable
         options={departments}
         selected={state.department}
         onChange={(department) => set({ department })}
@@ -53,6 +55,6 @@ export function InsightsFilters({ state, options, set }: FiltersProps) {
           Clear filters
         </Button>
       )}
-    </div>
+    </Card>
   );
 }

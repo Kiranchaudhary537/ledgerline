@@ -66,4 +66,10 @@ export function exportParams(state: ListState) {
   return params;
 }
 
+/** Detail-page URL that remembers the list query, so the pager and "back" return to the same list. */
+export function employeeLink(id: number, state: ListState) {
+  const query = listToParams(state).toString();
+  return query ? `/employees/${id}?${query}` : `/employees/${id}`;
+}
+
 export const hasFilters = (s: ListState) => !!s.q || MULTI_KEYS.some((k) => s[k].length > 0);

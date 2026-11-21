@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
-import { listToParams, parseListState, type ListState } from '@/features/employees/list/model/list-state';
+import {
+  listToParams,
+  parseListState,
+  type ListState,
+} from '@/features/employees/list/model/list-state';
 
 export type UpdateList = (patch: Partial<ListState>, replace?: boolean) => void;
 

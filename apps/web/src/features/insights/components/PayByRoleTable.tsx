@@ -1,11 +1,13 @@
-import { config, type InsightsStatsRow } from '@acme/shared';
+import type { StatsRow } from '@acme/shared';
+import { ChevronRight } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 import { Link } from 'react-router';
+import { Table, Td, Th, rowHover } from '@/components/ui/table';
 import { railPosition, railScale, type RailScale } from '@/features/employees/shared/model/band-geometry';
 import { BandRail } from '@/features/employees/shared/components/BandRail';
+import { groupByRole, type RoleGroup } from '@/features/insights/model/pay-roles';
 import { formatCount, label, money } from '@/lib/format';
-import { td, th } from '@/features/insights/components/Section';
-import { compaSpread, groupByRole, isWideSpread, type RoleGroup } from '@/features/insights/model/pay-roles';
+import { cn } from '@/lib/utils';
 
 const linkClass =
   'underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
@@ -42,34 +44,7 @@ function PayLadder({
   );
 }
 
-const ladderCell = 'h-9 w-2/5 min-w-48 border-b border-border pr-6';
-const limit = config.compaRatio.maxReviewSpread.toFixed(2);
-
-function OutsideBand({ count }: { count: number }) {
-  return count > 0 ? (
-    <span className="font-semibold">{formatCount(count)}</span>
-  ) : (
-    <span className="text-muted-foreground">0</span>
-  );
-}
-
-/** The p75 - p25 of compa-ratio; flagged quietly when it is wider than the review limit. */
-function Spread({ value }: { value: number }) {
-  const wide = isWideSpread(value);
-  return (
-    <span title={wide ? `Wider than ${limit}: worth asking why` : undefined}>
-      <span className={wide ? 'font-semibold' : 'text-muted-foreground'}>{value.toFixed(2)}</span>
-      {wide && (
-        <>
-          <span aria-hidden className="ml-1.5 text-xs text-muted-foreground">
-            wide
-          </span>
-          <span className="sr-only">, spread wider than {limit}, worth an explanation</span>
-        </>
-      )}
-    </span>
-  );
-}
+const ladderCell = 'w-2/5 min-w-56';
 
 interface RowProps {
   role: RoleGroup;
@@ -88,8 +63,8 @@ function RoleRow({
   onToggle,
 }: RowProps & { expanded: boolean; onToggle: () => void }) {
   return (
-    <tr className="hover:[&>td]:bg-band-soft/40">
-      <td className={td}>
+    <tr className={rowHover}>
+      <Td>
         <button
           type="button"
           aria-expanded={expanded}
@@ -97,41 +72,33 @@ function RoleRow({
           onClick={onToggle}
           className="mr-1 inline-flex size-6 items-center justify-center rounded-sm align-middle text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
         >
-          <span
+          <ChevronRight
             aria-hidden
-            className={`inline-block motion-safe:transition-transform ${expanded ? 'rotate-90' : ''}`}
-          >
-            ›
-          </span>
+            className={cn('size-4 motion-safe:transition-transform', expanded && 'rotate-90')}
+          />
         </button>
         <Link to={roleLink(country, role.jobTitle)} className={`font-semibold ${linkClass}`}>
           {role.jobTitle}
         </Link>
-      </td>
-      <td className={`${td} text-right`}>{formatCount(role.count)}</td>
-      <td className={`${td} text-right`}>
-        <OutsideBand count={role.outOfBand} />
-      </td>
-      <td className={`${td} text-right`}>
-        <Spread value={role.spread} />
-      </td>
-      <td className={ladderCell}>
+      </Td>
+      <Td align="right">{formatCount(role.count)}</Td>
+      <Td className={ladderCell}>
         <PayLadder role={role} scale={scale} countryCode={country} />
-      </td>
-      <td className={`${td} pr-0 text-right`}>
+      </Td>
+      <Td align="right">
         {role.levels.length > 1
           ? `${money(role.lowMedian, country)} – ${money(role.highMedian, country)}`
           : money(role.lowMedian, country)}
-      </td>
+      </Td>
     </tr>
   );
 }
 
-function LevelRow({ role, scale, country, row }: RowProps & { row: InsightsStatsRow }) {
+function LevelRow({ role, scale, country, row }: RowProps & { row: StatsRow }) {
   const level = row.group.level ?? '';
   return (
-    <tr className="hover:[&>td]:bg-band-soft/40">
-      <td className={`${td} pl-7`}>
+    <tr className={rowHover}>
+      <Td className="pl-14">
         <Link
           to={roleLink(country, role.jobTitle, row.group.level)}
           aria-label={`${role.jobTitle}, ${label(level)}`}
@@ -139,18 +106,12 @@ function LevelRow({ role, scale, country, row }: RowProps & { row: InsightsStats
         >
           {label(level)}
         </Link>
-      </td>
-      <td className={`${td} text-right`}>{formatCount(row.count)}</td>
-      <td className={`${td} text-right`}>
-        <OutsideBand count={row.outOfBandCount} />
-      </td>
-      <td className={`${td} text-right`}>
-        <Spread value={compaSpread(row)} />
-      </td>
-      <td className={ladderCell}>
+      </Td>
+      <Td align="right">{formatCount(row.count)}</Td>
+      <Td className={ladderCell}>
         <BandRail band={row} countryCode={country} markers={[]} scale={scale} showLabels={false} />
-      </td>
-      <td className={`${td} pr-0 text-right`}>{money(row.median, country)}</td>
+      </Td>
+      <Td align="right">{money(row.median, country)}</Td>
     </tr>
   );
 }
@@ -166,34 +127,20 @@ function useToggleSet() {
   return [open, toggle] as const;
 }
 
-export function PayByRole({ rows, country }: { rows: InsightsStatsRow[]; country: string }) {
+export function PayByRoleTable({ rows, country }: { rows: StatsRow[]; country: string }) {
   const scale = useMemo(() => railScale(rows), [rows]);
   const roles = useMemo(() => groupByRole(rows), [rows]);
   const [open, toggle] = useToggleSet();
 
   return (
     <div className="overflow-x-auto">
-      <table aria-label="Pay by role" className="tnum w-full border-collapse">
+      <Table aria-label="Pay by role">
         <thead>
           <tr>
-            <th scope="col" className={th}>
-              Role
-            </th>
-            <th scope="col" className={`${th} text-right`}>
-              People
-            </th>
-            <th scope="col" className={`${th} text-right`}>
-              Outside band
-            </th>
-            <th scope="col" className={`${th} text-right`}>
-              Compa spread
-            </th>
-            <th scope="col" className={`${th} w-2/5 min-w-48`}>
-              Pay ladder (median by level)
-            </th>
-            <th scope="col" className={`${th} pr-0 text-right`}>
-              Median range
-            </th>
+            <Th>Role</Th>
+            <Th align="right">People</Th>
+            <Th className={ladderCell}>Pay ladder (median by level)</Th>
+            <Th align="right">Median range</Th>
           </tr>
         </thead>
         <tbody>
@@ -222,7 +169,7 @@ export function PayByRole({ rows, country }: { rows: InsightsStatsRow[]; country
             );
           })}
         </tbody>
-      </table>
+      </Table>
     </div>
   );
 }
