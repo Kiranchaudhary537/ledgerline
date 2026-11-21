@@ -8,7 +8,6 @@ import {
 } from '@acme/db';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
-import { config } from '@acme/shared';
 import Fastify, { type FastifyServerOptions, LogController } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { errorHandler, sendError } from './errors.ts';
