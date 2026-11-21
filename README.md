@@ -25,3 +25,8 @@ pnpm dev          # API on :3000 and web on :5173, together
 | `pnpm check` | Typecheck, lint, format, DB types up to date, all tests |
 
 After changing a migration: `pnpm db:migrate && pnpm --filter @acme/db db:types`.
+
+## Configuration
+
+- **Behaviour** (page sizes, session length, rate limits, seed size, compa-ratio thresholds…): edit `packages/shared/src/config.ts`, the only place for tunable values.
+- **Environment** (`.env`, validated in `apps/api/src/env.ts`): `DATABASE_URL` (required), `PORT` (default 3000), `HOST` (default 0.0.0.0), `NODE_ENV`. The seed script also reads `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`; tests read `TEST_DATABASE_URL`.

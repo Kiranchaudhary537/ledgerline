@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { config } from '../config.ts';
 import { COUNTRY_CODES, EMPLOYMENT_TYPES, GENDERS, LEVELS } from '../constants.ts';
 import { emailSchema, salaryMinorSchema, versionSchema } from './common.ts';
 
@@ -7,18 +8,18 @@ const employeeFields = {
     .string()
     .trim()
     .min(1, { error: 'Enter a name' })
-    .max(120, { error: 'Name is too long' }),
+    .max(config.text.fullNameMaxLength, { error: 'Name is too long' }),
   email: emailSchema,
   department: z
     .string({ error: 'Choose a department' })
     .trim()
     .min(1, { error: 'Choose a department' })
-    .max(80),
+    .max(config.text.nameMaxLength),
   jobTitle: z
     .string({ error: 'Choose a job title' })
     .trim()
     .min(1, { error: 'Choose a job title' })
-    .max(80),
+    .max(config.text.nameMaxLength),
   level: z.enum(LEVELS, { error: 'Choose a level' }),
   countryCode: z.enum(COUNTRY_CODES, { error: 'Choose a country' }),
   employmentType: z.enum(EMPLOYMENT_TYPES, { error: 'Choose an employment type' }),

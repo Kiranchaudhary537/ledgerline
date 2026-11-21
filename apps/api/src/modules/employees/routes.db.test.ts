@@ -1,9 +1,9 @@
-import { createEmployee } from '@acme/db';
+import { EmployeeRepository } from '@acme/db';
 import { createTestDb, resetDb } from '@acme/db/testing';
 import type { EmployeeCreate } from '@acme/shared';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { buildApp } from './app.ts';
-import { loginCookie } from './testing.ts';
+import { buildApp } from '../../app.ts';
+import { loginCookie } from '../../testing.ts';
 
 const db = createTestDb();
 beforeEach(() => resetDb(db));
@@ -31,7 +31,7 @@ async function setup() {
     app.inject({ method, url, headers, payload: payload as object });
   const seed = async (over: Partial<EmployeeCreate> = {}) => {
     const user = await db.selectFrom('users').select('id').executeTakeFirstOrThrow();
-    return createEmployee(db, { ...base, ...over }, user.id);
+    return new EmployeeRepository(db).create({ ...base, ...over }, user.id);
   };
   return { app, headers, get, send, seed };
 }

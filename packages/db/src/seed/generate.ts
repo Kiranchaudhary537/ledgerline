@@ -1,4 +1,5 @@
 import {
+  config,
   type CountryCode,
   type EmployeeCreate,
   type EmploymentType,
@@ -32,12 +33,7 @@ function at<T>(table: Record<string, T>, key: string): T {
   return value;
 }
 
-/** Fixed "today" for the seed, so output never depends on when it runs. */
-export const REFERENCE_DATE = '2026-11-01';
-
-/** How far a salary may sit from its band midpoint. */
-const BAND_SPREAD = 0.12;
-const PROMOTION_CHANCE = 0.15;
+const seedConfig = config.seed;
 const DAY_MS = 86_400_000;
 
 export interface SeedSalaryChange {
@@ -50,7 +46,6 @@ export interface SeedSalaryChange {
 
 export type SeedEmployee = EmployeeCreate & { history: SeedSalaryChange[] };
 
-/** mulberry32: tiny, fast, seedable PRNG. Returns floats in [0, 1). */
 function createRandom(seed: number) {
   let a = seed >>> 0;
   const next = () => {
@@ -103,8 +98,8 @@ export function salaryBand({
     at(EMPLOYMENT_FACTOR, employmentType);
   const toMinor = 10 ** getCountry(countryCode).minorUnit;
   return {
-    min: Math.ceil(midMajor * (1 - BAND_SPREAD) * toMinor),
-    max: Math.floor(midMajor * (1 + BAND_SPREAD) * toMinor),
+    min: Math.ceil(midMajor * (1 - seedConfig.bandSpread) * toMinor),
+    max: Math.floor(midMajor * (1 + seedConfig.bandSpread) * toMinor),
   };
 }
 
@@ -120,7 +115,6 @@ function addDays(isoDate: string, days: number): string {
   return new Date(Date.parse(isoDate) + days * DAY_MS).toISOString().slice(0, 10);
 }
 
-/** Generates employees whose fields fit together: name ↔ country, title ↔ level ↔ pay ↔ tenure. */
 export function generateEmployees({
   seed,
   count,
@@ -153,7 +147,7 @@ export function generateEmployees({
 
     const [minYears, maxYears] = TENURE_YEARS[level];
     const tenureDays = Math.round(random.between(minYears, maxYears) * 365);
-    const hireDate = addDays(REFERENCE_DATE, -tenureDays);
+    const hireDate = addDays(seedConfig.referenceDate, -tenureDays);
 
     const step = at(ROUNDING, countryCode) * 10 ** getCountry(countryCode).minorUnit;
     const band = salaryBand({ countryCode, jobTitle, level, department, gender, employmentType });
@@ -164,13 +158,14 @@ export function generateEmployees({
       Math.floor(band.max / step) * step,
     );
 
-    // Walk back from today's salary, one raise per work anniversary.
     const anniversaries = Math.floor(tenureDays / 365);
     const salaries = [salaryMinor];
     const reasons: string[] = [];
     for (let k = anniversaries; k >= 1; k--) {
-      const promotion = random.next() < PROMOTION_CHANCE;
-      const raise = promotion ? random.between(0.12, 0.2) : random.between(0.03, 0.08);
+      const promotion = random.next() < seedConfig.promotionChance;
+      const raise = promotion
+        ? random.between(...seedConfig.promotionRaise)
+        : random.between(...seedConfig.annualRaise);
       const later = salaries[0]!;
       const earlier = Math.min(Math.round(later / (1 + raise) / step) * step, later - step);
       salaries.unshift(Math.max(earlier, step));

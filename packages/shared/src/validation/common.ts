@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { config } from '../config.ts';
 
 const emptyToUndefined = (value: unknown) => (value === '' ? undefined : value);
 
@@ -13,7 +14,7 @@ export function paramWithDefault<T extends z.ZodType>(schema: T, value: z.output
 }
 
 /** Department or job title: the allowed values live in the database. */
-export const nameSchema = z.string().trim().min(1).max(80);
+export const nameSchema = z.string().trim().min(1).max(config.text.nameMaxLength);
 
 /** Comma-separated query param ("IN,DE") → array of values that each match `item`. */
 export function commaList<T extends z.ZodType<unknown, string>>(item: T) {
@@ -23,7 +24,6 @@ export function commaList<T extends z.ZodType<unknown, string>>(item: T) {
     .pipe(z.array(item).min(1));
 }
 
-/** Same, for a fixed set of allowed values. */
 export const enumList = <const T extends readonly [string, ...string[]]>(values: T) =>
   commaList(z.enum(values));
 

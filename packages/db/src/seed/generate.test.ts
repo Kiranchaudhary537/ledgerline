@@ -1,7 +1,7 @@
-import { employeeCreateSchema, LEVELS } from '@acme/shared';
+import { config, employeeCreateSchema, LEVELS } from '@acme/shared';
 import { DEPARTMENTS } from './data.ts';
 import { describe, expect, it } from 'vitest';
-import { generateEmployees, REFERENCE_DATE, salaryBand, type SeedEmployee } from './generate.ts';
+import { generateEmployees, salaryBand, type SeedEmployee } from './generate.ts';
 
 const employees = generateEmployees({ seed: 42, count: 10_000 });
 
@@ -97,12 +97,12 @@ describe('generateEmployees', () => {
     const avgTenure = (level: string) => {
       const years = employees
         .filter((e) => e.level === level)
-        .map((e) => (Date.parse(REFERENCE_DATE) - Date.parse(e.hireDate)) / 3.15e10);
+        .map((e) => (Date.parse(config.seed.referenceDate) - Date.parse(e.hireDate)) / 3.15e10);
       return years.reduce((a, b) => a + b, 0) / years.length;
     };
     expect(avgTenure('principal')).toBeGreaterThan(avgTenure('mid'));
     expect(avgTenure('mid')).toBeGreaterThan(avgTenure('junior'));
-    expect(employees.every((e) => e.hireDate <= REFERENCE_DATE)).toBe(true);
+    expect(employees.every((e) => e.hireDate <= config.seed.referenceDate)).toBe(true);
   });
 
   it('gives every employee a salary history that ends at the current salary', () => {

@@ -1,17 +1,6 @@
+import type { Employee as DbEmployee, EmployeeRepository, MutationResult } from '@acme/db';
 import {
-  changeSalary,
-  createEmployee,
-  type Db,
-  type Employee as DbEmployee,
-  exportEmployees,
-  getEmployee,
-  getSalaryHistory,
-  listEmployees,
-  type MutationResult,
-  softDeleteEmployee,
-  updateEmployee,
-} from '@acme/db';
-import {
+  config,
   type Employee,
   type EmployeeCreate,
   type EmployeeList,
@@ -25,6 +14,28 @@ import {
 } from '@acme/shared';
 import { AppError } from '../../errors.ts';
 import { csvRow, formatMajor } from './csv.ts';
+
+/** What the service needs from the repository (a class with private fields cannot be faked). */
+export type EmployeeStore = Pick<
+  EmployeeRepository,
+  'list' | 'get' | 'create' | 'update' | 'softDelete' | 'changeSalary' | 'history' | 'export'
+>;
+
+const CSV_HEADER = [
+  'Code',
+  'Name',
+  'Email',
+  'Department',
+  'Job title',
+  'Level',
+  'Country',
+  'Employment type',
+  'Gender',
+  'Hire date',
+  'Annual salary',
+  'Currency',
+  'Compa-ratio',
+];
 
 const iso = (d: Date | string) => new Date(d).toISOString();
 
@@ -43,82 +54,65 @@ function unwrap(result: MutationResult): Employee {
   return toEmployee(result.employee);
 }
 
-export async function list(db: Db, query: ListQuery): Promise<EmployeeList> {
-  const { data, total } = await listEmployees(db, query);
-  return { data: data.map(toEmployee), page: query.page, pageSize: query.pageSize, total };
-}
+export class EmployeeService {
+  private readonly employees: EmployeeStore;
 
-export async function get(db: Db, id: number): Promise<Employee> {
-  const employee = await getEmployee(db, id);
-  if (!employee) throw new AppError('NOT_FOUND');
-  return toEmployee(employee);
-}
+  constructor(employees: EmployeeStore) {
+    this.employees = employees;
+  }
 
-export async function create(db: Db, input: EmployeeCreate, changedBy: number) {
-  return toEmployee(await createEmployee(db, input, changedBy));
-}
+  async list(query: ListQuery): Promise<EmployeeList> {
+    const { data, total } = await this.employees.list(query);
+    return { data: data.map(toEmployee), page: query.page, pageSize: query.pageSize, total };
+  }
 
-export async function update(db: Db, id: number, input: EmployeeUpdate): Promise<Employee> {
-  return unwrap(await updateEmployee(db, id, input));
-}
+  async get(id: number): Promise<Employee> {
+    const employee = await this.employees.get(id);
+    if (!employee) throw new AppError('NOT_FOUND');
+    return toEmployee(employee);
+  }
 
-export async function remove(db: Db, id: number) {
-  if (!(await softDeleteEmployee(db, id))) throw new AppError('NOT_FOUND');
-}
+  async create(input: EmployeeCreate, changedBy: number): Promise<Employee> {
+    return toEmployee(await this.employees.create(input, changedBy));
+  }
 
-export async function changeEmployeeSalary(
-  db: Db,
-  id: number,
-  input: SalaryChangeInput,
-  changedBy: number,
-) {
-  return unwrap(await changeSalary(db, { id, ...input, changedBy }));
-}
+  async update(id: number, input: EmployeeUpdate): Promise<Employee> {
+    return unwrap(await this.employees.update(id, input));
+  }
 
-export async function salaryHistory(db: Db, id: number): Promise<SalaryChange[]> {
-  if (!(await getEmployee(db, id))) throw new AppError('NOT_FOUND');
-  const rows = await getSalaryHistory(db, id);
-  return rows.map((r) => ({ ...r, changedAt: iso(r.changedAt) }));
-}
+  async remove(id: number): Promise<void> {
+    if (!(await this.employees.softDelete(id))) throw new AppError('NOT_FOUND');
+  }
 
-const CSV_HEADER = [
-  'Code',
-  'Name',
-  'Email',
-  'Department',
-  'Job title',
-  'Level',
-  'Country',
-  'Employment type',
-  'Gender',
-  'Hire date',
-  'Annual salary',
-  'Currency',
-  'Compa-ratio',
-];
+  async changeSalary(id: number, input: SalaryChangeInput, changedBy: number): Promise<Employee> {
+    return unwrap(await this.employees.changeSalary({ id, ...input, changedBy }));
+  }
 
-export async function exportCsv(db: Db, filters: Filters, sort: SortOption): Promise<string> {
-  const rows = await exportEmployees(db, filters, sort);
-  return (
-    csvRow(CSV_HEADER) +
-    rows
-      .map((e) =>
-        csvRow([
-          e.employeeCode,
-          e.fullName,
-          e.email,
-          e.department,
-          e.jobTitle,
-          e.level,
-          e.countryCode,
-          e.employmentType,
-          e.gender,
-          e.hireDate,
-          formatMajor(e.salaryMinor, e.countryCode),
-          getCountry(e.countryCode).currency,
-          e.compaRatio.toFixed(2),
-        ]),
-      )
-      .join('')
-  );
+  async salaryHistory(id: number): Promise<SalaryChange[]> {
+    if (!(await this.employees.get(id))) throw new AppError('NOT_FOUND');
+    const rows = await this.employees.history(id);
+    return rows.map((r) => ({ ...r, changedAt: iso(r.changedAt) }));
+  }
+
+  async exportCsv(filters: Filters, sort: SortOption): Promise<string> {
+    const rows = await this.employees.export(filters, sort);
+    const lines = rows.map((e) =>
+      csvRow([
+        e.employeeCode,
+        e.fullName,
+        e.email,
+        e.department,
+        e.jobTitle,
+        e.level,
+        e.countryCode,
+        e.employmentType,
+        e.gender,
+        e.hireDate,
+        formatMajor(e.salaryMinor, e.countryCode),
+        getCountry(e.countryCode).currency,
+        e.compaRatio.toFixed(config.compaRatio.decimals),
+      ]),
+    );
+    return csvRow(CSV_HEADER) + lines.join('');
+  }
 }

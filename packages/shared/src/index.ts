@@ -1,3 +1,4 @@
+export * from './config.ts';
 export * from './constants.ts';
 export * from './errors.ts';
 export * from './money.ts';

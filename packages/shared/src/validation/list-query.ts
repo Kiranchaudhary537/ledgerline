@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { config } from '../config.ts';
 import { COUNTRY_CODES, EMPLOYMENT_TYPES, GENDERS, LEVELS } from '../constants.ts';
 import { commaList, enumList, nameSchema, optionalParam, paramWithDefault } from './common.ts';
 
@@ -8,8 +9,10 @@ export const filterFields = {
     z
       .string()
       .trim()
-      .min(2, { error: 'Type at least 2 characters' })
-      .max(100, { error: 'Search is too long' }),
+      .min(config.search.minLength, {
+        error: `Type at least ${config.search.minLength} characters`,
+      })
+      .max(config.search.maxLength, { error: 'Search is too long' }),
   ),
   country: optionalParam(enumList(COUNTRY_CODES)),
   department: optionalParam(commaList(nameSchema)),
@@ -41,8 +44,14 @@ export const listQuerySchema = z
     sort: paramWithDefault(z.enum(SORT_OPTIONS, { error: 'Unknown sort' }), 'name:asc'),
     page: paramWithDefault(z.coerce.number().int().min(1), 1),
     pageSize: paramWithDefault(
-      z.coerce.number().int().min(1).max(100, { error: 'Page size is at most 100' }),
-      25,
+      z.coerce
+        .number()
+        .int()
+        .min(1)
+        .max(config.paging.maxPageSize, {
+          error: `Page size is at most ${config.paging.maxPageSize}`,
+        }),
+      config.paging.defaultPageSize,
     ),
   })
   .refine((q) => !q.sort.startsWith('salary') || q.country?.length === 1, {

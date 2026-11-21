@@ -1,7 +1,7 @@
 import { createDb } from '@acme/db';
 import { createTestDb } from '@acme/db/testing';
 import { afterAll, describe, expect, it } from 'vitest';
-import { buildApp } from './app.ts';
+import { buildApp } from '../../app.ts';
 
 describe('GET /api/health', () => {
   const db = createTestDb();

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { config } from '../config.ts';
 import { salaryMinorSchema, versionSchema } from './common.ts';
 
 export const salaryChangeSchema = z.object({
@@ -6,8 +7,10 @@ export const salaryChangeSchema = z.object({
   reason: z
     .string()
     .trim()
-    .min(3, { error: 'Enter a reason (at least 3 characters)' })
-    .max(500, { error: 'Reason is too long' }),
+    .min(config.text.reasonMinLength, {
+      error: `Enter a reason (at least ${config.text.reasonMinLength} characters)`,
+    })
+    .max(config.text.reasonMaxLength, { error: 'Reason is too long' }),
   version: versionSchema,
 });
 

@@ -3,18 +3,10 @@ import type { Insertable } from 'kysely';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb, resetDb } from '../testing.ts';
 import type { Employees } from '../types.ts';
-import {
-  changeSalary,
-  createEmployee,
-  exportEmployees,
-  getEmployee,
-  getSalaryHistory,
-  listEmployees,
-  softDeleteEmployee,
-  updateEmployee,
-} from './employees.ts';
+import { EmployeeRepository } from './employee-repository.ts';
 
 const db = createTestDb();
+const employees = new EmployeeRepository(db);
 afterAll(() => db.destroy());
 beforeEach(() => resetDb(db));
 
@@ -71,7 +63,7 @@ async function makeUser(name = 'Hana HR'): Promise<number> {
 }
 
 const listNames = async (q: Partial<ListQuery>) =>
-  (await listEmployees(db, query(q))).data.map((e) => e.fullName);
+  (await employees.list(query(q))).data.map((e) => e.fullName);
 
 describe('listEmployees', () => {
   it('sorts by name, hire date and salary in both directions', async () => {
@@ -102,7 +94,7 @@ describe('listEmployees', () => {
   it('breaks ties by id so paging is stable', async () => {
     const ids = await seed([{ fullName: 'Same' }, { fullName: 'Same' }, { fullName: 'Same' }]);
     const ordered = async (q: Partial<ListQuery>) =>
-      (await listEmployees(db, query(q))).data.map((e) => e.id);
+      (await employees.list(query(q))).data.map((e) => e.id);
     expect(await ordered({})).toEqual(ids);
     expect(await ordered({ sort: 'name:desc' })).toEqual(ids);
     expect([
@@ -113,7 +105,7 @@ describe('listEmployees', () => {
 
   it('pages and reports the total of all matches', async () => {
     await seed(['A', 'B', 'C', 'D', 'E'].map((fullName) => ({ fullName })));
-    const r = await listEmployees(db, query({ pageSize: 2, page: 3 }));
+    const r = await employees.list(query({ pageSize: 2, page: 3 }));
     expect(r.data.map((e) => e.fullName)).toEqual(['E']);
     expect(r.total).toBe(5);
   });
@@ -124,7 +116,7 @@ describe('listEmployees', () => {
       { fullName: 'De', countryCode: 'DE' },
       { fullName: 'Gone', countryCode: 'IN', deletedAt: new Date() },
     ]);
-    const r = await listEmployees(db, query({ country: ['IN'] }));
+    const r = await employees.list(query({ country: ['IN'] }));
     expect(r.data.map((e) => e.fullName)).toEqual(['In']);
     expect(r.total).toBe(1);
     expect(r.data[0]).not.toHaveProperty('deletedAt');
@@ -134,21 +126,21 @@ describe('listEmployees', () => {
 describe('getEmployee', () => {
   it('returns an active employee and hides deleted or missing ones', async () => {
     const [id, goneId] = await seed([{}, { deletedAt: new Date() }]);
-    const e = await getEmployee(db, id!);
+    const e = await employees.get(id!);
     expect(e?.fullName).toBe('Priya Sharma');
     expect(e).not.toHaveProperty('deletedAt');
-    expect(await getEmployee(db, goneId!)).toBeUndefined();
-    expect(await getEmployee(db, 999_999)).toBeUndefined();
+    expect(await employees.get(goneId!)).toBeUndefined();
+    expect(await employees.get(999_999)).toBeUndefined();
   });
 });
 
 describe('createEmployee', () => {
   it('inserts the employee and its starting-salary history row', async () => {
     const userId = await makeUser('HR');
-    const e = await createEmployee(db, newEmployee, userId);
+    const e = await employees.create(newEmployee, userId);
     expect(e).toMatchObject({ fullName: 'Nina Park', version: 1, salaryMinor: 500 });
     expect(e).not.toHaveProperty('deletedAt');
-    expect(await getSalaryHistory(db, e.id)).toMatchObject([
+    expect(await employees.history(e.id)).toMatchObject([
       {
         oldSalaryMinor: null,
         newSalaryMinor: 500,
@@ -160,19 +152,19 @@ describe('createEmployee', () => {
 
   it('rejects a duplicate active email with 23505 and saves nothing', async () => {
     const userId = await makeUser();
-    await createEmployee(db, newEmployee, userId);
-    await expect(createEmployee(db, newEmployee, userId)).rejects.toMatchObject({
+    await employees.create(newEmployee, userId);
+    await expect(employees.create(newEmployee, userId)).rejects.toMatchObject({
       code: '23505',
       constraint: 'employees_email_active',
     });
-    expect((await listEmployees(db, query())).total).toBe(1);
+    expect((await employees.list(query())).total).toBe(1);
   });
 });
 
 describe('updateEmployee', () => {
   it('updates fields and bumps the version', async () => {
     const [id] = await seed([{}]);
-    const r = await updateEmployee(db, id!, { fullName: 'New Name', version: 1 });
+    const r = await employees.update(id!, { fullName: 'New Name', version: 1 });
     expect(r.status).toBe('ok');
     if (r.status === 'ok') {
       expect(r.employee).toMatchObject({ fullName: 'New Name', version: 2 });
@@ -182,26 +174,26 @@ describe('updateEmployee', () => {
 
   it('returns stale for an old version and changes nothing', async () => {
     const [id] = await seed([{}]);
-    await updateEmployee(db, id!, { fullName: 'One', version: 1 });
-    expect(await updateEmployee(db, id!, { fullName: 'Two', version: 1 })).toEqual({
+    await employees.update(id!, { fullName: 'One', version: 1 });
+    expect(await employees.update(id!, { fullName: 'Two', version: 1 })).toEqual({
       status: 'stale',
     });
-    expect((await getEmployee(db, id!))?.fullName).toBe('One');
+    expect((await employees.get(id!))?.fullName).toBe('One');
   });
 
   it('returns not_found for missing and deleted employees', async () => {
     const [id] = await seed([{ deletedAt: new Date() }]);
-    expect(await updateEmployee(db, id!, { version: 1 })).toEqual({ status: 'not_found' });
-    expect(await updateEmployee(db, 999_999, { version: 1 })).toEqual({ status: 'not_found' });
+    expect(await employees.update(id!, { version: 1 })).toEqual({ status: 'not_found' });
+    expect(await employees.update(999_999, { version: 1 })).toEqual({ status: 'not_found' });
   });
 });
 
 describe('softDeleteEmployee', () => {
   it('hides the employee and reports whether a row was deleted', async () => {
     const [id] = await seed([{}]);
-    expect(await softDeleteEmployee(db, id!)).toBe(true);
-    expect(await getEmployee(db, id!)).toBeUndefined();
-    expect(await softDeleteEmployee(db, id!)).toBe(false);
+    expect(await employees.softDelete(id!)).toBe(true);
+    expect(await employees.get(id!)).toBeUndefined();
+    expect(await employees.softDelete(id!)).toBe(false);
   });
 });
 
@@ -209,7 +201,7 @@ describe('changeSalary', () => {
   it('updates salary, bumps version and writes history with old and new', async () => {
     const [id] = await seed([{ salaryMinor: 100 }]);
     const changedBy = await makeUser();
-    const r = await changeSalary(db, {
+    const r = await employees.changeSalary({
       id: id!,
       newSalaryMinor: 150,
       reason: 'Promotion',
@@ -218,7 +210,7 @@ describe('changeSalary', () => {
     });
     expect(r.status).toBe('ok');
     if (r.status === 'ok') expect(r.employee).toMatchObject({ salaryMinor: 150, version: 2 });
-    expect(await getSalaryHistory(db, id!)).toMatchObject([
+    expect(await employees.history(id!)).toMatchObject([
       { oldSalaryMinor: 100, newSalaryMinor: 150, reason: 'Promotion', changedByName: 'Hana HR' },
     ]);
   });
@@ -227,19 +219,21 @@ describe('changeSalary', () => {
     const [id, goneId] = await seed([{}, { deletedAt: new Date() }]);
     const changedBy = await makeUser();
     const input = { newSalaryMinor: 150, reason: 'Raise', version: 2, changedBy };
-    expect(await changeSalary(db, { id: id!, ...input })).toEqual({ status: 'stale' });
-    expect(await changeSalary(db, { id: goneId!, ...input, version: 1 })).toEqual({
+    expect(await employees.changeSalary({ id: id!, ...input })).toEqual({ status: 'stale' });
+    expect(await employees.changeSalary({ id: goneId!, ...input, version: 1 })).toEqual({
       status: 'not_found',
     });
-    expect(await changeSalary(db, { id: 999_999, ...input })).toEqual({ status: 'not_found' });
-    expect((await getEmployee(db, id!))?.salaryMinor).toBe(100);
-    expect(await getSalaryHistory(db, id!)).toHaveLength(0);
+    expect(await employees.changeSalary({ id: 999_999, ...input })).toEqual({
+      status: 'not_found',
+    });
+    expect((await employees.get(id!))?.salaryMinor).toBe(100);
+    expect(await employees.history(id!)).toHaveLength(0);
   });
 
   it('leaves the salary unchanged when the history insert fails', async () => {
     const [id] = await seed([{ salaryMinor: 100 }]);
     await expect(
-      changeSalary(db, {
+      employees.changeSalary({
         id: id!,
         newSalaryMinor: 150,
         reason: 'Raise',
@@ -247,7 +241,7 @@ describe('changeSalary', () => {
         changedBy: 999_999, // no such user: FK error on the history insert
       }),
     ).rejects.toMatchObject({ code: '23503' });
-    expect(await getEmployee(db, id!)).toMatchObject({ salaryMinor: 100, version: 1 });
+    expect(await employees.get(id!)).toMatchObject({ salaryMinor: 100, version: 1 });
   });
 });
 
@@ -261,7 +255,7 @@ describe('getSalaryHistory', () => {
         { employeeId: id!, newSalaryMinor: 2, reason: 'new', changedAt: new Date('2021-01-01') },
       ])
       .execute();
-    const h = await getSalaryHistory(db, id!);
+    const h = await employees.history(id!);
     expect(h.map((x) => x.reason)).toEqual(['new', 'old']);
     expect(h[0]?.changedByName).toBeNull();
   });
@@ -275,7 +269,7 @@ describe('exportEmployees', () => {
       { fullName: 'X', countryCode: 'DE' },
       { fullName: 'Gone', countryCode: 'IN', deletedAt: new Date() },
     ]);
-    const rows = await exportEmployees(db, { country: ['IN'] }, 'salary:desc');
+    const rows = await employees.export({ country: ['IN'] }, 'salary:desc');
     expect(rows.map((e) => e.fullName)).toEqual(['A', 'B']);
   });
 });

@@ -1,14 +1,14 @@
 import { createDb } from '@acme/db';
 import { buildApp } from './app.ts';
-import { loadConfig } from './config.ts';
+import { loadEnv } from './env.ts';
 
-const config = loadConfig();
-const db = createDb(config.DATABASE_URL);
+const env = loadEnv();
+const db = createDb(env.DATABASE_URL);
 const app = buildApp({
   db,
   logger: { level: 'info' },
-  cookieSecure: config.NODE_ENV === 'production',
-  trustProxy: config.NODE_ENV === 'production',
+  cookieSecure: env.NODE_ENV === 'production',
+  trustProxy: env.NODE_ENV === 'production',
 });
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
@@ -19,4 +19,4 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   });
 }
 
-await app.listen({ port: config.PORT, host: config.HOST });
+await app.listen({ port: env.PORT, host: env.HOST });

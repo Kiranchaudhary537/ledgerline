@@ -51,6 +51,7 @@ Allowed literals: `0`, `1`, array indexes, test fixtures.
 
 ## Tests
 
+- **Tests sit next to the code they cover** (`x.ts` → `x.test.ts`; `routes.ts` → `routes.db.test.ts`). Only shared helpers live apart (`apps/api/src/testing.ts`, `packages/db/src/testing.ts`).
 - Test behaviour through the public interface (HTTP for routes, methods for services/repositories).
 - Services get unit tests with fake repositories; repositories and routes get DB tests (`*.db.test.ts`) against real Postgres.
 - Deterministic: fixed seeds, no `Date.now()` in assertions, no sleeps.
