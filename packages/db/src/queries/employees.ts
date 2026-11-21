@@ -23,16 +23,53 @@ const COLUMNS = [
   'updatedAt',
 ] as const;
 
-export type Employee = Omit<Selectable<Employees>, 'deletedAt'>;
+/** compaRatio = salary ÷ median of the same country × title × level × employment type. */
+export type Employee = Omit<Selectable<Employees>, 'deletedAt'> & { compaRatio: number };
 export type MutationResult =
   { status: 'ok'; employee: Employee } | { status: 'not_found' } | { status: 'stale' };
 
 const SORT_COLUMNS = {
-  name: 'fullName',
-  hireDate: 'hireDate',
-  level: 'level', // enum: Postgres sorts by declaration order, which is seniority
-  salary: 'salaryMinor',
+  name: 'employees.fullName',
+  hireDate: 'employees.hireDate',
+  level: 'employees.level', // enum: Postgres sorts by declaration order, which is seniority
+  salary: 'employees.salaryMinor',
+  compaRatio: 'compaRatio',
 } as const;
+
+const QUALIFIED = COLUMNS.map((c) => `employees.${c}` as const);
+
+/**
+ * Active employees with their compa-ratio. Band medians are computed over ALL active employees,
+ * so a person's ratio does not change when the list is filtered.
+ */
+function employeesWithCompa(db: Db) {
+  return db
+    .with('bands', (qb) =>
+      qb
+        .selectFrom('employees')
+        .where('deletedAt', 'is', null)
+        .select([
+          'countryCode',
+          'jobTitle',
+          'level',
+          'employmentType',
+          sql<number>`percentile_cont(0.5) within group (order by salary_minor)`.as('median'),
+        ])
+        .groupBy(['countryCode', 'jobTitle', 'level', 'employmentType']),
+    )
+    .selectFrom('employees')
+    .innerJoin('bands', (join) =>
+      join
+        .onRef('bands.countryCode', '=', 'employees.countryCode')
+        .onRef('bands.jobTitle', '=', 'employees.jobTitle')
+        .onRef('bands.level', '=', 'employees.level')
+        .onRef('bands.employmentType', '=', 'employees.employmentType'),
+    )
+    .select(QUALIFIED)
+    .select(
+      sql<number>`round((employees.salary_minor / bands.median)::numeric, 2)`.as('compaRatio'),
+    );
+}
 
 /** 'name:asc' → [column, direction]. Callers add `id` as the tie-breaker so paging is stable. */
 function parseSort(sort: SortOption) {
@@ -47,12 +84,10 @@ export async function listEmployees(
   const where = (eb: Parameters<typeof employeeFilters>[0]) => employeeFilters(eb, query);
   const [column, dir] = parseSort(query.sort);
   const [data, count] = await Promise.all([
-    db
-      .selectFrom('employees')
-      .select(COLUMNS)
+    employeesWithCompa(db)
       .where(where)
       .orderBy(column, dir)
-      .orderBy('id')
+      .orderBy('employees.id')
       .limit(query.pageSize)
       .offset((query.page - 1) * query.pageSize)
       .execute(),
@@ -66,11 +101,9 @@ export async function listEmployees(
 }
 
 export function getEmployee(db: Db, id: number): Promise<Employee | undefined> {
-  return db
-    .selectFrom('employees')
-    .select(COLUMNS)
-    .where('id', '=', id)
-    .where('deletedAt', 'is', null)
+  return employeesWithCompa(db)
+    .where('employees.id', '=', id)
+    .where('employees.deletedAt', 'is', null)
     .executeTakeFirst();
 }
 
@@ -84,7 +117,7 @@ export function createEmployee(
     const employee = await trx
       .insertInto('employees')
       .values(input)
-      .returning(COLUMNS)
+      .returning(['id', 'salaryMinor'])
       .executeTakeFirstOrThrow();
     await trx
       .insertInto('salaryChanges')
@@ -96,7 +129,8 @@ export function createEmployee(
         changedBy,
       })
       .execute();
-    return employee;
+    // Re-read for the compa-ratio, which depends on the whole band.
+    return (await getEmployee(trx, employee.id))!;
   });
 }
 
@@ -112,9 +146,9 @@ export async function updateEmployee(
     .where('id', '=', id)
     .where('version', '=', version)
     .where('deletedAt', 'is', null)
-    .returning(COLUMNS)
+    .returning('id')
     .executeTakeFirst();
-  if (employee) return { status: 'ok', employee };
+  if (employee) return { status: 'ok', employee: (await getEmployee(db, id))! };
   // No row updated: either it does not exist (or is deleted), or the version moved on.
   return (await getEmployee(db, id)) ? { status: 'stale' } : { status: 'not_found' };
 }
@@ -155,7 +189,7 @@ export function changeSalary(
         updatedAt: sql`now()`,
       })
       .where('id', '=', input.id)
-      .returning(COLUMNS)
+      .returning('id')
       .executeTakeFirstOrThrow();
     await trx
       .insertInto('salaryChanges')
@@ -167,7 +201,7 @@ export function changeSalary(
         changedBy: input.changedBy,
       })
       .execute();
-    return { status: 'ok', employee };
+    return { status: 'ok', employee: (await getEmployee(trx, employee.id))! };
   });
 }
 
@@ -194,11 +228,9 @@ export function getSalaryHistory(db: Db, employeeId: number) {
 export function exportEmployees(db: Db, filters: Filters, sort: SortOption): Promise<Employee[]> {
   // shortcut: loads every row into memory (fine at ~10k); stream with a cursor if it grows to 100k+.
   const [column, dir] = parseSort(sort);
-  return db
-    .selectFrom('employees')
-    .select(COLUMNS)
+  return employeesWithCompa(db)
     .where((eb) => employeeFilters(eb, filters))
     .orderBy(column, dir)
-    .orderBy('id')
+    .orderBy('employees.id')
     .execute();
 }
