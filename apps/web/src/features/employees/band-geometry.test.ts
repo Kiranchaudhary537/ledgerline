@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { bandPosition, percentChange, railLayout } from './band-geometry';
+import { bandPosition, percentChange, railLayout, railPosition, railScale } from './band-geometry';
 
 const band = { min: 100, p25: 140, median: 150, p75: 170, max: 200 };
 
@@ -10,6 +10,12 @@ describe('railLayout', () => {
     expect(l.p25).toBeLessThan(l.median);
     expect(l.median).toBeLessThan(l.p75);
     expect(l.p75).toBeLessThan(100);
+  });
+
+  test('default scale is the band min to max with 5% padding, so the middle half fills the rail', () => {
+    const l = railLayout(band, [150]);
+    expect(l.p25).toBeCloseTo(((140 - 95) / 110) * 100);
+    expect(l.p75 - l.p25).toBeGreaterThan(25);
   });
 
   test('widens the scale so values outside the band still fit', () => {
@@ -25,6 +31,12 @@ describe('railLayout', () => {
     expect([l.p25, l.median, l.p75, ...l.values].every(Number.isFinite)).toBe(true);
     expect(railLayout({ min: 0, p25: 0, median: 0, p75: 0, max: 0 }, [0]).p25).toBe(0);
   });
+});
+
+test('railPosition maps a value on a shared scale and clamps', () => {
+  const scale = railScale([band]);
+  expect(railPosition(scale, 150)).toBeCloseTo(railLayout(band, []).median);
+  expect(railPosition(scale, 5000)).toBe(100);
 });
 
 describe('bandPosition', () => {
