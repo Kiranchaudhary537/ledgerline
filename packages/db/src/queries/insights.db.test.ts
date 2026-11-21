@@ -1,3 +1,4 @@
+import type { DistributionQuery } from '@acme/shared';
 import type { Insertable } from 'kysely';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createTestDb, resetDb } from '../testing.ts';
@@ -37,10 +38,21 @@ beforeAll(async () => {
     .values([
       ...[1000, 2000, 3000, 4000, 5000].map((s) => emp({ salaryMinor: s })),
       ...[2000, 4000, 7000, 8000, 10000].map((s) => emp({ salaryMinor: s, gender: 'male' })),
-      emp({ department: 'Sales', jobTitle: 'AE', level: 'mid', salaryMinor: 1500 }),
-      emp({ department: 'Sales', jobTitle: 'AE', level: 'mid', salaryMinor: 2500, gender: 'male' }),
+      emp({ department: 'Sales', jobTitle: 'Account Executive', level: 'mid', salaryMinor: 1500 }),
+      emp({
+        department: 'Sales',
+        jobTitle: 'Account Executive',
+        level: 'mid',
+        salaryMinor: 2500,
+        gender: 'male',
+      }),
       ...[100, 101, 101].map((s) =>
-        emp({ department: 'Support', jobTitle: 'Agent', level: 'junior', salaryMinor: s }),
+        emp({
+          department: 'Customer Support',
+          jobTitle: 'Recruiter',
+          level: 'junior',
+          salaryMinor: s,
+        }),
       ),
       emp({ countryCode: 'DE', gender: 'male', salaryMinor: 7000 }),
       emp({ salaryMinor: 999999, deletedAt: new Date() }),
@@ -52,6 +64,19 @@ describe('getStats', () => {
   it('computes exact stats per group, rounding to whole minor units', async () => {
     const rows = await getStats(db, { country: ['IN'], groupBy: ['department'] });
     expect(rows).toEqual([
+      // 100, 101, 101: avg 100.67 -> 101; p25 pos .5 -> 100.5 -> 101; total 302
+      {
+        group: { department: 'Customer Support' },
+        count: 3,
+        min: 100,
+        p25: 101,
+        median: 101,
+        p75: 101,
+        max: 101,
+        avg: 101,
+        total: 302,
+        currency: 'INR',
+      },
       // sorted: 1000 2000 2000 3000 4000 4000 5000 7000 8000 10000 (n=10)
       // median pos 4.5 -> (4000+4000)/2; p25 pos 2.25 -> 2000+.25*1000; p75 pos 6.75 -> 5000+.75*2000
       // total 46000, avg 4600
@@ -80,26 +105,13 @@ describe('getStats', () => {
         total: 4000,
         currency: 'INR',
       },
-      // 100, 101, 101: avg 100.67 -> 101; p25 pos .5 -> 100.5 -> 101; total 302
-      {
-        group: { department: 'Support' },
-        count: 3,
-        min: 100,
-        p25: 101,
-        median: 101,
-        p75: 101,
-        max: 101,
-        avg: 101,
-        total: 302,
-        currency: 'INR',
-      },
     ]);
   });
 
   it('groups by two dimensions, ordering levels by seniority', async () => {
     const rows = await getStats(db, { country: ['IN'], groupBy: ['level', 'department'] });
     expect(rows.map((r) => [r.group, r.count])).toEqual([
-      [{ level: 'junior', department: 'Support' }, 3],
+      [{ level: 'junior', department: 'Customer Support' }, 3],
       [{ level: 'mid', department: 'Sales' }, 2],
       [{ level: 'senior', department: 'Engineering' }, 10],
     ]);
@@ -121,7 +133,7 @@ describe('getStats', () => {
       groupBy: ['department'],
     });
     // Engineering women: 1000..5000 -> median 3000, avg 3000
-    expect(rows[0]).toMatchObject({
+    expect(rows[1]).toMatchObject({
       group: { department: 'Engineering' },
       count: 5,
       median: 3000,
@@ -134,6 +146,16 @@ describe('getGenderGap', () => {
   it('computes the gap and nulls it below 5 people per gender', async () => {
     const rows = await getGenderGap(db, { country: ['IN'], groupBy: ['department'] });
     expect(rows).toEqual([
+      // no men: maleMedian null
+      {
+        group: { department: 'Customer Support' },
+        femaleMedian: 101,
+        maleMedian: null,
+        femaleCount: 3,
+        maleCount: 0,
+        gapPct: null,
+        currency: 'INR',
+      },
       // F median 3000, M median 7000: (7000-3000)/7000*100 = 57.142... -> 57.1
       {
         group: { department: 'Engineering' },
@@ -154,22 +176,15 @@ describe('getGenderGap', () => {
         gapPct: null,
         currency: 'INR',
       },
-      // no men: maleMedian null
-      {
-        group: { department: 'Support' },
-        femaleMedian: 101,
-        maleMedian: null,
-        femaleCount: 3,
-        maleCount: 0,
-        gapPct: null,
-        currency: 'INR',
-      },
     ]);
   });
 });
 
 describe('getDistribution', () => {
-  const eng = { country: ['IN'], department: ['Engineering'] };
+  const eng: Pick<DistributionQuery, 'country' | 'department'> = {
+    country: ['IN'],
+    department: ['Engineering'],
+  };
 
   it('splits min..max into equal buckets', async () => {
     // min 1000, max 10000, 3 buckets of 3000: [1000,4000) [4000,7000) [7000,10000]
@@ -202,7 +217,7 @@ describe('getDistribution', () => {
   });
 
   it('returns no buckets for an empty set', async () => {
-    const d = await getDistribution(db, { country: ['IN'], department: ['Nope'], buckets: 5 });
+    const d = await getDistribution(db, { country: ['IN'], department: ['Finance'], buckets: 5 });
     expect(d.buckets).toEqual([]);
   });
 });
