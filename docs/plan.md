@@ -30,9 +30,9 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 ## M3 – API base (`apps/api`)
 
-- [ ] App factory, Zod config, request log (no salary, with `requestId`)
-- [ ] 🔴 Error handler: Zod → 400 + fields, unique violation → 409, DB down → 503, unknown → 500
-- [ ] 🔴 `GET /api/health` (200 / 503)
+- [x] App factory, Zod config, request log (no salary, with `requestId`)
+- [x] 🔴 Error handler: Zod → 400 + fields, unique violation → 409, DB down → 503, unknown → 500
+- [x] 🔴 `GET /api/health` (200 / 503)
 
 ## M4 – Auth
 

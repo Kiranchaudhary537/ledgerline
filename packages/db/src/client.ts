@@ -1,4 +1,4 @@
-import { CamelCasePlugin, Kysely, PostgresDialect } from 'kysely';
+import { CamelCasePlugin, Kysely, PostgresDialect, sql } from 'kysely';
 import pg from 'pg';
 import type { DB } from './types.ts';
 
@@ -16,4 +16,9 @@ export function createDb(connectionString: string): Db {
     dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString, max: 10 }) }),
     plugins: [new CamelCasePlugin()],
   });
+}
+
+/** Throws if the database cannot be reached. */
+export async function ping(db: Db): Promise<void> {
+  await sql`SELECT 1`.execute(db);
 }

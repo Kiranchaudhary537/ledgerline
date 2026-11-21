@@ -10,7 +10,10 @@ const db = createDb('postgres://unused@localhost:1/unused');
 
 async function appWithRoute(handler: () => unknown, logs?: string[]) {
   const logger = logs
-    ? { level: 'info', stream: new Writable({ write: (c, _e, cb) => (logs.push(String(c)), cb()) }) }
+    ? {
+        level: 'info',
+        stream: new Writable({ write: (c, _e, cb) => (logs.push(String(c)), cb()) }),
+      }
     : false;
   const app = buildApp({ db, logger });
   app.post('/api/test', handler);

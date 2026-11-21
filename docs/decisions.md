@@ -9,7 +9,7 @@ Full design: [system-design.md](system-design.md)
 | Runtime | Node 26 LTS, runs `.ts` directly (type stripping) | Node 24 + `tsx` + build step | No build step for backend; 26 is current LTS |
 | TypeScript | 6.0 (pinned) | 7.x | typescript-eslint supports < 6.1 |
 | Language | Node.js + TypeScript | Python, Java | One language for API and UI; shared types |
-| API framework | Fastify | Express | Built-in validation, log redaction, in-memory test requests |
+| API framework | Fastify (routes call shared Zod `.parse()`; no type-provider plugin) | Express | Plugins + hooks, in-memory test requests (`inject`), pino logging |
 | Database | PostgreSQL | SQLite, MongoDB | Relational data, real transactions, median in SQL, managed backups |
 | Query layer | Kysely + `kysely-codegen` | Prisma, Drizzle, raw SQL | See [Why Kysely over Prisma](#why-kysely-over-prisma) |
 | DB types | Generated from the migrated DB (`pnpm --filter @acme/db db:types`); `pnpm check` fails if stale | Hand-written types | Types can never drift from the real schema |
