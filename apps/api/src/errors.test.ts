@@ -4,6 +4,10 @@ import { Writable } from 'node:stream';
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildApp } from './app.ts';
 import { AppError } from './errors.ts';
+import { PUBLIC_ROUTES } from './plugins/auth.ts';
+
+// These tests exercise the error handler, not auth.
+PUBLIC_ROUTES.add('/api/test');
 
 // Never queried in these tests; pg connects lazily.
 const db = createDb('postgres://unused@localhost:1/unused');

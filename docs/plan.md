@@ -36,9 +36,9 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 ## M4 – Auth
 
-- [ ] 🔴 Queries: users, sessions
-- [ ] 🔴 Login / logout, session cookie (httpOnly, 8 h), auth plugin → 401
-- [ ] 🔴 Rate limit: 6th login in a minute → 429
+- [x] 🔴 Queries: users, sessions
+- [x] 🔴 Login / logout, session cookie (httpOnly, 8 h), auth plugin → 401
+- [x] 🔴 Rate limit: 6th login in a minute → 429
 
 ## M5 – Employees read
 
