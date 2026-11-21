@@ -27,7 +27,7 @@ Validation: `packages/shared/src/validation/list-query.ts`
 | `level` | multi | Junior, Mid, Senior, Lead, Principal |
 | `employmentType` | multi | full_time, part_time, contract |
 | `gender` | multi | female, male |
-| `sort` | `field:asc\|desc` | name, hireDate, level, compaRatio; `salary` only when exactly one country |
+| `sort` | `field:asc\|desc` | name, hireDate, level; `salary` only when exactly one country |
 | `page` | int | ≥ 1, default 1 |
 | `pageSize` | int | default 25, max 100 |
 
@@ -51,13 +51,13 @@ Validation: `packages/shared/src/validation/list-query.ts`
 | `GET /api/meta/filters` | Departments and job titles come from the database, countries from the ISO list. `{ countries: [{ code, name, currency }], departments: [{ name, jobTitles }], levels, employmentTypes, genders }` |
 
 Types (`packages/shared/src/api/employees.ts`):
-- `Employee`: `id, employeeCode, fullName, email, department, jobTitle, level, countryCode, currency, employmentType, gender, hireDate (YYYY-MM-DD), salaryMinor, compaRatio, version, createdAt, updatedAt` (timestamps ISO strings; `currency` derived from the country).
+- `Employee`: `id, employeeCode, fullName, email, department, jobTitle, level, countryCode, currency, employmentType, gender, hireDate (YYYY-MM-DD), salaryMinor, version, createdAt, updatedAt` (timestamps ISO strings; `currency` derived from the country).
 - `SalaryChange`: `id, oldSalaryMinor (null = starting salary), newSalaryMinor, reason, changedAt, changedByName (null = imported)`.
 
 ### CSV export
 
 `text/csv; charset=utf-8`, `Content-Disposition: attachment; filename="employees.csv"`, CRLF rows.
-Columns: Code, Name, Email, Department, Job title, Level, Country, Employment type, Gender, Hire date, Annual salary, Currency, Compa-ratio.
+Columns: Code, Name, Email, Department, Job title, Level, Country, Employment type, Gender, Hire date, Annual salary, Currency.
 
 - Salary is in major units as a plain decimal (`3800000.00`; JPY has no decimals).
 - Fields are quoted per RFC 4180. Values starting with `=`, `+`, `-`, `@`, tab or CR get a leading `'` so spreadsheets do not run them as formulas.
@@ -69,7 +69,7 @@ if `groupBy` does not include `country`, exactly one `country` is required → e
 
 | Endpoint | Extra params | Returns |
 |---|---|---|
-| `GET /api/insights/stats` | `groupBy` = 1–2 of country, department, jobTitle, level, gender, employmentType | `[{ group, count, min, p25, median, p75, max, avg, total, avgCompaRatio, outOfBandCount, compaP25, compaP75, currency }]`. The compa-ratio fields use the band median over everyone, so filters do not change a person's ratio; `outOfBandCount` counts ratios below `compaRatio.extremeLow` or above `extremeHigh`; `compaP25`/`compaP75` give the spread (review when wider than `compaRatio.maxReviewSpread`). |
+| `GET /api/insights/stats` | `groupBy` = 1–2 of country, department, jobTitle, level, gender, employmentType | `[{ group, count, min, p25, median, p75, max, avg, total, currency }]`. |
 | `GET /api/insights/distribution` | `buckets` (default 20, max 50) | `{ currency, buckets: [{ from, to, count }] }` |
 | `GET /api/insights/gender-gap` | `groupBy` (as above, without gender) | `[{ group, femaleMedian, maleMedian, femaleCount, maleCount, gapPct \| null, currency }]` |
 

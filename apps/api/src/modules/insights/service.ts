@@ -6,7 +6,7 @@ import {
   type GenderGapRow,
   getCountry,
   type StatsQuery,
-  type InsightsStatsRow,
+  type StatsRow,
 } from '@acme/shared';
 
 export type InsightsStore = Pick<InsightsRepository, 'stats' | 'genderGap' | 'distribution'>;
@@ -18,7 +18,7 @@ export class InsightsService {
     this.insights = insights;
   }
 
-  stats(query: StatsQuery): Promise<InsightsStatsRow[]> {
+  stats(query: StatsQuery): Promise<StatsRow[]> {
     return this.insights.stats(query);
   }
 

@@ -1,5 +1,4 @@
 import {
-  config,
   type EmployeeCreate,
   type EmployeeFacets,
   type Facet,
@@ -31,8 +30,7 @@ const COLUMNS = [
   'updatedAt',
 ] as const;
 
-/** compaRatio = salary ÷ median of the same country × title × level × employment type. */
-export type Employee = Omit<Selectable<Employees>, 'deletedAt'> & { compaRatio: number };
+export type Employee = Omit<Selectable<Employees>, 'deletedAt'>;
 export type MutationResult =
   { status: 'ok'; employee: Employee } | { status: 'not_found' } | { status: 'stale' };
 
@@ -49,7 +47,6 @@ const SORT_COLUMNS = {
   hireDate: 'employees.hireDate',
   level: 'employees.level', // enum: Postgres sorts by declaration order, which is seniority
   salary: 'employees.salaryMinor',
-  compaRatio: 'compaRatio',
 } as const;
 
 const FACET_COLUMNS = {
@@ -63,44 +60,11 @@ const FACET_COLUMNS = {
 
 const QUALIFIED = COLUMNS.map((c) => `employees.${c}` as const);
 
-/**
- * Active employees with their compa-ratio. Band medians are computed over ALL active employees,
- * so a person's ratio does not change when the list is filtered.
- */
-function employeesWithCompa(db: Db) {
-  return db
-    .with('bands', (qb) =>
-      qb
-        .selectFrom('employees')
-        .where('deletedAt', 'is', null)
-        .select([
-          'countryCode',
-          'jobTitle',
-          'level',
-          'employmentType',
-          sql<number>`percentile_cont(0.5) within group (order by salary_minor)`.as('median'),
-        ])
-        .groupBy(['countryCode', 'jobTitle', 'level', 'employmentType']),
-    )
-    .selectFrom('employees')
-    .innerJoin('bands', (join) =>
-      join
-        .onRef('bands.countryCode', '=', 'employees.countryCode')
-        .onRef('bands.jobTitle', '=', 'employees.jobTitle')
-        .onRef('bands.level', '=', 'employees.level')
-        .onRef('bands.employmentType', '=', 'employees.employmentType'),
-    )
-    .select(QUALIFIED)
-    .select(
-      sql<number>`round((employees.salary_minor / bands.median)::numeric, ${sql.lit(config.compaRatio.decimals)})`.as(
-        'compaRatio',
-      ),
-    );
-}
-
 /** Takes the connection explicitly so it also works inside a transaction. */
 function findEmployee(db: Db, id: number): Promise<Employee | undefined> {
-  return employeesWithCompa(db)
+  return db
+    .selectFrom('employees')
+    .select(QUALIFIED)
     .where('employees.id', '=', id)
     .where('employees.deletedAt', 'is', null)
     .executeTakeFirst();
@@ -123,7 +87,9 @@ export class EmployeeRepository {
     const where = (eb: Parameters<typeof employeeFilters>[0]) => employeeFilters(eb, query);
     const [column, dir] = parseSort(query.sort);
     const [data, count] = await Promise.all([
-      employeesWithCompa(this.db)
+      this.db
+        .selectFrom('employees')
+        .select(QUALIFIED)
         .where(where)
         .orderBy(column, dir)
         .orderBy('employees.id')
@@ -174,7 +140,7 @@ export class EmployeeRepository {
       const employee = await trx
         .insertInto('employees')
         .values(input)
-        .returning(['id', 'salaryMinor'])
+        .returning(COLUMNS)
         .executeTakeFirstOrThrow();
       await trx
         .insertInto('salaryChanges')
@@ -186,8 +152,7 @@ export class EmployeeRepository {
           changedBy,
         })
         .execute();
-      // Re-read: the compa-ratio depends on the whole band.
-      return (await findEmployee(trx, employee.id))!;
+      return employee;
     });
   }
 
@@ -199,9 +164,9 @@ export class EmployeeRepository {
       .where('id', '=', id)
       .where('version', '=', version)
       .where('deletedAt', 'is', null)
-      .returning('id')
+      .returning(COLUMNS)
       .executeTakeFirst();
-    if (updated) return { status: 'ok', employee: (await findEmployee(this.db, id))! };
+    if (updated) return { status: 'ok', employee: updated };
     // No row updated: it is missing or deleted, or the version moved on.
     return (await findEmployee(this.db, id)) ? { status: 'stale' } : { status: 'not_found' };
   }
@@ -231,7 +196,7 @@ export class EmployeeRepository {
       if (!current) return { status: 'not_found' };
       if (current.version !== input.version) return { status: 'stale' };
 
-      await trx
+      const employee = await trx
         .updateTable('employees')
         .set({
           salaryMinor: input.newSalaryMinor,
@@ -239,7 +204,8 @@ export class EmployeeRepository {
           updatedAt: sql`now()`,
         })
         .where('id', '=', input.id)
-        .execute();
+        .returning(COLUMNS)
+        .executeTakeFirstOrThrow();
       await trx
         .insertInto('salaryChanges')
         .values({
@@ -250,7 +216,7 @@ export class EmployeeRepository {
           changedBy: input.changedBy,
         })
         .execute();
-      return { status: 'ok', employee: (await findEmployee(trx, input.id))! };
+      return { status: 'ok', employee };
     });
   }
 
@@ -276,7 +242,9 @@ export class EmployeeRepository {
   export(filters: Filters, sort: SortOption): Promise<Employee[]> {
     // shortcut: loads every row into memory (fine at ~10k); stream with a cursor if it grows to 100k+.
     const [column, dir] = parseSort(sort);
-    return employeesWithCompa(this.db)
+    return this.db
+      .selectFrom('employees')
+      .select(QUALIFIED)
       .where((eb) => employeeFilters(eb, filters))
       .orderBy(column, dir)
       .orderBy('employees.id')

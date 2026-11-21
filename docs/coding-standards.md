@@ -17,7 +17,7 @@ Rules every change follows. Reviews (human or AI) check code against this file.
 
 ## No hard-coding: one config
 
-**All tunable values live in one file: `packages/shared/src/config.ts`.** To change behaviour (page sizes, session length, rate limits, seed size, compa-ratio thresholds…), edit only that file. It starts with a comment saying so, and every value has a one-line comment with its unit and why it has that value.
+**All tunable values live in one file: `packages/shared/src/config.ts`.** To change behaviour (page sizes, session length, rate limits, seed size…), edit only that file. It starts with a comment saying so, and every value has a one-line comment with its unit and why it has that value.
 
 - Used by API, seed and web alike (it has no Node-only code, so the browser can import it).
 - **Secrets and per-environment infrastructure** (`DATABASE_URL`, `PORT`, `NODE_ENV`, seed admin password) are not in that file: they come from environment variables, read and validated once in `apps/api/src/env.ts` (and the seed CLI). Only these entry points may read `process.env`: the API `apps/api/src/env.ts`, the seed CLI (`packages/db/src/seed/index.ts`), the migrate CLI (`packages/db/src/migrate.ts`, under `import.meta.main`) and the DB test helper (`packages/db/src/testing.ts`, for `TEST_DATABASE_URL`). Each fails with a clear message when a variable is missing. Nothing else reads it.
@@ -43,7 +43,7 @@ Allowed literals: `0`, `1`, array indexes, test fixtures.
 
 ## Naming and size
 
-- Names say what, in domain words: `changeSalary`, `compaRatio`, `bandMedian` — not `handle`, `data2`, `process`.
+- Names say what, in domain words: `changeSalary`, `salaryMinor`, `hireDate` — not `handle`, `data2`, `process`.
 - Booleans read as questions: `isStale`, `hasOneCountry`.
 - A function does one thing; if it needs a comment to separate steps, split it. Aim for < 30 lines.
 - **Comments only for decisions and important facts**: why a choice was made, a security or data-loss reason, a non-obvious constraint, a known limit (`// shortcut: <limit>, <when to upgrade>`). No comments that repeat what the code says (`// returns the user`, `// loop over rows`). If code needs a comment to be understood, rename or split it first.

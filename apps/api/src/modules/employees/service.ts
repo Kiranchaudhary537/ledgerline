@@ -1,6 +1,5 @@
 import type { Employee as DbEmployee, EmployeeRepository, MutationResult } from '@acme/db';
 import {
-  config,
   type Employee,
   type EmployeeCreate,
   type EmployeeFacets,
@@ -43,7 +42,6 @@ const CSV_HEADER = [
   'Hire date',
   'Annual salary',
   'Currency',
-  'Compa-ratio',
 ];
 
 const iso = (d: Date | string) => new Date(d).toISOString();
@@ -123,7 +121,6 @@ export class EmployeeService {
         e.hireDate,
         formatMajor(e.salaryMinor, e.countryCode),
         getCountry(e.countryCode).currency,
-        e.compaRatio.toFixed(config.compaRatio.decimals),
       ]),
     );
     return csvRow(CSV_HEADER) + lines.join('');
