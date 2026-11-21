@@ -71,6 +71,8 @@ export function buildApp({
   });
   app.addHook('onSend', async (_request, reply) => {
     reply.header('X-Robots-Tag', 'noindex, nofollow');
+    // Lets latency checks separate our processing time from network and hosting time.
+    reply.header('Server-Timing', `app;dur=${reply.elapsedTime.toFixed(1)}`);
   });
   app.setErrorHandler(errorHandler);
   app.setNotFoundHandler((request, reply) => sendError(reply, request, 'ROUTE_NOT_FOUND'));
