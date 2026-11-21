@@ -83,14 +83,14 @@ function EmployeeForm(props: Props & { options: FilterOptions }) {
   const save = useSaveEmployee(props, fieldError, () => setStale(true));
 
   function submit(v: FormValues) {
-    const { salary, ...fields } = v;
+    const { salary, countryCode, ...fields } = v;
     let body: Record<string, unknown>;
     if (mode === 'create') {
-      const salaryMinor = parseAmount(salary, v.countryCode, (message) =>
+      const salaryMinor = parseAmount(salary, countryCode, (message) =>
         setError('salary', { message }),
       );
       if (salaryMinor === null) return;
-      body = { ...fields, salaryMinor };
+      body = { ...fields, countryCode, salaryMinor };
     } else {
       body = { ...fields, version: employee.version };
     }
@@ -118,7 +118,7 @@ function EmployeeForm(props: Props & { options: FilterOptions }) {
   return (
     <form noValidate onSubmit={form.handleSubmit(submit)} className="flex flex-1 flex-col gap-4">
       {stale && <StaleBanner onReload={() => void reload()} />}
-      <EmployeeFields form={form} options={options} withSalary={mode === 'create'} />
+      <EmployeeFields form={form} options={options} creating={mode === 'create'} />
       <div className="mt-auto flex gap-2 pt-2">
         <Button type="submit" disabled={save.isPending}>
           {save.isPending ? 'Saving…' : mode === 'create' ? 'Add employee' : 'Save changes'}

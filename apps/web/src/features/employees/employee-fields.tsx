@@ -62,14 +62,15 @@ const choices = (values: string[]) =>
 export function EmployeeFields({
   form,
   options,
-  withSalary,
+  creating,
 }: {
   form: Form;
   options: FilterOptions;
-  withSalary: boolean;
+  creating: boolean;
 }) {
   const department = form.watch('department');
-  const currency = options.countries.find((c) => c.code === form.watch('countryCode'))?.currency;
+  const country = options.countries.find((c) => c.code === form.watch('countryCode'));
+  const currency = country?.currency;
   const titles = options.departments.find((d) => d.name === department)?.jobTitles ?? [];
 
   return (
@@ -102,13 +103,19 @@ export function EmployeeFields({
       <SelectField methods={form} name="level" title="Level" noun="level">
         {choices(options.levels)}
       </SelectField>
-      <SelectField methods={form} name="countryCode" title="Country" noun="country">
-        {options.countries.map((c) => (
-          <option key={c.code} value={c.code}>
-            {c.name}
-          </option>
-        ))}
-      </SelectField>
+      {creating ? (
+        <SelectField methods={form} name="countryCode" title="Country" noun="country">
+          {options.countries.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>
+          ))}
+        </SelectField>
+      ) : (
+        <Field id="countryCode" label="Country">
+          <p>{country?.name}</p>
+        </Field>
+      )}
       <SelectField
         methods={form}
         name="employmentType"
@@ -121,7 +128,7 @@ export function EmployeeFields({
         {choices(options.genders)}
       </SelectField>
       <TextField methods={form} name="hireDate" title="Hire date" type="date" />
-      {withSalary && (
+      {creating && (
         <TextField
           methods={form}
           name="salary"

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { renderApp, stubFetch } from '@/test/render-app';
@@ -99,6 +99,23 @@ describe('employee detail', () => {
       reason: 'Promotion',
       version: 3,
     });
+  });
+
+  test('edit details: country is read-only and not sent', async () => {
+    const fetch = stubApi(() => Response.json(employee));
+    const user = userEvent.setup();
+    renderApp('/employees/7');
+    await user.click(await screen.findByRole('button', { name: 'Edit details' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Edit details' });
+    expect(within(dialog).queryByRole('combobox', { name: 'Country' })).not.toBeInTheDocument();
+    expect(within(dialog).getByText('India')).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    const patch = fetch.mock.calls.find(([, init]) => init?.method === 'PATCH')!;
+    const body = JSON.parse(patch[1]!.body as string) as Record<string, unknown>;
+    expect(body).not.toHaveProperty('countryCode');
+    expect(body).toMatchObject({ version: 3 });
   });
 
   test('change salary: a 409 shows the conflict banner with Reload', async () => {
