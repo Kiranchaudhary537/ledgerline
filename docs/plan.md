@@ -42,19 +42,19 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 ## M5 – Employees read
 
-- [ ] 🔴 List query: every filter, AND/OR, sort whitelist, salary sort only for one country, paging, deleted hidden
-- [ ] 🔴 `GET /employees`, `GET /employees/:id`, `GET /meta/filters`
+- [x] 🔴 List query: every filter, AND/OR, sort whitelist, salary sort only for one country, paging, deleted hidden
+- [x] 🔴 `GET /employees`, `GET /employees/:id`, `GET /meta/filters`
 
 ## M6 – Employees write
 
-- [ ] 🔴 Create (code auto-generated; duplicate email → 409)
-- [ ] 🔴 Edit with version (stale → 409)
-- [ ] 🔴 Soft delete (then 404)
-- [ ] 🔴 Salary change + history in one transaction (failed history insert → salary unchanged); `GET /employees/:id/salary-history`
+- [x] 🔴 Create (code auto-generated; duplicate email → 409)
+- [x] 🔴 Edit with version (stale → 409)
+- [x] 🔴 Soft delete (then 404)
+- [x] 🔴 Salary change + history in one transaction (failed history insert → salary unchanged); `GET /employees/:id/salary-history`
 
 ## M7 – CSV export
 
-- [ ] 🔴 `GET /employees/export.csv` with current filters (header + rows match)
+- [x] 🔴 `GET /employees/export.csv` with current filters (header + rows match)
 
 ## M8 – Insights API
 

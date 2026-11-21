@@ -104,19 +104,30 @@ describe('writes', () => {
     const stale = await send('PATCH', `/api/employees/${e.id}`, { level: 'mid', version: 1 });
     expect(stale.statusCode).toBe(409);
     expect(stale.json().code).toBe('STALE_VERSION');
-    expect((await send('PATCH', '/api/employees/9999', { level: 'mid', version: 1 })).statusCode).toBe(404);
+    expect(
+      (await send('PATCH', '/api/employees/9999', { level: 'mid', version: 1 })).statusCode,
+    ).toBe(404);
     await app.close();
   });
 
   it('checks a lone department or jobTitle against the stored one', async () => {
     const { app, send, seed } = await setup();
     const e = await seed();
-    const badTitle = await send('PATCH', `/api/employees/${e.id}`, { jobTitle: 'Recruiter', version: 1 });
+    const badTitle = await send('PATCH', `/api/employees/${e.id}`, {
+      jobTitle: 'Recruiter',
+      version: 1,
+    });
     expect(badTitle.statusCode).toBe(400);
     expect(badTitle.json().fields.jobTitle).toBe('Choose a job title in this department');
-    const badDept = await send('PATCH', `/api/employees/${e.id}`, { department: 'Finance', version: 1 });
+    const badDept = await send('PATCH', `/api/employees/${e.id}`, {
+      department: 'Finance',
+      version: 1,
+    });
     expect(badDept.json().fields.jobTitle).toBe('Choose a job title in this department');
-    const ok = await send('PATCH', `/api/employees/${e.id}`, { jobTitle: 'QA Engineer', version: 1 });
+    const ok = await send('PATCH', `/api/employees/${e.id}`, {
+      jobTitle: 'QA Engineer',
+      version: 1,
+    });
     expect(ok.statusCode).toBe(200);
     await app.close();
   });
@@ -138,7 +149,11 @@ describe('salary changes', () => {
     const { app, send, get, seed } = await setup();
     const e = await seed();
     const url = `/api/employees/${e.id}/salary-changes`;
-    const ok = await send('POST', url, { newSalaryMinor: 400_000_000, reason: 'Promotion', version: 1 });
+    const ok = await send('POST', url, {
+      newSalaryMinor: 400_000_000,
+      reason: 'Promotion',
+      version: 1,
+    });
     expect(ok.statusCode).toBe(200);
     expect(ok.json()).toMatchObject({ salaryMinor: 400_000_000, version: 2 });
     const stale = await send('POST', url, { newSalaryMinor: 1, reason: 'Oops', version: 1 });
@@ -146,18 +161,35 @@ describe('salary changes', () => {
     const hist = await get(`/api/employees/${e.id}/salary-history`);
     expect(hist.statusCode).toBe(200);
     expect(hist.json()).toMatchObject([
-      { oldSalaryMinor: 380_000_000, newSalaryMinor: 400_000_000, reason: 'Promotion', changedByName: 'Hana HR' },
+      {
+        oldSalaryMinor: 380_000_000,
+        newSalaryMinor: 400_000_000,
+        reason: 'Promotion',
+        changedByName: 'Hana HR',
+      },
       { oldSalaryMinor: null, newSalaryMinor: 380_000_000, reason: 'Starting salary' },
     ]);
     expect((await get('/api/employees/9999/salary-history')).statusCode).toBe(404);
-    expect((await send('POST', '/api/employees/9999/salary-changes', { newSalaryMinor: 5, reason: 'abc', version: 1 })).statusCode).toBe(404);
+    expect(
+      (
+        await send('POST', '/api/employees/9999/salary-changes', {
+          newSalaryMinor: 5,
+          reason: 'abc',
+          version: 1,
+        })
+      ).statusCode,
+    ).toBe(404);
     await app.close();
   });
 
   it('rejects invalid input with fields', async () => {
     const { app, send, seed } = await setup();
     const e = await seed();
-    const res = await send('POST', `/api/employees/${e.id}/salary-changes`, { newSalaryMinor: 0, reason: 'x', version: 1 });
+    const res = await send('POST', `/api/employees/${e.id}/salary-changes`, {
+      newSalaryMinor: 0,
+      reason: 'x',
+      version: 1,
+    });
     expect(res.statusCode).toBe(400);
     expect(Object.keys(res.json().fields).sort()).toEqual(['newSalaryMinor', 'reason']);
     await app.close();
@@ -168,15 +200,24 @@ describe('GET /api/employees/export.csv', () => {
   it('exports filtered rows in major units with a header and attachment headers', async () => {
     const { app, get, seed } = await setup();
     await seed({ fullName: '=cmd, "x"', email: 'a@x.example' });
-    await seed({ fullName: 'Kenji', email: 'k@x.example', countryCode: 'JP', salaryMinor: 3_800_000 });
+    await seed({
+      fullName: 'Kenji',
+      email: 'k@x.example',
+      countryCode: 'JP',
+      salaryMinor: 3_800_000,
+    });
     const res = await get('/api/employees/export.csv?country=JP');
     expect(res.statusCode).toBe(200);
     expect(res.headers['content-type']).toBe('text/csv; charset=utf-8');
     expect(res.headers['content-disposition']).toBe('attachment; filename="employees.csv"');
     const lines = res.body.trim().split('\r\n');
-    expect(lines[0]).toBe('Code,Name,Email,Department,Job title,Level,Country,Employment type,Gender,Hire date,Annual salary,Currency');
+    expect(lines[0]).toBe(
+      'Code,Name,Email,Department,Job title,Level,Country,Employment type,Gender,Hire date,Annual salary,Currency',
+    );
     expect(lines).toHaveLength(2);
-    expect(lines[1]).toMatch(/^[^,]+,Kenji,k@x.example,Engineering,Software Engineer,senior,JP,full_time,female,2021-04-12,3800000,JPY$/);
+    expect(lines[1]).toMatch(
+      /^[^,]+,Kenji,k@x.example,Engineering,Software Engineer,senior,JP,full_time,female,2021-04-12,3800000,JPY$/,
+    );
     const all = await get('/api/employees/export.csv');
     expect(all.body).toContain(`"'=cmd, ""x"""`);
     expect(all.body).toContain('3800000.00');
@@ -189,7 +230,10 @@ describe('GET /api/meta/filters', () => {
     const { app, get } = await setup();
     const body = (await get('/api/meta/filters')).json();
     expect(body.countries).toContainEqual({ code: 'JP', name: 'Japan', currency: 'JPY' });
-    expect(body.departments).toContainEqual({ name: 'Product', jobTitles: ['Product Manager', 'Product Designer'] });
+    expect(body.departments).toContainEqual({
+      name: 'Product',
+      jobTitles: ['Product Manager', 'Product Designer'],
+    });
     expect(body.levels).toEqual(['junior', 'mid', 'senior', 'lead', 'principal']);
     expect(body.employmentTypes).toEqual(['full_time', 'part_time', 'contract']);
     expect(body.genders).toEqual(['female', 'male']);
