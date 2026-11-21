@@ -15,7 +15,7 @@ const statements = [
   )`,
 
   `CREATE TABLE users (
-    id             int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id             bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email          text NOT NULL UNIQUE,
     password_hash  text NOT NULL,
     name           text NOT NULL,
@@ -25,13 +25,13 @@ const statements = [
   // id is the SHA-256 of the cookie token, so a leaked table cannot be used to log in.
   `CREATE TABLE sessions (
     id          text PRIMARY KEY,
-    user_id     int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id     bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     expires_at  timestamptz NOT NULL,
     created_at  timestamptz NOT NULL DEFAULT now()
   )`,
 
   `CREATE TABLE employees (
-    id               int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id               bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     employee_code    text GENERATED ALWAYS AS ('ACME-' || lpad(id::text, 5, '0')) STORED NOT NULL UNIQUE,
     full_name        text NOT NULL,
     email            text NOT NULL,
@@ -55,12 +55,12 @@ const statements = [
 
   // Append-only. old_salary_minor is NULL for the starting salary; changed_by is NULL for imported history.
   `CREATE TABLE salary_changes (
-    id                int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    employee_id       int NOT NULL REFERENCES employees(id),
+    id                bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    employee_id       bigint NOT NULL REFERENCES employees(id),
     old_salary_minor  bigint,
     new_salary_minor  bigint NOT NULL CHECK (new_salary_minor > 0),
     reason            text NOT NULL,
-    changed_by        int REFERENCES users(id),
+    changed_by        bigint REFERENCES users(id),
     changed_at        timestamptz NOT NULL DEFAULT now()
   )`,
   `CREATE INDEX salary_changes_employee ON salary_changes (employee_id, changed_at DESC)`,
