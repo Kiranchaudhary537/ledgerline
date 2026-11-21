@@ -21,7 +21,6 @@ export function createDb(connectionString: string): Db {
   });
 }
 
-/** Throws if the database cannot be reached. */
 export async function ping(db: Db): Promise<void> {
   await sql`SELECT 1`.execute(db);
 }

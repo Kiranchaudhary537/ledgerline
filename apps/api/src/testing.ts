@@ -29,7 +29,6 @@ export async function createTestUser(
   return { id, email, name, password };
 }
 
-/** Creates a user and a session directly (no login request): returns a `cookie` header value. */
 export async function loginCookie(_app: ReturnType<typeof buildApp>, db: Db): Promise<string> {
   const user = await createTestUser(db);
   return `${config.cookie.sessionName}=${await new SessionRepository(db).create(user.id)}`;

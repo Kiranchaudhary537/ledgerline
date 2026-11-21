@@ -24,7 +24,6 @@ const genderMedian = (g: 'female' | 'male') =>
 const genderCount = (g: 'female' | 'male') =>
   sql<number>`count(*) filter (where ${sql.ref('employees.gender')} = ${g})`;
 
-/** Active employees matching the filters, joined to their country for the currency, grouped by dimensions. */
 function groupedBase(db: Db, q: StatsQuery | GenderGapQuery) {
   const cols = (q.groupBy as Dimension[]).map((d) => COLUMN[d]);
   // Currency is determined by country, so grouping by it never splits a group.
@@ -80,7 +79,7 @@ export class InsightsRepository {
     }));
   }
 
-  /** Medians are returned whenever that gender has anyone; only gapPct is null below 5 per gender. */
+  /** Medians are returned whenever that gender has anyone; only gapPct is null below the minimum group size. */
   async genderGap(q: GenderGapQuery) {
     const rows = await groupedBase(this.db, q)
       .select([

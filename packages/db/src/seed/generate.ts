@@ -46,7 +46,6 @@ export interface SeedSalaryChange {
 
 export type SeedEmployee = EmployeeCreate & { history: SeedSalaryChange[] };
 
-/** mulberry32: tiny, fast, seedable PRNG. Returns floats in [0, 1). */
 function createRandom(seed: number) {
   let a = seed >>> 0;
   const next = () => {
@@ -116,7 +115,6 @@ function addDays(isoDate: string, days: number): string {
   return new Date(Date.parse(isoDate) + days * DAY_MS).toISOString().slice(0, 10);
 }
 
-/** Generates employees whose fields fit together: name ↔ country, title ↔ level ↔ pay ↔ tenure. */
 export function generateEmployees({
   seed,
   count,
@@ -160,7 +158,6 @@ export function generateEmployees({
       Math.floor(band.max / step) * step,
     );
 
-    // Walk back from today's salary, one raise per work anniversary.
     const anniversaries = Math.floor(tenureDays / 365);
     const salaries = [salaryMinor];
     const reasons: string[] = [];

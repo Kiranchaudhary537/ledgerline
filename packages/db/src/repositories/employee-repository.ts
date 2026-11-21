@@ -237,7 +237,6 @@ export class EmployeeRepository {
       .execute();
   }
 
-  /** All matching rows in list order, for CSV. */
   export(filters: Filters, sort: SortOption): Promise<Employee[]> {
     // shortcut: loads every row into memory (fine at ~10k); stream with a cursor if it grows to 100k+.
     const [column, dir] = parseSort(sort);

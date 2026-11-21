@@ -24,7 +24,6 @@ export function commaList<T extends z.ZodType<unknown, string>>(item: T) {
     .pipe(z.array(item).min(1));
 }
 
-/** Same, for a fixed set of allowed values. */
 export const enumList = <const T extends readonly [string, ...string[]]>(values: T) =>
   commaList(z.enum(values));
 

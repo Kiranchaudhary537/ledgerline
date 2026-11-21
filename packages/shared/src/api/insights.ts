@@ -18,7 +18,7 @@ export interface GenderGapRow {
   maleMedian: number | null;
   femaleCount: number;
   maleCount: number;
-  /** null when either gender has fewer than 5 people. */
+  /** null when either gender has too few people (config.insights.genderGapMinGroupSize). */
   gapPct: number | null;
   currency: string;
 }

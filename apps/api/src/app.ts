@@ -80,14 +80,13 @@ export function buildApp({
   });
 
   app.register(cookie);
-  // Default 300/min per user (IP before login); the login route sets its own limit.
+  // Per user (IP before login); the login route sets its own, stricter limit.
   app.register(rateLimit, {
     max: config.rateLimit.apiMax,
     timeWindow: config.rateLimit.windowMs,
     hook: 'preHandler', // after onRequest auth and body parsing, so keys can use both
     keyGenerator: (request) => String(request.user?.id ?? request.ip),
   });
-  // Repositories (SQL) → services (rules) → routes, built once here.
   const auth = new AuthService(new UserRepository(db), new SessionRepository(db));
   const employees = new EmployeeService(new EmployeeRepository(db));
   const insights = new InsightsService(new InsightsRepository(db));

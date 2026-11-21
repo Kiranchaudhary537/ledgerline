@@ -12,7 +12,6 @@ export class DepartmentRepository {
     this.db = db;
   }
 
-  /** Every department with its job titles, both sorted by name. */
   async list(): Promise<DepartmentWithTitles[]> {
     const rows = await this.db
       .selectFrom('departments')
