@@ -1,5 +1,5 @@
 {
-  "name": "acme-salary",
+  "name": "ledgerline",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.16.1",
@@ -7,6 +7,12 @@
     "node": ">=26"
   },
   "scripts": {
+    "dev": "pnpm --parallel --filter @acme/api --filter @acme/web dev",
+    "build": "pnpm typecheck && pnpm --filter @acme/web build",
+    "start": "pnpm --parallel --filter @acme/api --filter @acme/web start",
+    "db:migrate": "pnpm --filter @acme/db migrate",
+    "db:seed": "pnpm --filter @acme/db seed",
+    "db:setup": "pnpm db:migrate && pnpm db:seed",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "pnpm -r --if-present typecheck",

@@ -6,16 +6,22 @@ Docs: [coding standards](docs/coding-standards.md) · [requirements](docs/requir
 
 ## Run locally
 
-Needs Node 26+, pnpm, and Docker (or OrbStack).
+Needs Node 26+, pnpm and Docker (or OrbStack).
 
 ```sh
 cp .env.example .env
 docker compose up -d db
 pnpm install
-pnpm --filter @acme/db migrate
-pnpm check        # typecheck + lint + format + DB types up to date + tests
+pnpm db:setup     # migrate + seed 10,000 employees and the HR user from .env
+pnpm dev          # API on :3000 and web on :5173, together
 ```
 
-Run the web app: `pnpm --filter @acme/web dev` (http://localhost:5173, proxies `/api` to the API on :3000; start it with `pnpm --filter @acme/api dev`).
+| Command | Does |
+|---|---|
+| `pnpm dev` | API (watch) + web (Vite) together |
+| `pnpm build` | Typecheck all packages, build the web app (the API runs TypeScript directly, no build) |
+| `pnpm start` | API in production mode + built web app via `vite preview` |
+| `pnpm db:migrate` / `db:seed` / `db:setup` | Migrate, seed, or both |
+| `pnpm check` | Typecheck, lint, format, DB types up to date, all tests |
 
-After changing a migration: `pnpm --filter @acme/db migrate && pnpm --filter @acme/db db:types`.
+After changing a migration: `pnpm db:migrate && pnpm --filter @acme/db db:types`.
