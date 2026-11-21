@@ -15,11 +15,13 @@
   },
   "devDependencies": {
     "@types/pg": "^8.23.1",
+    "@types/pg-cursor": "^2.7.2",
     "kysely-codegen": "^0.20.0"
   },
   "dependencies": {
     "@acme/shared": "workspace:*",
     "kysely": "0.29.9",
-    "pg": "^8.23.1"
+    "pg": "^8.23.1",
+    "pg-cursor": "2.22.1"
   }
 }

@@ -1,9 +1,10 @@
 import { EmployeeRepository } from '@acme/db';
 import { createTestDb, resetDb } from '@acme/db/testing';
-import type { EmployeeCreate } from '@acme/shared';
+import { type EmployeeCreate, getCountry } from '@acme/shared';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { buildApp } from '../../app.ts';
 import { loginCookie } from '../../testing.ts';
+import { csvRow, formatMajor } from './csv.ts';
 
 const db = createTestDb();
 beforeEach(() => resetDb(db));
@@ -253,6 +254,51 @@ describe('GET /api/employees/export.csv', () => {
     const all = await get('/api/employees/export.csv');
     expect(all.body).toContain(`"'=cmd, ""x"""`);
     expect(all.body).toContain('3800000.00');
+    await app.close();
+  });
+});
+
+describe('GET /api/employees/export.csv streaming', () => {
+  it('produces exactly the text the old in-memory builder produced', async () => {
+    const { app, get, seed } = await setup();
+    await seed({ fullName: 'Zed', email: 'z@x.example', salaryMinor: 5 });
+    await seed({ fullName: '@sum, "q"', email: 'q@x.example', countryCode: 'JP', salaryMinor: 7 });
+    await seed({ fullName: 'Anna', email: 'a@x.example', countryCode: 'DE', salaryMinor: 123_456 });
+    const rows = await db
+      .selectFrom('employees')
+      .selectAll()
+      .orderBy('fullName', 'desc')
+      .orderBy('id')
+      .execute();
+    const header = ['Code', 'Name', 'Email', 'Department', 'Job title', 'Level', 'Country'];
+    const expected =
+      csvRow([
+        ...header,
+        'Employment type',
+        'Gender',
+        'Hire date',
+        'Annual salary',
+        'Currency',
+      ]) +
+      rows
+        .map((e) =>
+          csvRow([
+            e.employeeCode,
+            e.fullName,
+            e.email,
+            e.department,
+            e.jobTitle,
+            e.level,
+            e.countryCode,
+            e.employmentType,
+            e.gender,
+            e.hireDate,
+            formatMajor(e.salaryMinor, e.countryCode),
+            getCountry(e.countryCode).currency,
+          ]),
+        )
+        .join('');
+    expect((await get('/api/employees/export.csv?sort=name:desc')).body).toBe(expected);
     await app.close();
   });
 });
