@@ -24,7 +24,10 @@ Full design: [system-design.md](system-design.md)
 | Auth | Session cookie in Postgres, argon2id | JWT in localStorage | Safe from XSS, can log out for real |
 | Money | Integer minor units, local currency | Floats, FX conversion | No rounding errors; no external rates |
 | Salary type | `BIGINT`, annual gross base, minor units | `INTEGER` | Some currencies overflow 2.1 billion |
-| Job title, department, level | Fixed lists in `shared/constants.ts` | Free text, lookup tables | Simple check, no typo groups; can move to a table later |
+| Countries | All ISO countries from `countries-list` (currency) + built-in `Intl` (names, currency decimals) | Hand-written 8-country list | Dynamic, maintained data; money formatted as `en-<country>` |
+| Departments, job titles | DB tables (`departments`, `job_titles`), seeded; composite FK `(department, job_title)` on employees | Code constants; a job-title package (O*NET/ESCO) | They are ACME's own structure, no package fits; FK makes Postgres reject a title outside its department |
+| Levels, employment types, genders | Code constants + Postgres enums | Packages / DB tables | Logic depends on them: level order (sort, bands), pay factors and compa bands, gender-gap maths |
+| Backend structure | Classes for repositories (SQL) and services (rules), wired in `app.ts`; pure helpers stay functions | All functions | Dependencies injected once; services unit-testable with fake repositories |
 | Gender | `female`, `male` (required) | More options | Kept simple for v1 |
 | List filters | Contract in [api.md](api.md) | Ad hoc params | One schema for API and UI |
 | Salary change | Own endpoint `POST /employees/:id/salary-changes` | Inside `PATCH /employees/:id` | Reason + history rules stay in one place |
@@ -100,6 +103,7 @@ The hardest parts (insights, special indexes) would be raw SQL in Prisma anyway,
 | Restore deleted employee | Rare; data is kept, can be added later |
 | Mobile layout, dark mode | HR works on desktop |
 | Manager / org chart | Not needed for pay questions |
+| Screen to edit departments / job titles | Seeded once; rare changes can be a migration or seed |
 
 ## Changes from system-design.md
 
