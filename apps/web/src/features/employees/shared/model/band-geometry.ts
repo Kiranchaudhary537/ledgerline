@@ -8,61 +8,35 @@ export interface Band {
 
 const clamp = (n: number) => Math.min(100, Math.max(0, n));
 
-export interface RailScale {
+export interface BandScale {
   lo: number;
   hi: number;
 }
 
-/** One scale that fits every band (and value) with 5% padding, so several rails line up. */
-export function railScale(bands: Band[], values: number[] = []): RailScale {
+/** One scale that fits every band (and value) with 5% padding, so several bands line up. */
+export function bandScale(bands: Band[], values: number[] = []): BandScale {
   const min = Math.min(...bands.map((b) => b.min), ...values);
   const max = Math.max(...bands.map((b) => b.max), ...values);
   const pad = (max - min) * 0.05 || Math.abs(min) * 0.05 || 1;
   return { lo: min - pad, hi: max + pad };
 }
 
-export const railPosition = (scale: RailScale, v: number) =>
+export const scalePosition = (scale: BandScale, v: number) =>
   clamp(((v - scale.lo) / (scale.hi - scale.lo || 1)) * 100);
 
-/** Maps money values to 0..100 positions on the rail. Without `scale`, it fits this band and `values`. */
-export function railLayout(
+/** Maps money values to 0..100 positions on the band. Without `scale`, it fits this band and `values`. */
+export function bandLayout(
   band: Band,
   values: number[],
-  scale: RailScale = railScale([band], values),
+  scale: BandScale = bandScale([band], values),
 ) {
-  const at = (v: number) => railPosition(scale, v);
+  const at = (v: number) => scalePosition(scale, v);
   return {
     p25: at(band.p25),
     median: at(band.median),
     p75: at(band.p75),
     values: values.map(at),
   };
-}
-
-export const BAND_MARKS = ['min', 'p25', 'median', 'p75', 'max'] as const;
-export type BandMark = (typeof BAND_MARKS)[number];
-
-/** Step on the cobalt ramp (0 light to 4 dark) of each band mark, shared by every band display. */
-export const MARK_STEP: Record<BandMark, number> = { min: 0, p25: 1, median: 2, p75: 3, max: 4 };
-
-/**
- * The band as four consecutive segments (min→p25, p25→median, median→p75, p75→max), each as a share
- * of the full range, plus the 0..100 position of `value` when given. Equal widths when the band is flat.
- */
-export function bandSegments(band: Band, value?: number) {
-  const span = band.max - band.min;
-  const marks = BAND_MARKS.map((m) => band[m]);
-  const segments = BAND_MARKS.slice(0, -1).map((from, i) => ({
-    from,
-    pct: span > 0 ? ((marks[i + 1]! - marks[i]!) / span) * 100 : 100 / (BAND_MARKS.length - 1),
-  }));
-  const marker =
-    value === undefined
-      ? undefined
-      : span > 0
-        ? Math.min(100, Math.max(0, ((value - band.min) / span) * 100))
-        : 50;
-  return { segments, marker };
 }
 
 export type BandPosition = 'below' | 'lower' | 'upper' | 'above';
@@ -83,4 +57,14 @@ export const POSITION_TEXT: Record<BandPosition, string> = {
 /** Fraction, e.g. 0.094 for +9.4%. Display only; money itself stays in integer minor units. */
 export function percentChange(oldMinor: number, newMinor: number) {
   return Math.round(((newMinor - oldMinor) / oldMinor) * 1000) / 1000;
+}
+
+/** Which labels (by index, left to right) fit: each must sit at least `minGap` percent after the last one kept. */
+export function labelsThatFit(positions: number[], minGap = 20) {
+  const kept: number[] = [];
+  positions.forEach((pos, i) => {
+    const last = kept.at(-1);
+    if (last === undefined || pos - (positions[last] ?? 0) >= minGap) kept.push(i);
+  });
+  return kept;
 }
