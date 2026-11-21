@@ -30,6 +30,16 @@ Full design: [system-design.md](system-design.md)
 | Config | Env checked by Zod at boot | Read env ad hoc | Missing config fails at start, not later |
 | Testing | Vitest only; real Postgres via `docker compose`, rollback per test | Jest, Testcontainers, Playwright | One light tool; real DB, no mocks |
 | Local dev | `docker compose up db` + `pnpm dev` | Local Postgres install | Same DB for everyone |
+| Job title + level | Two fields (`Software Engineer` + `Senior`) | One string | Insights can group by title, level or both |
+| Employee fields | Name, email, code, title, level, dept, country, type, gender, hire date, salary | Manager, city, DOB | Enough for pay questions |
+| Audit | History for salary changes only | Full audit log | Salary is what matters |
+| Server state (UI) | TanStack Query | Redux / RTK | Data lives on server; Query caches, refetches, handles loading/error |
+| UI state | URL (filters, sort, page) + react-hook-form | Redux store | Shareable links; nothing else left to store |
+| Routing | React Router | TanStack Router | Well known, enough for 4 pages |
+| Salary sort | Only when one country is filtered | Always | ₹ vs € can't be compared without FX |
+| Errors | One shared shape + code list ([error-handling.md](error-handling.md)) | Ad hoc errors | Same messages in API and UI |
+| Folder layout | By feature ([structure.md](structure.md)) | By file type | Change one feature in one place |
+| UI design | `frontend-design` skill | Default shadcn look | Avoid the templated AI look |
 | Architecture | Modular monolith | Microservices | One team, ~5 req/s |
 | Commits | Conventional Commits on `main` | Feature branches + PRs | Solo dev; history easy to read |
 
@@ -57,6 +67,10 @@ Full design: [system-design.md](system-design.md)
 | Cache, queue, load balancer | 10k rows, ~5 req/s – not needed yet (see Phase 2) |
 | Observability stack | Request logs are enough for ~10 users |
 | End-to-end browser tests (Playwright) | Heavy; unit + API tests cover the logic |
+| Full audit log (non-salary edits) | Salary history covers the core need |
+| Restore deleted employee | Rare; data is kept, can be added later |
+| Mobile layout, dark mode | HR works on desktop |
+| Manager / org chart | Not needed for pay questions |
 
 ## Changes from system-design.md
 
@@ -65,4 +79,5 @@ Full design: [system-design.md](system-design.md)
 | USD conversion in insights | Local currency only | No FX rates to maintain |
 | Salary change via `PATCH` | Separate `salary-changes` endpoint | Simpler rules per endpoint |
 | Insights API fixed | Designed when we build it | Build employees first |
+| `services/` + `repositories/` folders | Feature modules in `api`, SQL in `packages/db` | Same layers, split by package |
 
