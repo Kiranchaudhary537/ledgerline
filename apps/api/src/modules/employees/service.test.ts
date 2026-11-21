@@ -72,12 +72,14 @@ describe('EmployeeService', () => {
 
   it('builds a CSV with a header, major-unit salary and currency', async () => {
     const service = serviceWith({
-      export: async () => [
-        row,
-        { ...row, fullName: '=cmd,"x"', countryCode: 'JP', salaryMinor: 9_000_000 },
-      ],
+      export: async function* () {
+        yield row;
+        yield { ...row, fullName: '=cmd,"x"', countryCode: 'JP', salaryMinor: 9_000_000 };
+      },
     });
-    const lines = (await service.exportCsv({}, 'name:asc')).split('\r\n');
+    let csv = '';
+    for await (const chunk of service.exportCsv({}, 'name:asc')) csv += chunk;
+    const lines = csv.split('\r\n');
     expect(lines[0]).toBe(
       'Code,Name,Email,Department,Job title,Level,Country,Employment type,Gender,Hire date,Annual salary,Currency',
     );

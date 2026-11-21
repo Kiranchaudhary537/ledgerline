@@ -269,7 +269,9 @@ describe('exportEmployees', () => {
       { fullName: 'X', countryCode: 'DE' },
       { fullName: 'Gone', countryCode: 'IN', deletedAt: new Date() },
     ]);
-    const rows = await employees.export({ country: ['IN'] }, 'salary:desc');
-    expect(rows.map((e) => e.fullName)).toEqual(['A', 'B']);
+    const names: string[] = [];
+    for await (const e of employees.export({ country: ['IN'] }, 'salary:desc'))
+      names.push(e.fullName);
+    expect(names).toEqual(['A', 'B']);
   });
 });

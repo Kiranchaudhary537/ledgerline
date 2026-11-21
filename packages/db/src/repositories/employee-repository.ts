@@ -1,4 +1,7 @@
 import {
+  config,
+  LEVELS,
+  type Level,
   type EmployeeCreate,
   type EmployeeFacets,
   type Facet,
@@ -105,28 +108,50 @@ export class EmployeeRepository {
     return { data, total: count.total };
   }
 
-  /** Counts per value; each dimension applies every filter except its own. */
+  /**
+   * Counts per value; each dimension applies every filter except its own.
+   * One scan: rows are grouped once per dimension (GROUPING SETS), and each dimension's count only
+   * counts the rows that pass the other dimensions' filters (FILTER). Only the search and
+   * soft-delete filters, which every dimension shares, narrow the scan itself.
+   */
   async facets(filters: Filters): Promise<EmployeeFacets> {
     const dimensions = Object.keys(FACET_COLUMNS) as (keyof EmployeeFacets)[];
-    const lists = await Promise.all(dimensions.map((d) => this.facet(d, filters)));
-    return Object.fromEntries(dimensions.map((d, i) => [d, lists[i]])) as unknown as EmployeeFacets;
-  }
-
-  private async facet(dimension: keyof EmployeeFacets, filters: Filters): Promise<Facet[]> {
-    const column = `employees.${FACET_COLUMNS[dimension]}` as const;
+    const column = (d: keyof EmployeeFacets) => `employees.${FACET_COLUMNS[d]}` as const;
     const rows = await this.db
       .selectFrom('employees')
-      .select([`${column} as value`, (eb) => eb.fn.countAll<number>().as('count')])
-      .where((eb) => employeeFilters(eb, { ...filters, [dimension]: undefined }))
-      .groupBy(column)
-      .$call((qb) =>
-        dimension === 'level'
-          ? qb.orderBy(column) // enum: declaration order is seniority
-          : qb.orderBy('count', 'desc').orderBy(column),
+      .select((eb) => [
+        ...dimensions.map((d) => sql<string | null>`${sql.ref(column(d))}::text`.as(d)),
+        ...dimensions.map((d) =>
+          eb.fn
+            .countAll<number>()
+            .filterWhere((fb) => employeeFilters(fb, { ...filters, [d]: undefined }))
+            .as(`${d}Count`),
+        ),
+      ])
+      .where((eb) => employeeFilters(eb, { q: filters.q }))
+      .groupBy(
+        sql`grouping sets (${sql.join(dimensions.map((d) => sql`(${sql.ref(column(d))})`))})`,
       )
       .execute();
-    const facets = rows.map((r) => ({ value: String(r.value), count: Number(r.count) }));
-    const missing = (filters[dimension] ?? []).filter((v) => !facets.some((f) => f.value === v));
+    return Object.fromEntries(
+      dimensions.map((d) => [d, this.facetFor(d, rows, filters[d] ?? [])]),
+    ) as unknown as EmployeeFacets;
+  }
+
+  private facetFor(
+    dimension: keyof EmployeeFacets,
+    rows: Record<string, string | number | null>[],
+    selected: string[],
+  ): Facet[] {
+    const facets = rows
+      .filter((r) => r[dimension] !== null && Number(r[`${dimension}Count`]) > 0)
+      .map((r) => ({ value: String(r[dimension]), count: Number(r[`${dimension}Count`]) }))
+      .sort((a, b) =>
+        dimension === 'level'
+          ? LEVELS.indexOf(a.value as Level) - LEVELS.indexOf(b.value as Level)
+          : b.count - a.count || (a.value < b.value ? -1 : 1),
+      );
+    const missing = selected.filter((v) => !facets.some((f) => f.value === v));
     return [...facets, ...missing.map((value) => ({ value, count: 0 }))];
   }
 
@@ -239,8 +264,8 @@ export class EmployeeRepository {
       .execute();
   }
 
-  export(filters: Filters, sort: SortOption): Promise<Employee[]> {
-    // shortcut: loads every row into memory (fine at ~10k); stream with a cursor if it grows to 100k+.
+  /** Rows arrive in batches from a cursor, so memory stays flat however many employees match. */
+  export(filters: Filters, sort: SortOption): AsyncIterableIterator<Employee> {
     const [column, dir] = parseSort(sort);
     return this.db
       .selectFrom('employees')
@@ -248,6 +273,6 @@ export class EmployeeRepository {
       .where((eb) => employeeFilters(eb, filters))
       .orderBy(column, dir)
       .orderBy('employees.id')
-      .execute();
+      .stream(config.csv.streamBatchRows);
   }
 }

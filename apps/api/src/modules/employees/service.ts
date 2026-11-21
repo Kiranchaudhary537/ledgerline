@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import type { Employee as DbEmployee, EmployeeRepository, MutationResult } from '@acme/db';
 import {
   type Employee,
@@ -42,6 +43,21 @@ const CSV_HEADER = [
   'Hire date',
   'Annual salary',
   'Currency',
+];
+
+const csvCells = (e: DbEmployee) => [
+  e.employeeCode,
+  e.fullName,
+  e.email,
+  e.department,
+  e.jobTitle,
+  e.level,
+  e.countryCode,
+  e.employmentType,
+  e.gender,
+  e.hireDate,
+  formatMajor(e.salaryMinor, e.countryCode),
+  getCountry(e.countryCode).currency,
 ];
 
 const iso = (d: Date | string) => new Date(d).toISOString();
@@ -105,24 +121,14 @@ export class EmployeeService {
     return rows.map((r) => ({ ...r, changedAt: iso(r.changedAt) }));
   }
 
-  async exportCsv(filters: Filters, sort: SortOption): Promise<string> {
-    const rows = await this.employees.export(filters, sort);
-    const lines = rows.map((e) =>
-      csvRow([
-        e.employeeCode,
-        e.fullName,
-        e.email,
-        e.department,
-        e.jobTitle,
-        e.level,
-        e.countryCode,
-        e.employmentType,
-        e.gender,
-        e.hireDate,
-        formatMajor(e.salaryMinor, e.countryCode),
-        getCountry(e.countryCode).currency,
-      ]),
+  /** Lazy: each line is built as its row arrives, so the response can stream. */
+  exportCsv(filters: Filters, sort: SortOption): Readable {
+    const rows = this.employees.export(filters, sort);
+    return Readable.from(
+      (async function* () {
+        yield csvRow(CSV_HEADER);
+        for await (const e of rows) yield csvRow(csvCells(e));
+      })(),
     );
-    return csvRow(CSV_HEADER) + lines.join('');
   }
 }

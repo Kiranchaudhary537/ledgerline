@@ -89,4 +89,24 @@ describe('EmployeeRepository.facets', () => {
       { value: 'DE', count: 0 },
     ]);
   });
+
+  it('with several filters at once, each dimension applies all the others but not its own', async () => {
+    await seed();
+    const data = { department: 'Data', jobTitle: 'Data Analyst' } as const;
+    await add({ email: 'd@x.example', level: 'senior', countryCode: 'DE', ...data });
+    await add({ email: 'e@x.example', level: 'junior' });
+    await add({ email: 'f@x.example', level: 'junior', countryCode: 'DE', ...data });
+    const f = await employees.facets({ country: ['IN'], level: ['junior'], department: ['Data'] });
+    expect(f.country).toEqual([
+      { value: 'DE', count: 1 },
+      { value: 'IN', count: 1 },
+    ]);
+    expect(f.level).toEqual([{ value: 'junior', count: 1 }]);
+    expect(f.department).toEqual([
+      { value: 'Data', count: 1 },
+      { value: 'Engineering', count: 1 },
+    ]);
+    expect(f.jobTitle).toEqual([{ value: 'Data Analyst', count: 1 }]);
+    expect(f.gender).toEqual([{ value: 'female', count: 1 }]);
+  });
 });
