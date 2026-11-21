@@ -212,11 +212,11 @@ describe('GET /api/employees/export.csv', () => {
     expect(res.headers['content-disposition']).toBe('attachment; filename="employees.csv"');
     const lines = res.body.trim().split('\r\n');
     expect(lines[0]).toBe(
-      'Code,Name,Email,Department,Job title,Level,Country,Employment type,Gender,Hire date,Annual salary,Currency',
+      'Code,Name,Email,Department,Job title,Level,Country,Employment type,Gender,Hire date,Annual salary,Currency,Compa-ratio',
     );
     expect(lines).toHaveLength(2);
     expect(lines[1]).toMatch(
-      /^[^,]+,Kenji,k@x.example,Engineering,Software Engineer,senior,JP,full_time,female,2021-04-12,3800000,JPY$/,
+      /^[^,]+,Kenji,k@x.example,Engineering,Software Engineer,senior,JP,full_time,female,2021-04-12,3800000,JPY,1.00$/,
     );
     const all = await get('/api/employees/export.csv');
     expect(all.body).toContain(`"'=cmd, ""x"""`);

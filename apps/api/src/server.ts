@@ -8,6 +8,7 @@ const app = buildApp({
   db,
   logger: { level: 'info' },
   cookieSecure: config.NODE_ENV === 'production',
+  trustProxy: config.NODE_ENV === 'production',
 });
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {

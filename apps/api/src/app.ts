@@ -16,6 +16,8 @@ export interface AppOptions {
   logger?: FastifyServerOptions['logger'];
   /** Send the session cookie over HTTPS only. True in production. */
   cookieSecure?: boolean;
+  /** Trust X-Forwarded-* headers. True in production (behind proxies). */
+  trustProxy?: boolean;
 }
 
 declare module 'fastify' {
@@ -25,10 +27,17 @@ declare module 'fastify' {
   }
 }
 
-export function buildApp({ db, logger = true, cookieSecure = false }: AppOptions) {
+export function buildApp({
+  db,
+  logger = true,
+  cookieSecure = false,
+  trustProxy = false,
+}: AppOptions) {
   const app = Fastify({
     logger,
     genReqId: () => randomUUID(),
+    // Behind Vercel → Render: use X-Forwarded-For so rate limits see the real client IP.
+    trustProxy,
     // Replaced by the single line below.
     logController: new LogController({ disableRequestLogging: true }),
   });

@@ -27,7 +27,7 @@ Validation: `packages/shared/src/validation/list-query.ts`
 | `level` | multi | Junior, Mid, Senior, Lead, Principal |
 | `employmentType` | multi | full_time, part_time, contract |
 | `gender` | multi | female, male |
-| `sort` | `field:asc\|desc` | name, hireDate, level; `salary` only when exactly one country |
+| `sort` | `field:asc\|desc` | name, hireDate, level, compaRatio; `salary` only when exactly one country |
 | `page` | int | ≥ 1, default 1 |
 | `pageSize` | int | default 25, max 100 |
 
@@ -50,13 +50,13 @@ Validation: `packages/shared/src/validation/list-query.ts`
 | `GET /api/meta/filters` | `{ countries: [{ code, name, currency }], departments: [{ name, jobTitles }], levels, employmentTypes, genders }` |
 
 Types (`packages/shared/src/api/employees.ts`):
-- `Employee`: `id, employeeCode, fullName, email, department, jobTitle, level, countryCode, currency, employmentType, gender, hireDate (YYYY-MM-DD), salaryMinor, version, createdAt, updatedAt` (timestamps ISO strings; `currency` derived from the country).
+- `Employee`: `id, employeeCode, fullName, email, department, jobTitle, level, countryCode, currency, employmentType, gender, hireDate (YYYY-MM-DD), salaryMinor, compaRatio, version, createdAt, updatedAt` (timestamps ISO strings; `currency` derived from the country).
 - `SalaryChange`: `id, oldSalaryMinor (null = starting salary), newSalaryMinor, reason, changedAt, changedByName (null = imported)`.
 
 ### CSV export
 
 `text/csv; charset=utf-8`, `Content-Disposition: attachment; filename="employees.csv"`, CRLF rows.
-Columns: Code, Name, Email, Department, Job title, Level, Country, Employment type, Gender, Hire date, Annual salary, Currency.
+Columns: Code, Name, Email, Department, Job title, Level, Country, Employment type, Gender, Hire date, Annual salary, Currency, Compa-ratio.
 
 - Salary is in major units as a plain decimal (`3800000.00`; JPY has no decimals).
 - Fields are quoted per RFC 4180. Values starting with `=`, `+`, `-`, `@`, tab or CR get a leading `'` so spreadsheets do not run them as formulas.

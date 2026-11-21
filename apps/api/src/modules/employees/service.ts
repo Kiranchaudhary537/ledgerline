@@ -107,6 +107,7 @@ const CSV_HEADER = [
   'Hire date',
   'Annual salary',
   'Currency',
+  'Compa-ratio',
 ];
 
 export async function exportCsv(db: Db, filters: Filters, sort: SortOption): Promise<string> {
@@ -128,6 +129,7 @@ export async function exportCsv(db: Db, filters: Filters, sort: SortOption): Pro
           e.hireDate,
           formatMajor(e.salaryMinor, e.countryCode),
           getCountry(e.countryCode).currency,
+          e.compaRatio.toFixed(2),
         ]),
       )
       .join('')

@@ -23,6 +23,8 @@ export interface Employee {
   /** YYYY-MM-DD */
   hireDate: string;
   salaryMinor: number;
+  /** Salary ÷ median of the same country × title × level × employment type (2 decimals). */
+  compaRatio: number;
   version: number;
   createdAt: string;
   updatedAt: string;
