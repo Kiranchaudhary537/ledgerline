@@ -33,9 +33,18 @@ describe('employeeCreateSchema', () => {
     expect(parsed.email).toBe('priya.sharma@acme.example');
   });
 
-  it('rejects a job title from another department', () => {
-    expect(errorsOf(employeeCreateSchema, { ...validEmployee, jobTitle: 'Recruiter' })).toEqual({
-      jobTitle: 'Choose a job title in this department',
+  it('requires a department and job title but leaves the allowed values to the database', () => {
+    expect(employeeCreateSchema.safeParse({ ...validEmployee, department: 'Legal' }).success).toBe(
+      true,
+    );
+    expect(
+      errorsOf(employeeCreateSchema, { ...validEmployee, department: ' ', jobTitle: '' }),
+    ).toEqual({ department: 'Choose a department', jobTitle: 'Choose a job title' });
+  });
+
+  it('rejects a country code that does not exist', () => {
+    expect(errorsOf(employeeCreateSchema, { ...validEmployee, countryCode: 'XX' })).toEqual({
+      countryCode: 'Choose a country',
     });
   });
 

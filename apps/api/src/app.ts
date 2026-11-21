@@ -81,7 +81,7 @@ export function buildApp({
     healthRoutes(routes, { db });
     authRoutes(routes, { db, cookieSecure });
     employeeRoutes(routes, { db });
-    metaRoutes(routes);
+    metaRoutes(routes, { db });
     insightsRoutes(routes, { db });
   });
   return app;

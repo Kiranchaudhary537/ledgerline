@@ -9,16 +9,12 @@
   "excludePattern": "kysely_*",
   "typeMapping": { "int8": "number" },
   "customImports": {
-    "CountryCode": "@acme/shared#CountryCode",
-    "Department": "@acme/shared#Department",
-    "JobTitle": "@acme/shared#JobTitle"
+    "CountryCode": "@acme/shared#CountryCode"
   },
   "overrides": {
     "columns": {
       "countries.code": "CountryCode",
-      "employees.country_code": "CountryCode",
-      "employees.department": "Department",
-      "employees.job_title": "JobTitle"
+      "employees.country_code": "CountryCode"
     }
   }
 }

@@ -12,13 +12,20 @@ export function paramWithDefault<T extends z.ZodType>(schema: T, value: z.output
   return z.preprocess(emptyToUndefined, schema.default(value as never));
 }
 
-/** Comma-separated query param ("IN,DE") → array of allowed values. */
-export function commaList<const T extends readonly [string, ...string[]]>(values: T) {
+/** Department or job title: the allowed values live in the database. */
+export const nameSchema = z.string().trim().min(1).max(80);
+
+/** Comma-separated query param ("IN,DE") → array of values that each match `item`. */
+export function commaList<T extends z.ZodType<unknown, string>>(item: T) {
   return z
     .string()
     .transform((s) => s.split(',').map((v) => v.trim()))
-    .pipe(z.array(z.enum(values)).min(1));
+    .pipe(z.array(item).min(1));
 }
+
+/** Same, for a fixed set of allowed values. */
+export const enumList = <const T extends readonly [string, ...string[]]>(values: T) =>
+  commaList(z.enum(values));
 
 export const emailSchema = z
   .string()

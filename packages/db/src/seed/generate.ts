@@ -4,7 +4,6 @@ import {
   type EmploymentType,
   type Gender,
   getCountry,
-  type JobTitle,
   type Level,
 } from '@acme/shared';
 import {
@@ -25,6 +24,13 @@ import {
   TITLE_WEIGHTS,
   type Weighted,
 } from './data.ts';
+
+/** Looks up a seed table by key; the tables are keyed by plain strings, so a miss is a data bug. */
+function at<T>(table: Record<string, T>, key: string): T {
+  const value = table[key];
+  if (value === undefined) throw new Error(`Seed data has no entry for ${key}`);
+  return value;
+}
 
 /** Fixed "today" for the seed, so output never depends on when it runs. */
 export const REFERENCE_DATE = '2026-11-01';
@@ -72,7 +78,7 @@ function createRandom(seed: number) {
 
 type BandInput = {
   countryCode: CountryCode;
-  jobTitle: JobTitle;
+  jobTitle: string;
   level: Level;
   department?: EmployeeCreate['department'];
   gender?: Gender;
@@ -90,11 +96,11 @@ export function salaryBand({
 }: BandInput): { min: number; max: number } {
   const genderFactor = gender === 'female' && department ? (FEMALE_PAY_FACTOR[department] ?? 1) : 1;
   const midMajor =
-    BASE_PAY[countryCode] *
-    TITLE_FACTOR[jobTitle] *
-    LEVEL_FACTOR[level] *
+    at(BASE_PAY, countryCode) *
+    at(TITLE_FACTOR, jobTitle) *
+    at(LEVEL_FACTOR, level) *
     genderFactor *
-    EMPLOYMENT_FACTOR[employmentType];
+    at(EMPLOYMENT_FACTOR, employmentType);
   const toMinor = 10 ** getCountry(countryCode).minorUnit;
   return {
     min: Math.ceil(midMajor * (1 - BAND_SPREAD) * toMinor),
@@ -129,15 +135,15 @@ export function generateEmployees({
   for (let i = 0; i < count; i++) {
     const countryCode = random.weighted(COUNTRY_WEIGHTS);
     const department = random.weighted(DEPARTMENT_WEIGHTS);
-    const jobTitle = random.weighted(TITLE_WEIGHTS[department]);
+    const jobTitle = random.weighted(at(TITLE_WEIGHTS, department));
     const allowed = ALLOWED_LEVELS[jobTitle];
     const level = allowed
       ? random.weighted(LEVEL_WEIGHTS.filter(([l]) => allowed.includes(l)))
       : random.weighted(LEVEL_WEIGHTS);
-    const gender: Gender = random.next() < FEMALE_SHARE[department] ? 'female' : 'male';
+    const gender: Gender = random.next() < at(FEMALE_SHARE, department) ? 'female' : 'male';
     const employmentType = random.weighted(EMPLOYMENT_WEIGHTS);
 
-    const names = NAMES[countryCode];
+    const names = at(NAMES, countryCode);
     const first = random.pick(names[gender]);
     const last = random.pick(names.last);
     const local = `${toAscii(first)}.${toAscii(last)}`;
@@ -149,7 +155,7 @@ export function generateEmployees({
     const tenureDays = Math.round(random.between(minYears, maxYears) * 365);
     const hireDate = addDays(REFERENCE_DATE, -tenureDays);
 
-    const step = ROUNDING[countryCode] * 10 ** getCountry(countryCode).minorUnit;
+    const step = at(ROUNDING, countryCode) * 10 ** getCountry(countryCode).minorUnit;
     const band = salaryBand({ countryCode, jobTitle, level, department, gender, employmentType });
     // Average of two uniforms: most salaries near the middle of the band, few at the edges.
     const raw = band.min + ((random.next() + random.next()) / 2) * (band.max - band.min);

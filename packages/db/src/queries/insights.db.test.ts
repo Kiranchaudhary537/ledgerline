@@ -49,7 +49,7 @@ beforeAll(async () => {
       ...[100, 101, 101].map((s) =>
         emp({
           department: 'Customer Support',
-          jobTitle: 'Recruiter',
+          jobTitle: 'Support Specialist',
           level: 'junior',
           salaryMinor: s,
         }),

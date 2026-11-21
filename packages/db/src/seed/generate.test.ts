@@ -1,4 +1,5 @@
-import { employeeCreateSchema, isTitleInDepartment, LEVELS } from '@acme/shared';
+import { employeeCreateSchema, LEVELS } from '@acme/shared';
+import { DEPARTMENTS } from './data.ts';
 import { describe, expect, it } from 'vitest';
 import { generateEmployees, REFERENCE_DATE, salaryBand, type SeedEmployee } from './generate.ts';
 
@@ -37,7 +38,11 @@ describe('generateEmployees', () => {
   });
 
   it('keeps job titles inside their department', () => {
-    expect(employees.every((e) => isTitleInDepartment(e.jobTitle, e.department))).toBe(true);
+    expect(
+      employees.every((e) =>
+        (DEPARTMENTS as Record<string, readonly string[]>)[e.department]?.includes(e.jobTitle),
+      ),
+    ).toBe(true);
   });
 
   it('keeps every salary inside its band', () => {

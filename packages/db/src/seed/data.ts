@@ -1,11 +1,16 @@
-import type {
-  CountryCode,
-  Department,
-  EmploymentType,
-  Gender,
-  JobTitle,
-  Level,
-} from '@acme/shared';
+import type { CountryCode, EmploymentType, Gender, Level } from '@acme/shared';
+
+/** The initial org structure: departments and the job titles allowed in each. */
+export const DEPARTMENTS = {
+  Engineering: ['Software Engineer', 'QA Engineer', 'DevOps Engineer', 'Engineering Manager'],
+  Product: ['Product Manager', 'Product Designer'],
+  Data: ['Data Analyst', 'Data Scientist'],
+  Sales: ['Account Executive', 'Sales Development Representative'],
+  Marketing: ['Marketing Manager', 'Content Specialist'],
+  'Customer Support': ['Support Specialist', 'Support Team Lead'],
+  Finance: ['Accountant', 'Financial Analyst'],
+  People: ['HR Business Partner', 'Recruiter'],
+} as const;
 
 /** [value, weight] pairs; weights are relative. */
 export type Weighted<T> = readonly (readonly [T, number])[];
@@ -47,7 +52,7 @@ export const ROUNDING: Record<CountryCode, number> = {
   AU: 1_000,
 };
 
-export const DEPARTMENT_WEIGHTS: Weighted<Department> = [
+export const DEPARTMENT_WEIGHTS: Weighted<string> = [
   ['Engineering', 35],
   ['Sales', 15],
   ['Customer Support', 15],
@@ -58,7 +63,7 @@ export const DEPARTMENT_WEIGHTS: Weighted<Department> = [
   ['Finance', 6],
 ];
 
-export const TITLE_WEIGHTS: Record<Department, Weighted<JobTitle>> = {
+export const TITLE_WEIGHTS: Record<string, Weighted<string>> = {
   Engineering: [
     ['Software Engineer', 65],
     ['QA Engineer', 15],
@@ -96,7 +101,7 @@ export const TITLE_WEIGHTS: Record<Department, Weighted<JobTitle>> = {
 };
 
 /** Pay relative to Software Engineer. */
-export const TITLE_FACTOR: Record<JobTitle, number> = {
+export const TITLE_FACTOR: Record<string, number> = {
   'Software Engineer': 1,
   'QA Engineer': 0.8,
   'DevOps Engineer': 1,
@@ -134,7 +139,7 @@ export const LEVEL_FACTOR: Record<Level, number> = {
 };
 
 /** Manager roles only exist at higher levels. */
-export const ALLOWED_LEVELS: Partial<Record<JobTitle, readonly Level[]>> = {
+export const ALLOWED_LEVELS: Partial<Record<string, readonly Level[]>> = {
   'Engineering Manager': ['senior', 'lead', 'principal'],
   'Marketing Manager': ['mid', 'senior', 'lead', 'principal'],
   'Support Team Lead': ['mid', 'senior', 'lead'],
@@ -149,7 +154,7 @@ export const TENURE_YEARS: Record<Level, readonly [number, number]> = {
   principal: [5, 13],
 };
 
-export const FEMALE_SHARE: Record<Department, number> = {
+export const FEMALE_SHARE: Record<string, number> = {
   Engineering: 0.3,
   Product: 0.45,
   Data: 0.4,
@@ -161,7 +166,7 @@ export const FEMALE_SHARE: Record<Department, number> = {
 };
 
 /** Built-in gap so the gender gap view has something real to show. */
-export const FEMALE_PAY_FACTOR: Partial<Record<Department, number>> = {
+export const FEMALE_PAY_FACTOR: Partial<Record<string, number>> = {
   Engineering: 0.95,
   Sales: 0.94,
 };

@@ -1,11 +1,4 @@
-import type {
-  CountryCode,
-  Department,
-  EmploymentType,
-  Gender,
-  JobTitle,
-  Level,
-} from '../constants.ts';
+import type { CountryCode, EmploymentType, Gender, Level } from '../constants.ts';
 
 /** JSON shape of an employee. Money is integer minor units; dates are ISO strings. */
 export interface Employee {
@@ -13,8 +6,8 @@ export interface Employee {
   employeeCode: string;
   fullName: string;
   email: string;
-  department: Department;
-  jobTitle: JobTitle;
+  department: string;
+  jobTitle: string;
   level: Level;
   countryCode: CountryCode;
   currency: string;
@@ -50,7 +43,7 @@ export interface SalaryChange {
 
 export interface FilterOptions {
   countries: { code: CountryCode; name: string; currency: string }[];
-  departments: { name: Department; jobTitles: JobTitle[] }[];
+  departments: { name: string; jobTitles: string[] }[];
   levels: Level[];
   employmentTypes: EmploymentType[];
   genders: Gender[];

@@ -43,10 +43,14 @@ describe('formatMoney', () => {
   it('formats in the country locale and currency, without trailing zeros', () => {
     expect(formatMoney(380_000_000, 'IN')).toBe('₹38,00,000');
     expect(formatMoney(12_000_000, 'US')).toBe('$120,000');
-    expect(formatMoney(5_000_000, 'JP')).toBe('￥5,000,000');
+    expect(formatMoney(5_000_000, 'JP')).toBe('¥5,000,000');
+  });
+
+  it('formats per en-<country> for countries beyond the original eight', () => {
+    expect(formatMoney(1_234_567, 'KW')).toMatch(/^KWD\s1,234\.567$/);
   });
 
   it('keeps minor units when present', () => {
-    expect(formatMoney(8_500_050, 'DE')).toBe('85.000,50 €');
+    expect(formatMoney(8_500_050, 'DE')).toBe('€85,000.50');
   });
 });

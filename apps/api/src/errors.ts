@@ -36,6 +36,15 @@ function classify(err: ErrorLike): { code: ErrorCode; fields?: Record<string, st
   if (err.code === '23505' && err.constraint === 'employees_email_active') {
     return { code: 'EMAIL_TAKEN', fields: { email: 'Already in use' } };
   }
+  if (err.code === '23503' && err.constraint === 'employees_department_job_title_fkey') {
+    return {
+      code: 'VALIDATION_FAILED',
+      fields: { jobTitle: 'Choose a job title in this department' },
+    };
+  }
+  if (err.code === '23503' && err.constraint === 'employees_country_code_fkey') {
+    return { code: 'VALIDATION_FAILED', fields: { countryCode: 'Choose a country' } };
+  }
   if (err.code && CONNECTION_ERRORS.has(err.code)) return { code: 'SERVICE_UNAVAILABLE' };
   if (err.statusCode === 429) return { code: 'RATE_LIMITED' };
   // Fastify's own client errors: malformed JSON, body too large, wrong content type…

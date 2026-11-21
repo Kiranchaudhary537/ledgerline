@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { commaList, paramWithDefault } from './common.ts';
+import { enumList, paramWithDefault } from './common.ts';
 import { filterFields } from './list-query.ts';
 
 export const DIMENSIONS = [
@@ -13,7 +13,7 @@ export const DIMENSIONS = [
 export type Dimension = (typeof DIMENSIONS)[number];
 
 function groupBy<const T extends readonly [string, ...string[]]>(dimensions: T) {
-  return commaList(dimensions)
+  return enumList(dimensions)
     .pipe(z.array(z.string()).max(2, { error: 'Group by at most 2 fields' }))
     .refine((dims) => new Set(dims).size === dims.length, { error: 'Group by each field once' });
 }

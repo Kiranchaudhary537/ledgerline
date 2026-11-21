@@ -1,8 +1,10 @@
 export * from './client.ts';
 export * from './countries.ts';
+export * from './departments.ts';
 export * from './migrate.ts';
 export type * from './types.ts';
 export * from './password.ts';
+export * from './queries/departments.ts';
 export * from './queries/employees.ts';
 export * from './queries/filters.ts';
 export * from './queries/insights.ts';

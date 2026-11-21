@@ -59,6 +59,13 @@ describe('employees table', () => {
     });
   });
 
+  it('rejects a job title that does not belong to the department', async () => {
+    await expect(insert(employee({ jobTitle: 'Recruiter' }))).rejects.toMatchObject({
+      code: '23503',
+      constraint: 'employees_department_job_title_fkey',
+    });
+  });
+
   it('sorts levels by seniority, not alphabetically', async () => {
     for (const [i, level] of (
       ['principal', 'junior', 'lead', 'mid', 'senior'] as const
