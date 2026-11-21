@@ -10,7 +10,7 @@ import { api } from '@/lib/api';
 import { formatPercent, money, parseMoney } from '@/lib/format';
 import { bandPosition, percentChange, POSITION_TEXT } from './band-geometry';
 import { BandRail } from './band-rail';
-import { Field, fieldProps, handleSaveError, StaleBanner } from './form-parts';
+import { Field, fieldProps, handleSaveError, parseAmount, StaleBanner } from './form-parts';
 import { employeeKey, employeesKey, fetchEmployee } from './queries';
 
 interface FormValues {
@@ -26,7 +26,7 @@ export function SalaryChangeDialog({
   onOpenChange,
 }: {
   employee: Employee;
-  band: StatsRow | undefined;
+  band: Band;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -42,13 +42,67 @@ export function SalaryChangeDialog({
   );
 }
 
+type Band = StatsRow | undefined;
+
+function useChangeSalary(
+  employee: Employee,
+  onDone: () => void,
+  fieldError: (name: string, message: string) => boolean,
+  onStale: () => void,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: unknown) =>
+      api<Employee>(`/api/employees/${employee.id}/salary-changes`, { method: 'POST', body }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: employeesKey });
+      await queryClient.invalidateQueries({ queryKey: ['insights'] });
+      toast.success('Salary changed');
+      onDone();
+    },
+    onError: (error) => handleSaveError(error, fieldError, onStale),
+  });
+}
+
+function ProposalSummary({
+  employee,
+  band,
+  proposed,
+}: {
+  employee: Employee;
+  band: Band;
+  proposed: number | null;
+}) {
+  const valid = proposed !== null && proposed > 0;
+  return (
+    <div className="space-y-1">
+      {band && (
+        <BandRail
+          band={band}
+          countryCode={employee.countryCode}
+          markers={[
+            { value: employee.salaryMinor, kind: 'current' },
+            ...(valid ? [{ value: proposed, kind: 'proposed' as const }] : []),
+          ]}
+        />
+      )}
+      <p className="tnum text-xs text-muted-foreground" aria-live="polite">
+        {valid
+          ? `${formatPercent(percentChange(employee.salaryMinor, proposed))} from today` +
+            (band ? `, ${POSITION_TEXT[bandPosition(proposed, band)]}` : '')
+          : 'Type the new salary to see where it lands in the band.'}
+      </p>
+    </div>
+  );
+}
+
 function SalaryChangeForm({
   employee,
   band,
   onDone,
 }: {
   employee: Employee;
-  band: StatsRow | undefined;
+  band: Band;
   onDone: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -60,10 +114,7 @@ function SalaryChangeForm({
     watch,
     formState: { errors },
   } = useForm<FormValues>({ defaultValues: { newSalary: '', reason: '' } });
-
   const { countryCode, currency } = employee;
-  const proposed = parseMoney(watch('newSalary'), countryCode);
-  const valid = proposed !== null && proposed > 0;
 
   const fieldError = (name: string, message: string) => {
     const field = name === 'newSalaryMinor' ? 'newSalary' : name;
@@ -71,24 +122,13 @@ function SalaryChangeForm({
     setError(field, { message });
     return true;
   };
-
-  const change = useMutation({
-    mutationFn: (body: unknown) =>
-      api<Employee>(`/api/employees/${employee.id}/salary-changes`, { method: 'POST', body }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: employeesKey });
-      await queryClient.invalidateQueries({ queryKey: ['insights'] });
-      toast.success('Salary changed');
-      onDone();
-    },
-    onError: (error) => handleSaveError(error, fieldError, () => setStale(true)),
-  });
+  const change = useChangeSalary(employee, onDone, fieldError, () => setStale(true));
 
   function submit(v: FormValues) {
-    const newSalaryMinor = parseMoney(v.newSalary, countryCode);
-    if (newSalaryMinor === null) {
-      return setError('newSalary', { message: 'Enter an amount such as 19,50,000' });
-    }
+    const newSalaryMinor = parseAmount(v.newSalary, countryCode, (message) =>
+      setError('newSalary', { message }),
+    );
+    if (newSalaryMinor === null) return;
     const parsed = salaryChangeSchema.safeParse({
       newSalaryMinor,
       reason: v.reason,
@@ -127,26 +167,11 @@ function SalaryChangeForm({
       <Field id="reason" label="Reason" error={reasonError}>
         <Input {...fieldProps('reason', reasonError)} autoComplete="off" {...register('reason')} />
       </Field>
-
-      <div className="space-y-1">
-        {band && (
-          <BandRail
-            band={band}
-            countryCode={countryCode}
-            markers={[
-              { value: employee.salaryMinor, kind: 'current' },
-              ...(valid ? [{ value: proposed, kind: 'proposed' as const }] : []),
-            ]}
-          />
-        )}
-        <p className="tnum text-xs text-muted-foreground" aria-live="polite">
-          {valid
-            ? `${formatPercent(percentChange(employee.salaryMinor, proposed))} from today` +
-              (band ? `, ${POSITION_TEXT[bandPosition(proposed, band)]}` : '')
-            : 'Type the new salary to see where it lands in the band.'}
-        </p>
-      </div>
-
+      <ProposalSummary
+        employee={employee}
+        band={band}
+        proposed={parseMoney(watch('newSalary'), countryCode)}
+      />
       <div className="flex gap-2">
         <Button type="submit" disabled={change.isPending}>
           {change.isPending ? 'Saving…' : 'Change salary'}
