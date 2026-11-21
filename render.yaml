@@ -7,7 +7,7 @@ databases:
 
 services:
   - type: web
-    name: ledgerline-api # URL becomes https://ledgerline-api-teue.onrender.com (use it in apps/web/vercel.json)
+    name: ledgerline-api # URL becomes https://ledgerline-api-1a43.onrender.com (use it in apps/web/vercel.json)
     runtime: node
     plan: free # sleeps after 15 min idle; no shell; no preDeployCommand
     region: singapore

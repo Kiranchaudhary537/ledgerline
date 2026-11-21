@@ -24,7 +24,7 @@ On a paid web service you can use the Render Shell instead.
 
 ## 3. Vercel (web)
 
-1. `apps/web/vercel.json` already points `/api/*` to `https://ledgerline-api-teue.onrender.com`. If Render had to rename the service (name taken), update that host, commit, push.
+1. `apps/web/vercel.json` already points `/api/*` to `https://ledgerline-api-1a43.onrender.com`. If Render had to rename the service (name taken), update that host, commit, push.
 2. Vercel, Add New Project, import the repo, set **Project Name** to `ledgerline` (the URL becomes `https://ledgerline-theta-bice.vercel.app`) and **Root Directory** to `apps/web`. Leave the build settings alone: `vercel.json` sets them. Keep "Include source files outside of the Root Directory" on (default) so the workspace install works.
 3. Deploy.
 

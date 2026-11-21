@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://ledgerline-api-teue.onrender.com/api/:path*"
+      "destination": "https://ledgerline-api-1a43.onrender.com/api/:path*"
     },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
