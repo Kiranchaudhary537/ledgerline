@@ -1,4 +1,4 @@
-import type { Employee } from '@acme/shared';
+import { config, type Employee } from '@acme/shared';
 import {
   createColumnHelper,
   flexRender,
@@ -37,8 +37,8 @@ const SORT_FIELD: Record<string, string> = {
 const RIGHT = new Set(['salary', 'compaRatio']);
 
 function CompaRatio({ value }: { value: number }) {
-  const low = value < 0.85;
-  const high = value > 1.15;
+  const low = value < config.compaRatio.extremeLow;
+  const high = value > config.compaRatio.extremeHigh;
   return (
     <span className={cn('tnum', (low || high) && 'font-semibold text-destructive')}>
       {(low || high) && (
@@ -113,7 +113,6 @@ export function EmployeesPage() {
     setParams(listToParams(parseListState(listToParams(next))), { replace });
   }
 
-  // Search: local text, pushed to the URL 300 ms after typing stops, 2+ characters only.
   const [text, setText] = useState(state.q);
   const pushed = useRef(state.q);
   useEffect(() => {
@@ -124,11 +123,12 @@ export function EmployeesPage() {
   }, [state.q]);
   useEffect(() => {
     const value = text.trim();
-    if (value === pushed.current || value.length === 1) return;
+    if (value === pushed.current || (value.length > 0 && value.length < config.search.minLength))
+      return;
     const timer = setTimeout(() => {
       pushed.current = value;
       update({ q: value }, true);
-    }, 300);
+    }, config.ui.searchDebounceMs);
     return () => clearTimeout(timer);
   }, [text]);
 

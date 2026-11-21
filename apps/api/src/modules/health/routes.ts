@@ -1,9 +1,6 @@
-import { type Db, ping } from '@acme/db';
 import type { FastifyInstance } from 'fastify';
+import type { HealthService } from './service.ts';
 
-export function healthRoutes(app: FastifyInstance, { db }: { db: Db }) {
-  app.get('/api/health', async () => {
-    await ping(db); // throws a connection error → 503 via the error handler
-    return { status: 'ok' };
-  });
+export function healthRoutes(app: FastifyInstance, { health }: { health: HealthService }) {
+  app.get('/api/health', () => health.check());
 }

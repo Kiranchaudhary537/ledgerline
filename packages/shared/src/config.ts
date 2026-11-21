@@ -74,6 +74,11 @@ export const config = deepFreeze({
     filename: 'employees.csv', // name offered by the browser when exporting
   },
 
+  ui: {
+    searchDebounceMs: 300, // milliseconds: wait for a pause in typing before querying
+    queryRetries: 2, // retries for failed reads (5xx / network only; 4xx never retry)
+  },
+
   seed: {
     employeeCount: 10_000, // rows: enough for realistic insights, still seeds in seconds
     randomSeed: 42, // PRNG seed: same data on every run

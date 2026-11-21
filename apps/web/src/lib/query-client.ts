@@ -1,3 +1,4 @@
+import { config } from '@acme/shared';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ApiError } from './api.ts';
@@ -12,7 +13,8 @@ export function createQueryClient(onUnauthenticated: () => void) {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        retry: (count, error) => !(error instanceof ApiError && error.status < 500) && count < 2,
+        retry: (count, error) =>
+          !(error instanceof ApiError && error.status < 500) && count < config.ui.queryRetries,
         refetchOnWindowFocus: false,
       },
     },

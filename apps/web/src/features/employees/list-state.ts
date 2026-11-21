@@ -1,4 +1,4 @@
-import { SORT_OPTIONS } from '@acme/shared';
+import { config, SORT_OPTIONS } from '@acme/shared';
 
 export const MULTI_KEYS = [
   'country',
@@ -11,7 +11,7 @@ export const MULTI_KEYS = [
 export type MultiKey = (typeof MULTI_KEYS)[number];
 
 export const DEFAULT_SORT = 'name:asc';
-export const PAGE_SIZE = 25;
+export const PAGE_SIZE = config.paging.defaultPageSize;
 
 export type ListState = { q: string; sort: string; page: number } & Record<MultiKey, string[]>;
 

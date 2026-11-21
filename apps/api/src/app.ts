@@ -17,6 +17,7 @@ import { authRoutes } from './modules/auth/routes.ts';
 import { EmployeeService } from './modules/employees/service.ts';
 import { employeeRoutes } from './modules/employees/routes.ts';
 import { healthRoutes } from './modules/health/routes.ts';
+import { HealthService } from './modules/health/service.ts';
 import { insightsRoutes } from './modules/insights/routes.ts';
 import { InsightsService } from './modules/insights/service.ts';
 import { metaRoutes } from './modules/meta/routes.ts';
@@ -91,11 +92,12 @@ export function buildApp({
   const employees = new EmployeeService(new EmployeeRepository(db));
   const insights = new InsightsService(new InsightsRepository(db));
   const meta = new MetaService(new DepartmentRepository(db));
+  const health = new HealthService(db);
 
   authPlugin(app, { auth });
   // Registered after the plugins above load, so they apply to every route.
   app.register(async (routes) => {
-    healthRoutes(routes, { db });
+    healthRoutes(routes, { health });
     authRoutes(routes, { auth, cookieSecure });
     employeeRoutes(routes, { employees });
     metaRoutes(routes, { meta });
