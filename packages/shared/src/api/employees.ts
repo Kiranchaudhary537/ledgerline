@@ -48,3 +48,18 @@ export interface FilterOptions {
   employmentTypes: EmploymentType[];
   genders: Gender[];
 }
+
+export interface Facet {
+  value: string;
+  count: number;
+}
+
+/** Per dimension: the values that exist, counted with every other active filter applied. */
+export interface EmployeeFacets {
+  country: Facet[];
+  department: Facet[];
+  jobTitle: Facet[];
+  level: Facet[];
+  employmentType: Facet[];
+  gender: Facet[];
+}
