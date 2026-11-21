@@ -35,6 +35,32 @@ Validation: `packages/shared/src/validation/list-query.ts`
 - Deleted employees never returned.
 - Response: `{ data: Employee[], page, pageSize, total }`.
 
+## Employees
+
+| Endpoint | Result |
+|---|---|
+| `GET /api/employees` | `{ data: Employee[], page, pageSize, total }` (filters above) |
+| `GET /api/employees/:id` | `Employee`, or `404 NOT_FOUND` (deleted, missing or non-numeric id) |
+| `POST /api/employees` | `201 Employee`; duplicate active email → `409 EMAIL_TAKEN` with `fields.email` |
+| `PATCH /api/employees/:id` `{ ...fields, version }` | `Employee` (version + 1); no salary here. Stale → `409 STALE_VERSION`. Sending only one of `department` / `jobTitle` checks the pair against the stored employee → `400` with `fields.jobTitle` |
+| `DELETE /api/employees/:id` | `204` (soft delete), or `404` |
+| `POST /api/employees/:id/salary-changes` `{ newSalaryMinor, reason, version }` | `Employee`; writes a history row in the same transaction. Stale → `409`, missing → `404` |
+| `GET /api/employees/:id/salary-history` | `SalaryChange[]`, newest first; `404` if the employee does not exist |
+| `GET /api/employees/export.csv` | Same filters and `sort` as the list, no paging |
+| `GET /api/meta/filters` | `{ countries: [{ code, name, currency }], departments: [{ name, jobTitles }], levels, employmentTypes, genders }` |
+
+Types (`packages/shared/src/api/employees.ts`):
+- `Employee`: `id, employeeCode, fullName, email, department, jobTitle, level, countryCode, currency, employmentType, gender, hireDate (YYYY-MM-DD), salaryMinor, version, createdAt, updatedAt` (timestamps ISO strings; `currency` derived from the country).
+- `SalaryChange`: `id, oldSalaryMinor (null = starting salary), newSalaryMinor, reason, changedAt, changedByName (null = imported)`.
+
+### CSV export
+
+`text/csv; charset=utf-8`, `Content-Disposition: attachment; filename="employees.csv"`, CRLF rows.
+Columns: Code, Name, Email, Department, Job title, Level, Country, Employment type, Gender, Hire date, Annual salary, Currency.
+
+- Salary is in major units as a plain decimal (`3800000.00`; JPY has no decimals).
+- Fields are quoted per RFC 4180. Values starting with `=`, `+`, `-`, `@`, tab or CR get a leading `'` so spreadsheets do not run them as formulas.
+
 ## Insights
 
 All take the **same filters as the list** (except `sort`, `page`, `pageSize`). Money is always in one currency:
