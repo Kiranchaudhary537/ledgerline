@@ -24,7 +24,6 @@ export class ApiError extends Error {
 const unavailable = (status = 0) =>
   new ApiError('SERVICE_UNAVAILABLE', ERRORS.SERVICE_UNAVAILABLE.message, status);
 
-/** JSON in, JSON out. 204 → undefined. Any failure throws ApiError. */
 export async function api<T = undefined>(
   path: string,
   opts: { method?: string; body?: unknown } = {},

@@ -1,6 +1,7 @@
-import type { Employee, EmployeeList, FilterOptions, SalaryChange, StatsRow } from '@acme/shared';
+import type { Employee, EmployeeList, FilterOptions, SalaryChange } from '@acme/shared';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { useStatsQuery } from '@/lib/stats-query';
 import { listToApiParams, type ListState } from './list-state';
 
 /** Everything under ['employees'] is refreshed together after a write. */
@@ -34,7 +35,6 @@ export const useSalaryHistory = (id: string) =>
     queryFn: () => api<SalaryChange[]>(`/api/employees/${id}/salary-history`),
   });
 
-/** The pay band of this person's country, title, level and employment type. */
 export function useBand(e: Employee | undefined) {
   const params = new URLSearchParams(
     e
@@ -47,10 +47,6 @@ export function useBand(e: Employee | undefined) {
         }
       : {},
   );
-  return useQuery({
-    queryKey: ['insights', 'stats', params.toString()],
-    queryFn: () => api<StatsRow[]>(`/api/insights/stats?${params}`),
-    enabled: !!e,
-    select: (rows) => rows[0],
-  });
+  const stats = useStatsQuery(params, !!e);
+  return { ...stats, data: stats.data?.[0] };
 }

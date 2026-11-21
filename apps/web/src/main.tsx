@@ -7,9 +7,12 @@ import { createQueryClient } from '@/lib/query-client';
 import { goToLogin, router } from '@/router';
 import './index.css';
 
+const root = document.getElementById('root');
+if (!root) throw new Error('index.html is missing the #root element');
+
 const queryClient = createQueryClient(() => goToLogin(router));
 
-createRoot(document.getElementById('root')!).render(
+createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />

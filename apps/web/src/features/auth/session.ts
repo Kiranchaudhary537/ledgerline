@@ -1,8 +1,9 @@
+import { config } from '@acme/shared';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
 export interface SessionUser {
-  id: string;
+  id: number;
   email: string;
   name: string;
 }
@@ -13,7 +14,7 @@ export const useSession = () =>
   useQuery({
     queryKey: sessionKey,
     queryFn: () => api<{ user: SessionUser }>('/api/auth/me'),
-    staleTime: 5 * 60_000,
+    staleTime: config.ui.sessionStaleMs,
   });
 
 export function loginUrl(here: { pathname: string; search: string }) {

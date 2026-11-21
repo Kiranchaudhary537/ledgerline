@@ -1,19 +1,14 @@
-import type { Distribution, GenderGapRow, StatsRow } from '@acme/shared';
+import type { Distribution, GenderGapRow } from '@acme/shared';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { useStatsQuery } from '@/lib/stats-query';
 import { insightsApiParams, type InsightsState } from './insights-state';
 
 const get = <T>(path: string, params: URLSearchParams) => api<T>(`${path}?${params}`);
 
 /** Stats for a grouping. `country` is empty for the all-countries overview. */
-export const useStats = (state: InsightsState, groupBy: string, enabled = true) => {
-  const params = insightsApiParams(state, groupBy);
-  return useQuery({
-    queryKey: ['insights', 'stats', params.toString()],
-    queryFn: () => get<StatsRow[]>('/api/insights/stats', params),
-    enabled,
-  });
-};
+export const useStats = (state: InsightsState, groupBy: string, enabled = true) =>
+  useStatsQuery(insightsApiParams(state, groupBy), enabled);
 
 export const useGenderGap = (state: InsightsState, enabled: boolean) => {
   const params = insightsApiParams(state, 'jobTitle');

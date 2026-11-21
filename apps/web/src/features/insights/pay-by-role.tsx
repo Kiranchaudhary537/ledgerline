@@ -4,15 +4,12 @@ import { Link } from 'react-router';
 import { railPosition, railScale, type RailScale } from '@/features/employees/band-geometry';
 import { BandRail } from '@/features/employees/band-rail';
 import { formatCount, label, money } from '@/lib/format';
+import { td, th } from './insights-ui';
 import { groupByRole, type RoleGroup } from './pay-roles';
 
-export const th =
-  'border-b border-border pr-3 pb-1.5 text-left text-xs font-semibold text-muted-foreground';
-export const td = 'h-9 border-b border-border pr-3 whitespace-nowrap';
 const linkClass =
   'underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 
-/** Median of each level as a lettered tick, joined by a thin line from the lowest to the highest. */
 function PayLadder({
   role,
   scale,
@@ -45,16 +42,95 @@ function PayLadder({
   );
 }
 
+const ladderCell = 'h-9 w-1/2 min-w-48 border-b border-border pr-6';
+
+interface RowProps {
+  role: RoleGroup;
+  scale: RailScale;
+  country: string;
+}
+
+const roleLink = (country: string, jobTitle: string, level?: string) =>
+  `/employees?${new URLSearchParams({ country, jobTitle, ...(level && { level }) })}`;
+
+function RoleRow({
+  role,
+  scale,
+  country,
+  expanded,
+  onToggle,
+}: RowProps & { expanded: boolean; onToggle: () => void }) {
+  return (
+    <tr className="hover:[&>td]:bg-band-soft/40">
+      <td className={td}>
+        <button
+          type="button"
+          aria-expanded={expanded}
+          aria-label={`${role.jobTitle} levels`}
+          onClick={onToggle}
+          className="mr-1 inline-flex size-6 items-center justify-center rounded-sm align-middle text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          <span
+            aria-hidden
+            className={`inline-block motion-safe:transition-transform ${expanded ? 'rotate-90' : ''}`}
+          >
+            ›
+          </span>
+        </button>
+        <Link to={roleLink(country, role.jobTitle)} className={`font-semibold ${linkClass}`}>
+          {role.jobTitle}
+        </Link>
+      </td>
+      <td className={`${td} text-right`}>{formatCount(role.count)}</td>
+      <td className={ladderCell}>
+        <PayLadder role={role} scale={scale} countryCode={country} />
+      </td>
+      <td className={`${td} pr-0 text-right`}>
+        {role.levels.length > 1
+          ? `${money(role.lowMedian, country)} – ${money(role.highMedian, country)}`
+          : money(role.lowMedian, country)}
+      </td>
+    </tr>
+  );
+}
+
+function LevelRow({ role, scale, country, row }: RowProps & { row: StatsRow }) {
+  const level = row.group.level ?? '';
+  return (
+    <tr className="hover:[&>td]:bg-band-soft/40">
+      <td className={`${td} pl-7`}>
+        <Link
+          to={roleLink(country, role.jobTitle, row.group.level)}
+          aria-label={`${role.jobTitle}, ${label(level)}`}
+          className={linkClass}
+        >
+          {label(level)}
+        </Link>
+      </td>
+      <td className={`${td} text-right`}>{formatCount(row.count)}</td>
+      <td className={ladderCell}>
+        <BandRail band={row} countryCode={country} markers={[]} scale={scale} showLabels={false} />
+      </td>
+      <td className={`${td} pr-0 text-right`}>{money(row.median, country)}</td>
+    </tr>
+  );
+}
+
+function useToggleSet() {
+  const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
+  const toggle = (key: string) =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+  return [open, toggle] as const;
+}
+
 export function PayByRole({ rows, country }: { rows: StatsRow[]; country: string }) {
   const scale = useMemo(() => railScale(rows), [rows]);
   const roles = useMemo(() => groupByRole(rows), [rows]);
-  const [open, setOpen] = useState<ReadonlySet<string>>(new Set());
-  const toggle = (title: string) =>
-    setOpen((prev) => {
-      const next = new Set(prev);
-      if (!next.delete(title)) next.add(title);
-      return next;
-    });
+  const [open, toggle] = useToggleSet();
 
   return (
     <div className="overflow-x-auto">
@@ -78,64 +154,24 @@ export function PayByRole({ rows, country }: { rows: StatsRow[]; country: string
         <tbody>
           {roles.map((role) => {
             const expanded = open.has(role.jobTitle);
-            const to = (level?: string) =>
-              `/employees?${new URLSearchParams({ country, jobTitle: role.jobTitle, ...(level && { level }) })}`;
             return (
               <Fragment key={role.jobTitle}>
-                <tr className="hover:[&>td]:bg-band-soft/40">
-                  <td className={td}>
-                    <button
-                      type="button"
-                      aria-expanded={expanded}
-                      aria-label={`${role.jobTitle} levels`}
-                      onClick={() => toggle(role.jobTitle)}
-                      className="mr-1 inline-flex size-6 items-center justify-center rounded-sm align-middle text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
-                    >
-                      <span
-                        aria-hidden
-                        className={`inline-block motion-safe:transition-transform ${expanded ? 'rotate-90' : ''}`}
-                      >
-                        ›
-                      </span>
-                    </button>
-                    <Link to={to()} className={`font-semibold ${linkClass}`}>
-                      {role.jobTitle}
-                    </Link>
-                  </td>
-                  <td className={`${td} text-right`}>{formatCount(role.count)}</td>
-                  <td className="h-9 w-1/2 min-w-48 border-b border-border pr-6">
-                    <PayLadder role={role} scale={scale} countryCode={country} />
-                  </td>
-                  <td className={`${td} pr-0 text-right`}>
-                    {role.levels.length > 1
-                      ? `${money(role.lowMedian, country)} – ${money(role.highMedian, country)}`
-                      : money(role.lowMedian, country)}
-                  </td>
-                </tr>
+                <RoleRow
+                  role={role}
+                  scale={scale}
+                  country={country}
+                  expanded={expanded}
+                  onToggle={() => toggle(role.jobTitle)}
+                />
                 {expanded &&
-                  role.levels.map((r) => (
-                    <tr key={r.group.level} className="hover:[&>td]:bg-band-soft/40">
-                      <td className={`${td} pl-7`}>
-                        <Link
-                          to={to(r.group.level)}
-                          aria-label={`${role.jobTitle}, ${label(r.group.level ?? '')}`}
-                          className={linkClass}
-                        >
-                          {label(r.group.level ?? '')}
-                        </Link>
-                      </td>
-                      <td className={`${td} text-right`}>{formatCount(r.count)}</td>
-                      <td className="h-9 w-1/2 min-w-48 border-b border-border pr-6">
-                        <BandRail
-                          band={r}
-                          countryCode={country}
-                          markers={[]}
-                          scale={scale}
-                          showLabels={false}
-                        />
-                      </td>
-                      <td className={`${td} pr-0 text-right`}>{money(r.median, country)}</td>
-                    </tr>
+                  role.levels.map((row) => (
+                    <LevelRow
+                      key={row.group.level}
+                      role={role}
+                      scale={scale}
+                      country={country}
+                      row={row}
+                    />
                   ))}
               </Fragment>
             );

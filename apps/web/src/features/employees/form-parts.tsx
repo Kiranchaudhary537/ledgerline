@@ -3,13 +3,26 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ApiError } from '@/lib/api';
+import { parseMoney } from '@/lib/format';
 
-/** Props that tie a control to its label-less error message. */
 export const fieldProps = (id: string, error?: string) => ({
   id,
   'aria-invalid': !!error,
   'aria-describedby': error ? `${id}-error` : undefined,
 });
+
+const AMOUNT_HINT = 'Enter an amount such as 19,50,000';
+
+/** Parses a typed salary; on bad input reports the shared hint through `setMessage` and returns null. */
+export function parseAmount(
+  input: string,
+  countryCode: string,
+  setMessage: (message: string) => void,
+) {
+  const minor = parseMoney(input, countryCode);
+  if (minor === null) setMessage(AMOUNT_HINT);
+  return minor;
+}
 
 export function Field({
   id,

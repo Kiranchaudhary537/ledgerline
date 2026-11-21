@@ -44,4 +44,4 @@ export const bandRow: StatsRow = {
   currency: 'INR',
 };
 
-export const session = { user: { id: 'u1', email: 'hr@acme.test', name: 'Hana HR' } };
+export const session = { user: { id: 1, email: 'hr@acme.test', name: 'Hana HR' } };

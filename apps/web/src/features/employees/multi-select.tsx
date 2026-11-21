@@ -6,7 +6,6 @@ export interface Option {
   label: string;
 }
 
-/** A filter button that opens a checkbox list. The button shows how many are chosen. */
 export function MultiSelect({
   name,
   options,
