@@ -23,8 +23,8 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 ## M2 – Database (`packages/db`)
 
-- [ ] Kysely client, migration runner, test helper (transaction rolled back per test)
-- [ ] Migrations: `users`, `sessions`, `countries`, `employees`, `salary_changes`, indexes, partial unique
+- [x] Kysely client, migration runner, test helper (tables reset before each DB test)
+- [x] Migrations: `users`, `sessions`, `countries`, `employees`, `salary_changes`, indexes, partial unique
 - [ ] 🔴 Seed generator (pure): deterministic, salaries inside bands, history ends at current salary, unique emails, uneven headcount
 - [ ] Seed writer: batch insert 10k + HR user from env; re-run = truncate + reseed
 

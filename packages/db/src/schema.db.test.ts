@@ -1,25 +1,30 @@
+import type { CountryCode } from '@acme/shared';
+import type { Insertable } from 'kysely';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb, resetDb } from './testing.ts';
+import type { EmployeesTable } from './types.ts';
 
 const db = createTestDb();
 beforeEach(() => resetDb(db));
 afterAll(() => db.destroy());
 
-const employee = (overrides: Record<string, unknown> = {}) => ({
+const employee = (
+  overrides: Partial<Insertable<EmployeesTable>> = {},
+): Insertable<EmployeesTable> => ({
   fullName: 'Priya Sharma',
   email: 'priya.sharma@acme.example',
   department: 'Engineering',
   jobTitle: 'Software Engineer',
-  level: 'senior' as const,
+  level: 'senior',
   countryCode: 'IN',
-  employmentType: 'full_time' as const,
-  gender: 'female' as const,
+  employmentType: 'full_time',
+  gender: 'female',
   hireDate: '2021-04-12',
   salaryMinor: 380_000_000,
   ...overrides,
 });
 
-const insert = (values: ReturnType<typeof employee>) =>
+const insert = (values: Insertable<EmployeesTable>) =>
   db.insertInto('employees').values(values).returningAll().executeTakeFirstOrThrow();
 
 describe('employees table', () => {
@@ -51,13 +56,15 @@ describe('employees table', () => {
   });
 
   it('rejects an unknown country', async () => {
-    await expect(insert(employee({ countryCode: 'XX' }))).rejects.toMatchObject({
+    await expect(insert(employee({ countryCode: 'XX' as CountryCode }))).rejects.toMatchObject({
       code: '23503',
     });
   });
 
   it('sorts levels by seniority, not alphabetically', async () => {
-    for (const [i, level] of (['principal', 'junior', 'lead', 'mid', 'senior'] as const).entries()) {
+    for (const [i, level] of (
+      ['principal', 'junior', 'lead', 'mid', 'senior'] as const
+    ).entries()) {
       await insert(employee({ email: `p${i}@acme.example`, level }));
     }
     const rows = await db.selectFrom('employees').select('level').orderBy('level').execute();

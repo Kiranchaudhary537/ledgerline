@@ -11,6 +11,8 @@ export function createTestDb(): Db {
 
 /** Empties every table and restores countries. Call in beforeEach of *.db.test.ts files. */
 export async function resetDb(db: Db): Promise<void> {
-  await sql`TRUNCATE salary_changes, employees, sessions, users RESTART IDENTITY CASCADE`.execute(db);
+  await sql`TRUNCATE salary_changes, employees, sessions, users RESTART IDENTITY CASCADE`.execute(
+    db,
+  );
   await upsertCountries(db);
 }
