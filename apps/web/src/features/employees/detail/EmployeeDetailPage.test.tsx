@@ -55,32 +55,29 @@ async function openSalaryDialog() {
 }
 
 describe('employee detail', () => {
-  test('header shows the person, status and key facts', async () => {
+  test('header shows the person, role, tenure and status on one page with no tabs', async () => {
     stubApi();
     renderApp('/employees/7');
     expect(await screen.findByRole('heading', { name: 'Sandeep Singh' })).toBeInTheDocument();
-    expect(screen.getByText('Active')).toBeInTheDocument();
-    const header = screen
-      .getByRole('heading', { name: 'Sandeep Singh' })
-      .closest('div[class*="flex-wrap"]')!;
-    for (const text of ['ACME-00022', 'Engineering', 'India']) {
-      expect(await within(header as HTMLElement).findByText(text)).toBeInTheDocument();
-    }
+    expect(await screen.findByText('Software Engineer, Mid, India')).toBeInTheDocument();
+    expect(screen.getByText(/Joined Aug 2022, \d+ years/)).toBeInTheDocument();
+    expect(screen.getByText(/Active/)).toBeInTheDocument();
+    expect(screen.getAllByText('ACME-00022').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to employees' })).toHaveAttribute(
       'href',
       '/employees',
     );
   });
 
-  test('salary tab shows the salary and the band values with the person placed in it', async () => {
+  test('shows the salary and the pay band with the person placed in it', async () => {
     const fetch = stubApi();
     renderApp('/employees/7');
     expect((await screen.findAllByText('₹17,90,000')).length).toBeGreaterThan(0);
-    const band = await screen.findByLabelText('Pay band');
-    for (const term of ['Min', 'P25', 'Median', 'P75', 'Max']) {
-      expect(within(band).getByText(term)).toBeInTheDocument();
-    }
-    expect(within(band).getByText('₹16,80,000')).toBeInTheDocument();
+    const band = await screen.findByRole('img', { name: /^Pay band:/ });
+    expect(band).toHaveAccessibleName(/middle half ₹16,80,000 to ₹18,37,500, median ₹17,50,000/);
+    expect(band).toHaveAccessibleName(/current ₹17,90,000/);
+    expect(within(band).getByText('₹15,40,000')).toBeInTheDocument();
     expect(screen.getByText(/is in the upper middle of the band/)).toBeInTheDocument();
 
     const stats = fetch.mock.calls.map(([u]) => u).find((u) => u.startsWith('/api/insights/stats'));
@@ -93,27 +90,25 @@ describe('employee detail', () => {
     });
   });
 
-  test('history tab lists changes with reason pills, and sorts by a header', async () => {
+  test('the history timeline lists changes newest first, and the chart has a table behind it', async () => {
     stubApi();
-    const user = userEvent.setup();
     renderApp('/employees/7');
-    await user.click(await screen.findByRole('tab', { name: 'History' }));
-    expect(await screen.findByText('Starting salary')).toBeInTheDocument();
-    expect(screen.getByText('Annual review')).toBeInTheDocument();
-    expect(screen.getByText('Imported')).toBeInTheDocument();
-    expect(screen.getByText('+6.5%')).toBeInTheDocument();
-
-    const firstDataRow = () => screen.getAllByRole('row')[1]!;
-    expect(firstDataRow()).toHaveTextContent('Annual review');
-    await user.click(screen.getByRole('button', { name: /^Date/ }));
-    expect(firstDataRow()).toHaveTextContent('Starting salary');
+    const region = await screen.findByRole('region', { name: 'Salary history' });
+    const items = await within(region).findAllByRole('listitem');
+    expect(items[0]).toHaveTextContent('Annual review');
+    expect(items[0]).toHaveTextContent('₹16,80,000 to ₹17,90,000');
+    expect(items[0]).toHaveTextContent('+6.5%');
+    expect(items[0]).toHaveTextContent('Priya');
+    expect(items[1]).toHaveTextContent('Starting salary');
+    expect(items[1]).toHaveTextContent('Imported');
+    expect(await screen.findByRole('img', { name: /salary over time/i })).toBeInTheDocument();
+    expect(screen.getByRole('table', { name: /salary over time/i })).toBeInTheDocument();
   });
 
-  test('profile tab shows the fields and an Edit details button', async () => {
+  test('the profile fields are on the page, with an Edit details button', async () => {
     stubApi();
     const user = userEvent.setup();
     renderApp('/employees/7');
-    await user.click(await screen.findByRole('tab', { name: 'Profile' }));
     expect(await screen.findByText('sandeep@acme.test')).toBeInTheDocument();
     expect(screen.getByText('Full time')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Edit details' }));
@@ -133,7 +128,10 @@ describe('employee detail', () => {
 
     await user.type(screen.getByLabelText(/New annual salary/), '19,50,000');
     expect(
-      await screen.findByText(/\+8\.9% from today, above the middle half/),
+      (await screen.findAllByText(/\+8\.9% from today, above the middle half/)).length,
+    ).toBeGreaterThan(0);
+    expect(
+      within(dialog).getByRole('img', { name: /current ₹17,90,000, new ₹19,50,000/ }),
     ).toBeInTheDocument();
     await user.type(screen.getByLabelText('Reason'), 'x');
     await user.click(screen.getByRole('button', { name: 'Change salary' }));

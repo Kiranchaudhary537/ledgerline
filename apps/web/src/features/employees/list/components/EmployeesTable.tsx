@@ -1,5 +1,6 @@
 import type { Employee } from '@acme/shared';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, Td, Th, rowHover } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { ariaSort } from '@/features/employees/list/model/columns';
@@ -49,13 +50,13 @@ export function EmployeesTable({ rows, loading, state, update, countryName, onAc
             </tr>
           ))}
         </thead>
-        <tbody>
+        <tbody key={rows.map((r) => r.id).join()} className={cn(!loading && 'rows-fresh')}>
           {loading &&
             Array.from({ length: SKELETON_ROWS }, (_, i) => (
               <tr key={i} aria-hidden>
                 {columns.map((c) => (
                   <Td key={c.id}>
-                    <div className="h-3.5 w-3/4 rounded-sm bg-paper-3 motion-safe:animate-pulse" />
+                    <Skeleton className="h-3.5 w-3/4" />
                   </Td>
                 ))}
               </tr>

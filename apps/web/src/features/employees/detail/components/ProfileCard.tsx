@@ -25,17 +25,17 @@ export function ProfileCard({
     ['Hire date', formatDate(e.hireDate)],
   ];
   return (
-    <Card>
+    <Card role="region" aria-labelledby="profile-title">
       <CardHeader className="pb-4">
-        <CardTitle>Profile</CardTitle>
+        <CardTitle id="profile-title">Profile</CardTitle>
         <Button variant="secondary" onClick={onEdit}>
           Edit details
         </Button>
       </CardHeader>
-      <dl className="grid gap-x-10 gap-y-4 border-t border-rule p-5 sm:grid-cols-2">
+      <dl className="grid gap-x-10 gap-y-4 border-t p-5 sm:grid-cols-2">
         {facts.map(([term, value]) => (
           <div key={term} className="min-w-0">
-            <dt className="text-xs text-muted">{term}</dt>
+            <dt className="text-xs text-muted-foreground">{term}</dt>
             <dd className="break-words">{value}</dd>
           </div>
         ))}

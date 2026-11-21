@@ -5,6 +5,7 @@ import {
   insightsApiParams,
   insightsToParams,
   parseInsightsState,
+  roleOptions,
 } from '@/features/insights/model/insights-state';
 
 const parse = (qs: string) => parseInsightsState(new URLSearchParams(qs));
@@ -18,28 +19,30 @@ test('biggestCountry picks the country with the most people', () => {
 });
 
 describe('insights state', () => {
-  test('empty URL has no country yet', () => {
-    expect(parse('')).toEqual({ country: '', department: [], level: [] });
-  });
-
-  test('reads country and csv filters, keeps only the first country', () => {
-    expect(parse('country=IN,DE&department=Engineering,Sales&level=mid')).toEqual({
-      country: 'IN',
-      department: ['Engineering', 'Sales'],
-      level: ['mid'],
-    });
+  test('empty URL asks about any role and level, in no country yet', () => {
+    expect(parse('')).toEqual({ country: '', jobTitle: '', level: '' });
   });
 
   test('round trips and leaves empty values out', () => {
-    const state = { country: 'DE', department: [], level: ['senior'] };
+    const state = { country: 'DE', jobTitle: '', level: 'senior' };
     expect(insightsToParams(state).toString()).toBe('country=DE&level=senior');
     expect(parse(insightsToParams(state).toString())).toEqual(state);
   });
 
-  test('API params add the grouping', () => {
-    const state = { country: 'IN', department: ['Sales'], level: [] };
-    expect(insightsApiParams(state, 'jobTitle,level').toString()).toBe(
-      'groupBy=jobTitle%2Clevel&country=IN&department=Sales',
+  test('API params add the grouping, and omit what a section does not follow', () => {
+    const state = { country: 'IN', jobTitle: 'QA Engineer', level: 'mid' };
+    expect(insightsApiParams(state, 'country').toString()).toBe(
+      'groupBy=country&country=IN&jobTitle=QA+Engineer&level=mid',
+    );
+    expect(insightsApiParams(state, 'jobTitle', ['jobTitle']).toString()).toBe(
+      'groupBy=jobTitle&country=IN&level=mid',
     );
   });
+});
+
+test('roleOptions lists each role once, sorted', () => {
+  expect(
+    roleOptions([{ jobTitles: ['QA Engineer', 'Analyst'] }, { jobTitles: ['Analyst'] }]),
+  ).toEqual(['Analyst', 'QA Engineer']);
+  expect(roleOptions(undefined)).toEqual([]);
 });

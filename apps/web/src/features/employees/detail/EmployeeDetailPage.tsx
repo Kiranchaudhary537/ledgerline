@@ -1,8 +1,7 @@
-import { History, User, Wallet } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useSalaryHistory } from '@/features/employees/detail/api/salary-history';
 import { useEmployeePager } from '@/features/employees/detail/api/employee-pager';
 import { toHistoryRows } from '@/features/employees/detail/model/history';
@@ -14,20 +13,17 @@ import { useEmployee } from '@/features/employees/shared/api/employee';
 import { useFilterOptions } from '@/features/employees/shared/api/filter-options';
 import { ApiError } from '@/lib/api';
 import { EmployeeHeader } from './components/EmployeeHeader';
-import { HistoryCard } from './components/HistoryCard';
+import { HistoryTimeline } from './components/HistoryTimeline';
 import { ProfileCard } from './components/ProfileCard';
-import { SalaryCard } from './components/SalaryCard';
-
-const TABS = ['profile', 'salary', 'history'] as const;
-type Tab = (typeof TABS)[number];
+import { SalaryChart } from './components/SalaryChart';
+import { SalaryPanel } from './components/SalaryPanel';
 
 function DetailSkeleton() {
-  const bar = 'rounded-sm bg-paper-3 motion-safe:animate-pulse';
   return (
-    <div className="space-y-4" aria-busy="true">
-      <div className={`${bar} h-24 w-full`} />
-      <div className={`${bar} h-9 w-64`} />
-      <div className={`${bar} h-40 w-full`} />
+    <div className="space-y-6" aria-busy="true">
+      <Skeleton className="h-24 w-full max-w-md" />
+      <Skeleton className="h-52 w-full" />
+      <Skeleton className="h-64 w-full" />
       <span className="sr-only">Loading employee…</span>
     </div>
   );
@@ -52,9 +48,9 @@ function DetailError({ error, retry }: { error: Error; retry: () => void }) {
   );
 }
 
+/** One page, no tabs: who, what they earn and where that sits, how it got here, then the profile. */
 export function EmployeeDetailPage() {
   const { id = '' } = useParams();
-  const [params, setParams] = useSearchParams();
   const { state: listState } = useListUrl();
   const employee = useEmployee(id);
   const band = useBand(employee.data);
@@ -62,18 +58,6 @@ export function EmployeeDetailPage() {
   const options = useFilterOptions();
   const pager = useEmployeePager(Number(id), listState);
   const [dialog, setDialog] = useState<DialogKind | null>(null);
-
-  const tab = TABS.includes(params.get('tab') as Tab) ? (params.get('tab') as Tab) : 'salary';
-  // The tab lives in the URL so a link opens the same view; the list's own params are kept.
-  const onTab = (next: string) =>
-    setParams(
-      (prev) => {
-        const copy = new URLSearchParams(prev);
-        copy.set('tab', next);
-        return copy;
-      },
-      { replace: true },
-    );
 
   if (employee.isPending) return <DetailSkeleton />;
   if (employee.isError)
@@ -84,9 +68,10 @@ export function EmployeeDetailPage() {
     options.data?.countries.find((c) => c.code === e.countryCode)?.name ?? e.countryCode;
   const query = listToParams(listState).toString();
   const listTo = (page: number, to: number) => employeeLink(to, { ...listState, page });
+  const rows = history.data && toHistoryRows(history.data);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <EmployeeHeader
         employee={e}
         countryName={countryName}
@@ -101,38 +86,27 @@ export function EmployeeDetailPage() {
         }
         onEdit={() => setDialog('edit')}
         onDelete={() => setDialog('delete')}
+      />
+      <SalaryPanel
+        employee={e}
+        band={{ ...band, refetch: () => void band.refetch() }}
+        countryName={countryName}
         onChangeSalary={() => setDialog('salary')}
       />
-      <Tabs value={tab} onValueChange={onTab} className="space-y-5">
-        <TabsList aria-label="Employee sections">
-          <TabsTrigger value="profile">
-            <User aria-hidden className="size-4" />
-            Profile
-          </TabsTrigger>
-          <TabsTrigger value="salary">
-            <Wallet aria-hidden className="size-4" />
-            Salary
-          </TabsTrigger>
-          <TabsTrigger value="history">
-            <History aria-hidden className="size-4" />
-            History
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="profile">
-          <ProfileCard employee={e} countryName={countryName} onEdit={() => setDialog('edit')} />
-        </TabsContent>
-        <TabsContent value="salary">
-          <SalaryCard employee={e} band={band.data} countryName={countryName} />
-        </TabsContent>
-        <TabsContent value="history">
-          <HistoryCard
-            rows={history.data && toHistoryRows(history.data)}
-            error={history.error}
-            onRetry={() => void history.refetch()}
-            countryCode={e.countryCode}
-          />
-        </TabsContent>
-      </Tabs>
+      <SalaryChart
+        rows={rows}
+        error={history.error}
+        onRetry={() => void history.refetch()}
+        countryCode={e.countryCode}
+        name={e.fullName}
+      />
+      <HistoryTimeline
+        rows={rows}
+        error={history.error}
+        onRetry={() => void history.refetch()}
+        countryCode={e.countryCode}
+      />
+      <ProfileCard employee={e} countryName={countryName} onEdit={() => setDialog('edit')} />
       <EmployeeDialogs kind={dialog} employee={e} onClose={() => setDialog(null)} />
     </div>
   );

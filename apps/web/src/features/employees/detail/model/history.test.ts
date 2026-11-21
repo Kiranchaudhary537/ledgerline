@@ -1,6 +1,6 @@
 import type { SalaryChange } from '@acme/shared';
 import { describe, expect, test } from 'vitest';
-import { reasonKind, sortHistoryRows, toHistoryRows } from './history';
+import { freshIds, newestFirst, reasonKind, salarySteps, toHistoryRows } from './history';
 
 const change = (
   id: number,
@@ -40,12 +40,28 @@ describe('toHistoryRows', () => {
   });
 });
 
-describe('sortHistoryRows', () => {
-  test('sorts by each key in both directions without touching the input', () => {
-    expect(sortHistoryRows(rows, 'date', 'desc').map((r) => r.id)).toEqual([3, 2, 1]);
-    expect(sortHistoryRows(rows, 'to', 'asc').map((r) => r.id)).toEqual([1, 2, 3]);
-    expect(sortHistoryRows(rows, 'change', 'desc').map((r) => r.id)).toEqual([3, 2, 1]);
-    expect(sortHistoryRows(rows, 'by', 'asc').map((r) => r.id)).toEqual([1, 2, 3]);
-    expect(rows.map((r) => r.id)).toEqual([1, 2, 3]);
+describe('freshIds', () => {
+  test('names only the rows not seen before', () => {
+    expect(freshIds(new Set([1, 2]), rows)).toEqual(new Set([3]));
+    expect(freshIds(new Set(), rows).size).toBe(3);
+  });
+});
+
+test('newestFirst does not touch the input', () => {
+  expect(newestFirst(rows).map((r) => r.id)).toEqual([3, 2, 1]);
+  expect(rows.map((r) => r.id)).toEqual([1, 2, 3]);
+});
+
+describe('salarySteps', () => {
+  test('ascending by date, then one point at now holding the last salary', () => {
+    const now = Date.parse('2026-01-01T00:00:00.000Z');
+    const steps = salarySteps(rows, now);
+    expect(steps.map((s) => s.salaryMinor)).toEqual([100, 110, 154, 154]);
+    expect(steps.at(-1)?.at).toBe(now);
+  });
+
+  test('no history gives no steps; a change after now adds nothing', () => {
+    expect(salarySteps([], 5)).toEqual([]);
+    expect(salarySteps(rows, 0)).toHaveLength(3);
   });
 });

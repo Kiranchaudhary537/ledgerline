@@ -2,6 +2,7 @@ import type { Employee } from '@acme/shared';
 import { createColumnHelper } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { Link } from 'react-router';
+import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,9 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, Chip } from '@/components/ui/pill';
+import { Chip } from '@/components/ui/pill';
 import { SortButton } from '@/components/ui/table';
-import { initials } from '@/features/employees/shared/model/people';
 import { label, money } from '@/lib/format';
 import {
   COLUMNS,
@@ -55,7 +55,7 @@ function RowMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Actions for ${employee.fullName}`}
-        className="key key-flat key-sm key-icon"
+        className={buttonVariants({ variant: 'ghost', size: 'icon' })}
       >
         <MoreHorizontal aria-hidden className="size-4" />
       </DropdownMenuTrigger>
@@ -99,19 +99,16 @@ export function employeeColumns({ state, update, countryName, onAction }: Ctx) {
       id: 'code',
       meta: meta('code'),
       header: header('code'),
-      cell: (c) => <span className="font-outlier text-xs text-muted">{c.getValue()}</span>,
+      cell: (c) => <span className="font-mono text-xs text-muted-foreground">{c.getValue()}</span>,
     }),
     col.accessor('fullName', {
       id: 'name',
       meta: meta('name'),
       header: header('name'),
       cell: (c) => (
-        <span className="flex items-center gap-2.5">
-          <Avatar initials={initials(c.getValue())} size="sm" />
-          <Link to={employeeLink(c.row.original.id, state)} className={linkClass}>
-            {c.getValue()}
-          </Link>
-        </span>
+        <Link to={employeeLink(c.row.original.id, state)} className={linkClass}>
+          {c.getValue()}
+        </Link>
       ),
     }),
     col.accessor('department', {
@@ -129,7 +126,7 @@ export function employeeColumns({ state, update, countryName, onAction }: Ctx) {
       id: 'level',
       meta: meta('level'),
       header: header('level'),
-      cell: (c) => <Chip>{label(c.getValue())}</Chip>,
+      cell: (c) => label(c.getValue()),
     }),
     col.accessor('countryCode', {
       id: 'country',

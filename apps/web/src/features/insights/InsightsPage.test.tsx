@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { filterOptions, session } from '@/features/employees/shared/fixtures';
@@ -77,24 +77,44 @@ function apiResponse(url: string) {
 }
 
 describe('insights page', () => {
-  test('defaults to the biggest country and shows its summary', async () => {
+  test('defaults to the biggest country and answers the question for any role and level', async () => {
     const fetch = stubApi();
     renderApp('/insights');
-    const summary = await screen.findByRole('status', { name: 'Summary' });
-    expect(await within(summary).findByText('50')).toBeInTheDocument();
+    const answer = await screen.findByRole('status', { name: 'Answer' });
+    expect(await within(answer).findByText('₹1,79,000')).toBeInTheDocument();
+    expect(within(answer).getByText(/median, 50 people/)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Country' })).toHaveValue('IN');
     const urls = fetch.mock.calls.map(([u]) => u);
     expect(urls.some((u) => u.includes('groupBy=jobTitle%2Clevel&country=IN'))).toBe(true);
   });
 
-  test('the summary card states payroll, headcount, median and the quarters of the chosen country', async () => {
+  test('the answer is a pay band with the middle half in words', async () => {
     stubApi();
     renderApp('/insights?country=IN');
-    const summary = await screen.findByRole('status', { name: 'Summary' });
-    expect(await within(summary).findByText('50')).toBeInTheDocument();
-    expect(within(summary).getByText('People')).toBeInTheDocument();
-    expect(within(summary).getByText('₹1,79,000')).toBeInTheDocument();
-    expect(within(summary).getByText('₹89,50,000')).toBeInTheDocument();
-    expect(within(summary).getByText(/Annual payroll in India/)).toBeInTheDocument();
+    const answer = await screen.findByRole('status', { name: 'Answer' });
+    expect(
+      await within(answer).findByRole('img', { name: /middle half ₹1,78,500 to ₹1,79,500/ }),
+    ).toBeInTheDocument();
+    expect(within(answer).getByText(/Middle half ₹1,78,500 to ₹1,79,500/)).toBeInTheDocument();
+  });
+
+  test('picking a role and level asks the API for exactly that and puts it in the URL', async () => {
+    const fetch = stubApi();
+    const router = renderApp('/insights?country=IN');
+    await screen.findByRole('status', { name: 'Answer' });
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Role' }), 'QA Engineer');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Level' }), 'senior');
+    expect(router.state.location.search).toBe('?country=IN&jobTitle=QA+Engineer&level=senior');
+    await waitFor(() =>
+      expect(
+        fetch.mock.calls.some(
+          ([u]) =>
+            u.includes('groupBy=country') &&
+            u.includes('jobTitle=QA+Engineer') &&
+            u.includes('level=senior'),
+        ),
+      ).toBe(true),
+    );
   });
 
   test('no compa-ratio or needs-attention content remains', async () => {
@@ -148,14 +168,12 @@ describe('insights page', () => {
     expect(within(table).getByText('Not enough data')).toBeInTheDocument();
   });
 
-  test('gender gap is a dot plot sorted by gap with a table behind it', async () => {
+  test('gender gap is a chart sorted by gap, with the roles it cannot plot named', async () => {
     stubApi();
     renderApp('/insights?country=IN');
-    const list = await screen.findByRole('list', { name: 'Gender gap by role' });
-    const items = within(list).getAllByRole('listitem');
-    expect(items[0]).toHaveTextContent('Software Engineer');
-    expect(items[0]).toHaveTextContent('8.3% women paid less');
-    expect(items[1]).toHaveTextContent('Not enough data');
+    const chart = await screen.findByRole('img', { name: /^Gender gap by role:/ });
+    expect(chart).toHaveAccessibleName(/Software Engineer 8\.3% women paid less/);
+    expect(screen.getByText(/Not enough data: QA Engineer/)).toBeInTheDocument();
   });
 
   test('a country row switches the page to that country', async () => {
@@ -166,18 +184,20 @@ describe('insights page', () => {
     expect(router.state.location.search).toBe('?country=DE');
   });
 
-  test('shows an empty state when nobody matches', async () => {
+  test('shows empty states when nobody matches', async () => {
     stubFetch((url) => {
       const u = new URL(url, 'http://x');
       if (u.pathname === '/api/auth/me') return Response.json(session);
       if (u.pathname === '/api/meta/filters') return Response.json(filterOptions);
       if (u.pathname === '/api/insights/distribution')
         return Response.json({ currency: null, buckets: [] });
-      if (u.pathname === '/api/employees')
-        return Response.json({ data: [], page: 1, pageSize: 5, total: 0 });
       return Response.json([]);
     });
     renderApp('/insights?country=IN&level=junior');
-    expect(await screen.findByText('No people match these filters')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Nobody holds this role at this level here'),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('No one is paid in this country yet')).toBeInTheDocument();
+    expect(await screen.findByText('No salaries to chart')).toBeInTheDocument();
   });
 });

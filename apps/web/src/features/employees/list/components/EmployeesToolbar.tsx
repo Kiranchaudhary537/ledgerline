@@ -2,8 +2,9 @@ import type { EmployeeFacets } from '@acme/shared';
 import { Search } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { label } from '@/lib/format';
+import { formatCount, label } from '@/lib/format';
 import { facetOptions, FILTERS } from '@/features/employees/list/model/filters';
 import { hasFilters, type ListState } from '@/features/employees/list/model/list-state';
 import type { UpdateList } from '@/features/employees/list/hooks/use-list-url';
@@ -16,6 +17,7 @@ interface Props {
   countryName: (code: string) => string;
   searchText: string;
   onSearchText: (text: string) => void;
+  total: number | undefined;
 }
 
 export function EmployeesToolbar({
@@ -26,6 +28,7 @@ export function EmployeesToolbar({
   countryName,
   searchText,
   onSearchText,
+  total,
 }: Props) {
   const [moreOpen, setMoreOpen] = useState(
     state.employmentType.length > 0 || state.gender.length > 0,
@@ -45,14 +48,14 @@ export function EmployeesToolbar({
   );
 
   return (
-    <div role="group" aria-label="Filters" className="space-y-2 border-b border-rule p-4">
+    <div role="group" aria-label="Filters" className="space-y-2 border-b p-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-xs">
           <Search
             aria-hidden
-            className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted"
+            className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
           />
-          <input
+          <Input
             type="search"
             name="search"
             aria-label="Search by name, email or code"
@@ -61,7 +64,7 @@ export function EmployeesToolbar({
             spellCheck={false}
             value={searchText}
             onChange={(e) => onSearchText(e.target.value)}
-            className="field pr-2.5 pl-8"
+            className="pr-2.5 pl-8"
           />
         </div>
         {FILTERS.filter((f) => !f.secondary).map(menu)}
@@ -77,9 +80,12 @@ export function EmployeesToolbar({
             Clear filters
           </Button>
         )}
+        <p className="tnum ml-auto text-muted-foreground" aria-live="polite">
+          {total === undefined ? ' ' : `${formatCount(total)} employees`}
+        </p>
       </div>
       {searchText.trim().length === 1 && (
-        <p className="text-xs text-muted">Type at least 2 characters to search.</p>
+        <p className="text-xs text-muted-foreground">Type at least 2 characters to search.</p>
       )}
       {moreOpen && (
         <div className="flex flex-wrap items-center gap-2">

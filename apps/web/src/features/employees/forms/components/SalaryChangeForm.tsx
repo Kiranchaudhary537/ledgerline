@@ -14,7 +14,9 @@ import {
   salaryFieldOf,
   type SalaryFormValues,
 } from '@/features/employees/forms/model/salary-change';
-import { BandRail } from '@/features/employees/shared/components/BandRail';
+import { PayBand } from '@/features/employees/shared/components/PayBand';
+import { percentChange } from '@/features/employees/shared/model/band-geometry';
+import { useTween } from '@/lib/tween';
 import { StaleBanner } from './StaleBanner';
 
 interface Props {
@@ -34,20 +36,26 @@ function ProposalSummary({
   band: StatsRow | undefined;
   proposed: number | null;
 }) {
+  // The percentage counts along with the point, so the eye follows one change.
+  const counted = useTween(percentChange(employee.salaryMinor, proposed ?? employee.salaryMinor));
   return (
     <div className="space-y-1">
       {band && (
-        <BandRail
+        <PayBand
+          size="preview"
           band={band}
           countryCode={employee.countryCode}
-          markers={[
+          points={[
             { value: employee.salaryMinor, kind: 'current' },
             ...(proposed === null ? [] : [{ value: proposed, kind: 'proposed' as const }]),
           ]}
         />
       )}
-      <p className="tnum text-xs text-muted" aria-live="polite">
+      <p className="sr-only" aria-live="polite">
         {proposalText(employee.salaryMinor, proposed, band)}
+      </p>
+      <p aria-hidden className="tnum mt-2 text-xs text-muted-foreground">
+        {proposalText(employee.salaryMinor, proposed, band, counted)}
       </p>
     </div>
   );
