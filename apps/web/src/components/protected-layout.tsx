@@ -6,7 +6,10 @@ import { ApiError, api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
-  cn('rounded-md px-3 py-1.5 text-sm hover:bg-muted', isActive && 'bg-muted font-medium');
+  cn(
+    'border-b-2 border-transparent py-2 text-muted-foreground hover:text-foreground',
+    isActive && 'border-primary font-semibold text-foreground',
+  );
 
 export function ProtectedLayout() {
   const session = useSession();
@@ -51,11 +54,11 @@ export function ProtectedLayout() {
       >
         Skip to content
       </a>
-      <header className="flex items-center gap-6 border-b border-border px-6 py-2">
-        <span translate="no" className="font-semibold">
+      <header className="flex items-center gap-6 border-b border-border px-6 pt-2">
+        <span translate="no" className="py-2 font-semibold">
           ACME&nbsp;Pay
         </span>
-        <nav aria-label="Main" className="flex gap-1">
+        <nav aria-label="Main" className="flex gap-5">
           <NavLink to="/employees" className={navClass}>
             Employees
           </NavLink>
@@ -63,17 +66,18 @@ export function ProtectedLayout() {
             Insights
           </NavLink>
         </nav>
-        <span className="ml-auto text-sm text-muted-foreground">{session.data.user.name}</span>
+        <span className="ml-auto text-muted-foreground">{session.data.user.name}</span>
         <Button
           variant="ghost"
           size="sm"
+          className="mb-1"
           onClick={() => logout.mutate()}
           disabled={logout.isPending}
         >
           Log out
         </Button>
       </header>
-      <main id="main" className="p-6">
+      <main id="main" className="mx-auto max-w-[1200px] px-6 py-6">
         <Outlet />
       </main>
     </>

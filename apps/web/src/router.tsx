@@ -2,7 +2,9 @@ import { createBrowserRouter, type RouteObject } from 'react-router';
 import { ProtectedLayout } from '@/components/protected-layout';
 import { LoginPage } from '@/features/auth/login-page';
 import { loginUrl } from '@/features/auth/session';
-import { EmployeeDetailPage, EmployeesPage, InsightsPage } from '@/pages';
+import { EmployeeDetailPage } from '@/features/employees/employee-detail-page';
+import { EmployeesPage } from '@/features/employees/employees-page';
+import { InsightsPage } from '@/pages';
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
