@@ -1,39 +1,96 @@
 # Build plan
 
-v1 first, then deploy. Each step = a few small commits. Tests first on logic (red → green → refactor).
+Vertical slices: each milestone works end to end before the next. One task ≈ 1–3 commits.
+🔴 = test first (`test:` commit, then `feat:`).
 
-**Done for every step:** tests pass, typecheck + lint clean, docs updated, committed.
+**Done for every task:** tests pass, typecheck + lint clean, docs updated, committed ([commit-conventions.md](commit-conventions.md)).
 
-## v1
+Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.md) · [errors](error-handling.md)
 
-| # | Step | Package | Tests |
-|---|---|---|---|
-| 0 | Scaffold: pnpm workspace, strict TS, ESLint + Prettier, Vitest, `docker-compose.yml`, `.env.example` | all | one passing smoke test |
-| 1 | Shared: Zod schemas (employee, salary change, list query), money helpers (minor units per currency) | shared | parse/format INR, USD, JPY (0 decimals); invalid input rejected |
-| 2 | Schema: migrations for `users`, `sessions`, `countries`, `employees`, `salary_changes`; indexes; partial unique | db | migrate up on empty DB; unique email only among active rows |
-| 3 | Seed: realistic, connected 10k employees (see below) | db | same seed → same data; 10k rows; salaries inside bands; history ends at current salary |
-| 4 | API skeleton: app factory, env check, error format `{code,message,fields}`, `/health`, log redaction | api | health 200/503; bad input → 400 with fields; salary never in logs |
-| 5 | Auth: login, logout, session cookie, rate limit | api | wrong password 401; 6th try 429; no cookie 401 |
-| 6 | Employees read: list (search/filter/sort/page), detail, filter lists | api, db | each filter; sort whitelist; pageSize > 100 → 400; deleted hidden |
-| 7 | Employees write: create, edit (version), soft delete, salary change + history | api, db | duplicate → 409; stale version → 409; failed history insert → salary unchanged |
-| 8 | CSV export of current filter | api | header + rows match filter |
-| 9 | Web v1: login, list, detail/edit, salary change, history (**UI design discussed first**) | web | form validation, conflict message |
-| 9b | Insights: API + screen (**designed first**) | api, db, web | stats match a hand-computed small dataset |
-| 10 | Deploy: Render (API + Postgres, same region), Vercel (web + `/api` rewrite), run seed | – | smoke check on live URL |
+## M0 – Scaffold
+
+- [ ] pnpm workspace, `tsconfig.base.json` (strict), ESLint + Prettier, root Vitest
+- [ ] `docker-compose.yml` (Postgres), `.env.example`, `.gitignore`
+- [ ] Empty `apps/api`, `apps/web`, `packages/db`, `packages/shared`, each with one smoke test
+- [ ] README: how to run
+
+## M1 – Shared (`packages/shared`)
+
+- [ ] Constants: 8 countries (currency, locale, minor unit), departments → job titles, levels, employment types, genders
+- [ ] 🔴 Money: major ↔ minor units, format by locale (INR, EUR, JPY with 0 decimals, bad input)
+- [ ] 🔴 Errors: code table (status + message), `ApiError` shape
+- [ ] 🔴 Schemas: employee create/edit, salary change, list query (multi values, salary-sort rule, pageSize cap), insights query (one-country rule)
+
+## M2 – Database (`packages/db`)
+
+- [ ] Kysely client, migration runner, test helper (transaction rolled back per test)
+- [ ] Migrations: `users`, `sessions`, `countries`, `employees`, `salary_changes`, indexes, partial unique
+- [ ] 🔴 Seed generator (pure): deterministic, salaries inside bands, history ends at current salary, unique emails, uneven headcount
+- [ ] Seed writer: batch insert 10k + HR user from env; re-run = truncate + reseed
+
+## M3 – API base (`apps/api`)
+
+- [ ] App factory, Zod config, request log (no salary, with `requestId`)
+- [ ] 🔴 Error handler: Zod → 400 + fields, unique violation → 409, DB down → 503, unknown → 500
+- [ ] 🔴 `GET /api/health` (200 / 503)
+
+## M4 – Auth
+
+- [ ] 🔴 Queries: users, sessions
+- [ ] 🔴 Login / logout, session cookie (httpOnly, 8 h), auth plugin → 401
+- [ ] 🔴 Rate limit: 6th login in a minute → 429
+
+## M5 – Employees read
+
+- [ ] 🔴 List query: every filter, AND/OR, sort whitelist, salary sort only for one country, paging, deleted hidden
+- [ ] 🔴 `GET /employees`, `GET /employees/:id`, `GET /meta/filters`
+
+## M6 – Employees write
+
+- [ ] 🔴 Create (code auto-generated; duplicate email → 409)
+- [ ] 🔴 Edit with version (stale → 409)
+- [ ] 🔴 Soft delete (then 404)
+- [ ] 🔴 Salary change + history in one transaction (failed history insert → salary unchanged); `GET /employees/:id/salary-history`
+
+## M7 – CSV export
+
+- [ ] 🔴 `GET /employees/export.csv` with current filters (header + rows match)
+
+## M8 – Insights API
+
+- [ ] 🔴 `stats`, `distribution`, `gender-gap` against ~12 hand-picked employees (even-count median, gap < 5 → null)
+
+## M9 – Web (`apps/web`)
+
+- [ ] Design pass with `frontend-design` skill: palette, type, layout → `docs/ui-design.md`
+- [ ] App shell, router, `lib/api.ts`, error handling (toast, inline fields, 401 → login, 409 banner)
+- [ ] Login page
+- [ ] 🔴 Employee list: table, search, filters, sort, paging – all in URL
+- [ ] Employee detail + salary history timeline
+- [ ] 🔴 Forms: add / edit (side sheet), change salary, delete confirm
+- [ ] Insights page: country picker, KPIs, pay by role, distribution, gender gap, countries overview; row → filtered list
+
+## M10 – Deploy
+
+- [ ] Render: Postgres + API (same region), run migrations + seed
+- [ ] Vercel: web + `/api/*` rewrite to Render
+- [ ] Smoke check on live URL
+
+## M11 – Finish
+
+- [ ] Edge cases from [system-design.md §9](system-design.md)
+- [ ] `docs/ai-prompts.md` (how AI was used)
+- [ ] Demo video
 
 ## Seed: realistic and connected
 
 | Rule | Example |
 |---|---|
-| Name and locale match country | India → Indian names; Japan → Japanese names |
+| Name matches country and gender | India → Priya Sharma; Japan → Haruto Sato (romanized) |
 | Email from name | `priya.sharma@acme.com` (number added if taken) |
-| Job title belongs to a department, with levels | Engineering → Software Engineer I/II/Senior/Staff |
-| Salary = band(country × job title × level) ± small spread | Senior SWE India ≈ ₹3.0–4.2M; Germany ≈ €75–95k |
-| Hire date fits level | Staff engineers hired years ago; juniors recently |
-| Salary history leads to current salary | Hire salary → yearly raises → today's value |
-| Headcount per country is uneven, like a real org | More in US/India, fewer in Japan/Brazil |
-
-## After v1
-
-- Hardening against edge cases in [system-design.md §9](system-design.md).
-- Demo video.
+| Job title belongs to a department, has a level | Engineering → Software Engineer, Senior |
+| Salary = band(country × job title × level) ± spread | Senior SWE India ≈ ₹30–42L; Germany ≈ €75–95k |
+| Small built-in gender gap in some roles | So the gap view shows something real |
+| Hire date fits level | Principals hired years ago; juniors recently |
+| Salary history leads to current salary | Hire salary → yearly raises → today |
+| Uneven headcount per country | More in US / India, fewer in Japan / Brazil |

@@ -25,4 +25,16 @@ Schema: `packages/shared/src/schemas/list-query.ts`
 
 ## Insights
 
-To be designed (in v1).
+All take the **same filters as the list** (except `sort`, `page`, `pageSize`). Money is always in one currency:
+if `groupBy` does not include `country`, exactly one `country` is required → else `400 VALIDATION_FAILED`.
+
+| Endpoint | Extra params | Returns |
+|---|---|---|
+| `GET /api/insights/stats` | `groupBy` = 1–2 of country, department, jobTitle, level, gender, employmentType | `[{ group, count, min, p25, median, p75, max, avg, total, currency }]` |
+| `GET /api/insights/distribution` | `buckets` (default 20, max 50) | `{ currency, buckets: [{ from, to, count }] }` |
+| `GET /api/insights/gender-gap` | `groupBy` (as above, without gender) | `[{ group, femaleMedian, maleMedian, femaleCount, maleCount, gapPct \| null, currency }]` |
+
+- Percentiles: `percentile_cont` in SQL. Deleted employees excluded.
+- Gap % = (male median − female median) ÷ male median × 100. Positive = women paid less.
+- `gapPct` is `null` when either gender has fewer than 5 people (UI: "Not enough data").
+- Gap % has no currency, so it can be compared across countries.

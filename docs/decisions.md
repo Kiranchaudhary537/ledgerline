@@ -42,6 +42,11 @@ Full design: [system-design.md](system-design.md)
 | Errors | One shared shape + code list ([error-handling.md](error-handling.md)) | Ad hoc errors | Same messages in API and UI |
 | Folder layout | By feature ([structure.md](structure.md)) | By file type | Change one feature in one place |
 | UI design | `frontend-design` skill | Default shadcn look | Avoid the templated AI look |
+| Insights API | 3 endpoints (`stats`, `distribution`, `gender-gap`) reusing list filters | One endpoint per question | Covers every question with one filter schema |
+| Insights money | One country per result (or grouped by country) | Mixing currencies | No FX; ₹ + € is meaningless |
+| Small groups | Gender gap hidden below 5 people | Always show | One person swings the % |
+| Insights compute | Live SQL + index `(country, job_title, level)` | Cache | < 50 ms on 10k rows |
+| Seed names | Own name lists per country + tiny seeded RNG | faker | Romanized names (faker `ja` gives kanji → bad emails); one less dependency |
 | Architecture | Modular monolith | Microservices | One team, ~5 req/s |
 | Commits | Conventional Commits on `main` | Feature branches + PRs | Solo dev; history easy to read |
 
