@@ -62,7 +62,13 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 ## M9 – Web (`apps/web`)
 
-- [ ] Design pass with `frontend-design` skill: palette, type, layout → `docs/ui-design.md`
+**Skills:** `frontend-design` (look) · `dataviz` (charts) · `prototype` (style tile) · `web-design-guidelines` (audit).
+
+**Loop for every screen:** design (`frontend-design`) → build → audit (`web-design-guidelines`) → fix findings → screenshot + check against the anti-slop checklist → remove one unneeded element → commit.
+
+- [ ] `docs/ui-design.md`: brief (user, one job per screen), tokens (4–6 colours, one typeface with tabular figures, type scale, radius by hierarchy), ASCII wireframes, anti-slop checklist
+- [ ] Style tile in 2 directions with real seed rows (table row, salary form, one chart) → **user picks one**
+- [ ] Replace shadcn defaults with the chosen tokens
 - [ ] App shell, router, `lib/api.ts`, error handling (toast, inline fields, 401 → login, 409 banner)
 - [ ] Login page
 - [ ] 🔴 Employee list: table, search, filters, sort, paging – all in URL

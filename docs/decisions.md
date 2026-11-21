@@ -41,7 +41,8 @@ Full design: [system-design.md](system-design.md)
 | Salary sort | Only when one country is filtered | Always | ₹ vs € can't be compared without FX |
 | Errors | One shared shape + code list ([error-handling.md](error-handling.md)) | Ad hoc errors | Same messages in API and UI |
 | Folder layout | By feature ([structure.md](structure.md)) | By file type | Change one feature in one place |
-| UI design | `frontend-design` skill | Default shadcn look | Avoid the templated AI look |
+| UI design | `frontend-design` skill | Default shadcn look, `ui-ux-pro-max` | Choices made for this brief, not picked from a preset catalog |
+| UI audit | `web-design-guidelines` (Vercel, rules pinned in repo) | Manual review only | 100+ checks: a11y, focus, forms, states, copy |
 | Insights API | 3 endpoints (`stats`, `distribution`, `gender-gap`) reusing list filters | One endpoint per question | Covers every question with one filter schema |
 | Insights money | One country per result (or grouped by country) | Mixing currencies | No FX; ₹ + € is meaningless |
 | Small groups | Gender gap hidden below 5 people | Always show | One person swings the % |
