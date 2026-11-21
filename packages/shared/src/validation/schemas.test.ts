@@ -133,6 +133,10 @@ describe('listQuerySchema (query strings)', () => {
     );
     expect(errorsOf(listQuerySchema, { sort: 'salary:desc', country: 'IN' })).toEqual({});
   });
+
+  it('allows compa-ratio sort across countries', () => {
+    expect(errorsOf(listQuerySchema, { sort: 'compaRatio:desc' })).toEqual({});
+  });
 });
 
 describe('insights queries', () => {

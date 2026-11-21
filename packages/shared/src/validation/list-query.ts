@@ -35,6 +35,9 @@ export const SORT_OPTIONS = [
   'level:desc',
   'salary:asc',
   'salary:desc',
+  // Currency-free, so allowed across countries.
+  'compaRatio:asc',
+  'compaRatio:desc',
 ] as const;
 
 export const filtersSchema = z.object(filterFields);
