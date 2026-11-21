@@ -35,6 +35,7 @@ function stubApi() {
       if (by === 'country') return Response.json([stat({ country: 'IN' }, 50, 17900000)]);
       return Response.json([
         stat({ jobTitle: 'Software Engineer', level: 'senior' }, 30, 23600000),
+        stat({ jobTitle: 'Software Engineer', level: 'junior' }, 10, 11600000),
         stat({ jobTitle: 'QA Engineer', level: 'mid' }, 20, 12000000),
       ]);
     }
@@ -80,25 +81,37 @@ describe('insights page', () => {
     expect(urls.some((u) => u.includes('groupBy=jobTitle%2Clevel&country=IN'))).toBe(true);
   });
 
-  test('renders the pay by role table with a rail per row', async () => {
+  test('pay by role has one row per title with a median tick per level', async () => {
     stubApi();
     renderApp('/insights?country=IN');
     const table = await screen.findByRole('table', { name: 'Pay by role' });
     const rows = within(table).getAllByRole('row').slice(1);
     expect(rows).toHaveLength(2);
-    expect(within(rows[0]!).getByText('Software Engineer')).toBeInTheDocument();
-    expect(within(rows[0]!).getByText('₹2,36,000')).toBeInTheDocument();
-    expect(within(rows[0]!).getByRole('img')).toHaveAccessibleName(/median ₹2,36,000/);
+    expect(within(rows[0]!).getByText('40')).toBeInTheDocument();
+    expect(within(rows[0]!).getByText('₹1,16,000 – ₹2,36,000')).toBeInTheDocument();
+    expect(within(rows[0]!).getByRole('img', { name: 'Senior median ₹2,36,000' })).toBeVisible();
+    expect(within(rows[0]!).getByRole('img', { name: 'Junior median ₹1,16,000' })).toBeVisible();
   });
 
-  test('a row opens the employees list with its filters', async () => {
+  test('a role expands to its levels with band rails', async () => {
+    stubApi();
+    renderApp('/insights?country=IN');
+    const toggle = await screen.findByRole('button', { name: 'Software Engineer levels' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    const table = screen.getByRole('table', { name: 'Pay by role' });
+    expect(within(table).getAllByRole('row')).toHaveLength(5);
+    expect(within(table).getByRole('img', { name: /Pay band: .*median ₹2,36,000/ })).toBeVisible();
+    await userEvent.click(toggle);
+    expect(within(table).getAllByRole('row')).toHaveLength(3);
+  });
+
+  test('the role link opens the employees list for the title, a level link adds the level', async () => {
     stubApi();
     const router = renderApp('/insights?country=IN');
-    await userEvent.click(await screen.findByRole('link', { name: /Software Engineer/ }));
-    expect(router.state.location.pathname).toBe('/employees');
-    expect(router.state.location.search).toBe(
-      '?country=IN&jobTitle=Software+Engineer&level=senior',
-    );
+    await userEvent.click(await screen.findByRole('link', { name: 'Software Engineer' }));
+    expect(router.state.location.search).toBe('?country=IN&jobTitle=Software+Engineer');
   });
 
   test('gender gap shows direction in text and Not enough data for null', async () => {
