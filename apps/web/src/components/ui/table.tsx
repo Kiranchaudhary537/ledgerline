@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 type Align = 'left' | 'right';
 
-/** Header row on a paper-2 well, 48px body rows, a hairline between rows. Numbers: pass align="right". */
+/** Header row on a muted well, 48px body rows, a hairline between rows. Numbers: pass align="right". */
 export function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return <table className={cn('tnum w-full border-collapse', className)} {...props} />;
 }
@@ -18,7 +18,7 @@ export function Th({
     <th
       scope="col"
       className={cn(
-        'h-10 border-b border-rule bg-paper-2 px-4 align-middle text-xs font-medium whitespace-nowrap text-muted',
+        'h-10 border-b bg-muted px-4 align-middle text-xs font-medium whitespace-nowrap text-muted-foreground',
         align === 'right' ? 'text-right' : 'text-left',
         className,
       )}
@@ -35,7 +35,7 @@ export function Td({
   return (
     <td
       className={cn(
-        'h-12 border-b border-rule px-4 whitespace-nowrap',
+        'h-12 border-b px-4 whitespace-nowrap',
         align === 'right' && 'text-right',
         className,
       )}
@@ -44,8 +44,8 @@ export function Td({
   );
 }
 
-/** Row hover tint shared by every table. */
-export const rowHover = 'hover:[&>td]:bg-paper-2';
+/** Row hover is a colour change only. */
+export const rowHover = 'hover:[&>td]:bg-muted/60';
 
 interface SortButtonProps {
   children: string;
@@ -74,10 +74,10 @@ export function SortButton({
       aria-label={disabled ? `${children}, ${disabledHint}` : undefined}
       onClick={() => !disabled && onClick()}
       className={cn(
-        'inline-flex items-center gap-1 font-medium hover:text-ink',
+        'inline-flex items-center gap-1 font-medium hover:text-foreground',
         alignRight && 'flex-row-reverse',
-        disabled && 'cursor-not-allowed opacity-60 hover:text-muted',
-        direction && 'text-ink',
+        disabled && 'cursor-not-allowed opacity-60 hover:text-muted-foreground',
+        direction && 'text-foreground',
       )}
     >
       {children}

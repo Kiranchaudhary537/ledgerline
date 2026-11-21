@@ -6,7 +6,10 @@ const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
 const DialogClose = DialogPrimitive.Close;
 
-/** `side` makes it a right-hand sheet; otherwise a centred dialog. Radix traps focus and closes on Esc. */
+/**
+ * `side` makes it a right-hand sheet; otherwise a centred dialog. Radix traps focus and closes on Esc.
+ * The dialog is centred with auto margins, not a translate, so the scale-in owns `transform`.
+ */
 function DialogContent({
   className,
   children,
@@ -21,23 +24,21 @@ function DialogContent({
 }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-graphite/60" />
+      <DialogPrimitive.Overlay className="scrim fixed inset-0 z-40 bg-foreground/40" />
       <DialogPrimitive.Content
         className={cn(
-          'cut fixed z-50 flex flex-col gap-4 overflow-y-auto overscroll-contain p-6 shadow-overlay',
+          'fixed z-50 flex flex-col gap-4 overflow-y-auto overscroll-contain border bg-card p-6 text-card-foreground',
           side
             ? 'sheet inset-y-0 right-0 w-full max-w-md'
-            : 'top-1/2 left-1/2 max-h-[90dvh] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2',
+            : 'pop inset-0 m-auto h-fit max-h-[90dvh] w-[calc(100%-2rem)] max-w-md',
           className,
         )}
         {...props}
       >
         <div className="space-y-1">
-          <DialogPrimitive.Title className="font-display text-xl font-semibold tracking-display">
-            {title}
-          </DialogPrimitive.Title>
+          <DialogPrimitive.Title className="text-xl font-semibold">{title}</DialogPrimitive.Title>
           {description ? (
-            <DialogPrimitive.Description className="text-muted">
+            <DialogPrimitive.Description className="text-muted-foreground">
               {description}
             </DialogPrimitive.Description>
           ) : (

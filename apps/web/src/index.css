@@ -1,176 +1,99 @@
-/* Hallmark · shape: app screen · genre: modern-minimal · theme: Cobalt (deal 3/3, seed internal-compensation-tool-manager-a805·acb59c1e·2026-11-21·r0) · redesign: full
- * nav: graphite top bar with breadcrumb and one keycap add action, narrow paper-2 icon rail · signature: the pay band, a cobalt lightness ramp with the person's tick, the same scale on the salary, summary and ladder views · states: loading, empty, error, full
- * axes: light+dark/grotesk-sans/cool · posture: restrained · contrast: pass · modes: light+dark · data: real, seeded · v2.0.0 */
-/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V3 · weakest: V, Cobalt is a calm product-chrome register and the information architecture is the owner's, so variety comes from the cut corners and keycaps only; the ASCII field was left out because an app has no hero to carry it */
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Warm ledger (shadcn dashboard, ink-green, sharp edges) · light only · v2.0.0 */
 @import 'tailwindcss';
-@import '@fontsource/familjen-grotesk/600.css';
 @import '@fontsource/ibm-plex-sans/400.css';
 @import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
 @import '@fontsource/jetbrains-mono/400.css';
 @import './tokens.css';
 @import './base.css' layer(base);
 
 @layer components {
-  /* Panels, chips and fields are cut on two opposite corners; a plain radius is the fallback. */
-  .cut,
-  .cut-s {
-    border: var(--rule-hair) solid var(--color-rule);
-    border-radius: var(--radius-card);
-    background: var(--color-paper);
+  /* Overlays scale from where they opened and fade; exits are faster than enters. */
+  .pop[data-state='open'] {
+    animation: pop-in var(--dur-short) var(--ease-out);
   }
-  .cut-s {
-    border-radius: var(--radius-input);
+  .pop[data-state='closed'] {
+    animation: pop-out var(--dur-exit) var(--ease-out) forwards;
   }
-  @supports (corner-shape: bevel) {
-    .cut {
-      border-radius: var(--cut-l) 4px var(--cut-l) 4px;
-      corner-shape: bevel round bevel round;
-    }
-    .cut-s {
-      border-radius: var(--cut) 3px var(--cut) 3px;
-      corner-shape: bevel round bevel round;
-    }
+  .sheet[data-state='open'] {
+    animation: sheet-in var(--dur-long) var(--ease-out);
   }
-
-  /* Keycaps: a real bottom edge that lifts on hover and sinks on press. One solid cobalt key per screen. */
-  .key {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-xs);
-    height: 36px;
-    padding-inline: var(--space-md);
-    border: var(--rule-hair) solid var(--color-rule-2);
-    border-radius: var(--radius-input);
-    background: var(--color-key-face);
-    color: var(--color-ink);
-    font-weight: 500;
-    line-height: 1;
-    white-space: nowrap;
-    cursor: pointer;
-    box-shadow: var(--shadow-key);
+  .sheet[data-state='closed'] {
+    animation: sheet-out var(--dur-exit) var(--ease-out) forwards;
+  }
+  .scrim[data-state='open'] {
+    animation: fade-in var(--dur-short) var(--ease-out);
+  }
+  .scrim[data-state='closed'] {
+    animation: fade-out var(--dur-exit) var(--ease-out) forwards;
+  }
+  /* The pay-band point slides to its place on first render and glides when its value changes. */
+  .point-slide {
+    transition: transform var(--dur-long) var(--ease-out);
+    animation: point-in var(--dur-long) var(--ease-out);
+  }
+  .rows-fresh {
+    animation: fade-in var(--dur-short) var(--ease-out);
+  }
+  .row-in {
+    animation: row-in var(--dur-long) var(--ease-out);
+  }
+  .press {
     transition:
       transform var(--dur-micro) var(--ease-out),
-      box-shadow var(--dur-micro) var(--ease-out),
-      background-color var(--dur-micro) var(--ease-out);
+      background-color var(--dur-micro) var(--ease-out),
+      color var(--dur-micro) var(--ease-out),
+      border-color var(--dur-micro) var(--ease-out),
+      opacity var(--dur-micro) var(--ease-out);
   }
-  @media (hover: hover) {
-    .key:hover:not(:disabled, .key-flat, [aria-disabled='true']) {
-      transform: translateY(-1px);
-    }
-  }
-  .key:active:not(:disabled, .key-flat, [aria-disabled='true']),
-  .key[aria-expanded='true']:not(.key-flat),
-  .key[data-state='open']:not(.key-flat) {
-    transform: translateY(3px);
-    box-shadow: var(--shadow-key-press);
-  }
-  .key:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  .key[aria-disabled='true'] {
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  .key-primary {
-    background: var(--color-accent);
-    border-color: var(--color-accent-edge);
-    color: var(--color-accent-ink);
-    box-shadow: var(--shadow-key-accent);
-  }
-  .key-danger {
-    background: var(--color-error);
-    border-color: color-mix(in oklab, var(--color-error) 60%, var(--color-ink));
-    color: var(--color-paper);
-    box-shadow: 0 3px 0 0 color-mix(in oklab, var(--color-error) 60%, var(--color-ink));
-  }
-  .key-sm {
-    height: 32px;
-    padding-inline: var(--space-sm);
-  }
-  .key-icon {
-    width: 36px;
-    padding: 0;
-  }
-  /* No edge: for actions that sit inside a row of text. */
-  .key-flat {
-    border-color: transparent;
-    background: transparent;
-    box-shadow: none;
-    color: var(--color-ink-2);
-  }
-  @media (hover: hover) {
-    .key-flat:hover:not(:disabled) {
-      background: var(--color-paper-3);
-      color: var(--color-ink);
-      transform: none;
-    }
-  }
-  .key-flat:active:not(:disabled),
-  .key-flat[data-state='open'] {
-    transform: none;
-    background: var(--color-paper-3);
-    box-shadow: none;
-  }
-
-  .field {
-    height: 36px;
-    width: 100%;
-    border: var(--rule-hair) solid var(--color-muted);
-    border-radius: var(--radius-input);
-    background: var(--color-paper);
-    color: var(--color-ink);
-    padding-inline: var(--space-sm);
-    outline: 2px solid transparent;
-    outline-offset: -3px;
-    transition: background-color var(--dur-micro) var(--ease-out);
-  }
-  @supports (corner-shape: bevel) {
-    .field {
-      border-radius: var(--cut) 3px var(--cut) 3px;
-      corner-shape: bevel round bevel round;
-    }
-  }
-  .field::placeholder {
-    color: var(--color-muted);
-  }
-  @media (hover: hover) {
-    .field:hover:not(:disabled) {
-      background: var(--color-paper-2);
-    }
-  }
-  .field:focus-visible {
-    outline-color: var(--color-focus);
-    border-color: var(--color-ink-2);
-  }
-  .field[aria-invalid='true'] {
-    border-color: var(--color-error);
-  }
-  .field:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  .sheet {
-    animation: sheet-in var(--dur-short) var(--ease-out);
+  .press:active:not(:disabled, [aria-disabled='true']) {
+    transform: scale(var(--press-scale));
   }
 }
 
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--pop-scale));
+  }
+}
+@keyframes pop-out {
+  to {
+    opacity: 0;
+    transform: scale(var(--pop-scale));
+  }
+}
 @keyframes sheet-in {
   from {
+    opacity: 0;
     transform: translateX(24px);
+  }
+}
+@keyframes sheet-out {
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+@keyframes fade-in {
+  from {
     opacity: 0;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .sheet {
-    animation: none;
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
   }
 }
 
-tbody tr td {
-  transition: background-color var(--dur-micro) var(--ease-out);
+@keyframes point-in {
+  from {
+    transform: translateX(var(--from, 0%));
+  }
 }
