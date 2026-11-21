@@ -12,6 +12,16 @@ export interface StatsRow {
   currency: string;
 }
 
+/** What `/api/insights/stats` returns: the pay band plus how people sit against their own band. */
+export interface InsightsStatsRow extends StatsRow {
+  /** Compa-ratio figures use the band median over everyone, even when the stats are filtered. */
+  avgCompaRatio: number;
+  /** People with a compa-ratio below config.compaRatio.extremeLow or above extremeHigh. */
+  outOfBandCount: number;
+  compaP25: number;
+  compaP75: number;
+}
+
 export interface GenderGapRow {
   group: Record<string, string>;
   femaleMedian: number | null;

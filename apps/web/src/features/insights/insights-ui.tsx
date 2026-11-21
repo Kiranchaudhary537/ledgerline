@@ -31,10 +31,19 @@ export function Skeleton({ rows, cols }: { rows: number; cols: number }) {
   );
 }
 
-export function Section({ title, children }: { title: string; children: ReactNode }) {
+export function Section({
+  title,
+  children,
+  lead = false,
+}: {
+  title: string;
+  children: ReactNode;
+  /** The page's focal section: a larger heading and more air around it. */
+  lead?: boolean;
+}) {
   return (
-    <section aria-label={title} className="space-y-2">
-      <h2 className="text-lg font-semibold">{title}</h2>
+    <section aria-label={title} className={lead ? 'space-y-4' : 'space-y-2'}>
+      <h2 className={lead ? 'text-xl font-semibold' : 'text-lg font-semibold'}>{title}</h2>
       {children}
     </section>
   );

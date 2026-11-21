@@ -1,7 +1,7 @@
-import type { FilterOptions, StatsRow } from '@acme/shared';
+import type { FilterOptions } from '@acme/shared';
 import { Button } from '@/components/ui/button';
 import { MultiSelect, type Option } from '@/features/employees/multi-select';
-import { formatCount, label, money } from '@/lib/format';
+import { label } from '@/lib/format';
 import type { InsightsState } from './insights-state';
 
 interface FiltersProps {
@@ -54,21 +54,5 @@ export function InsightsFilters({ state, options, set }: FiltersProps) {
         </Button>
       )}
     </div>
-  );
-}
-
-export function SummaryLine({ total, country }: { total: StatsRow | undefined; country: string }) {
-  return (
-    <p className="tnum min-h-6" aria-live="polite">
-      {total && (
-        <>
-          <strong className="font-semibold">{formatCount(total.count)} people</strong>
-          <span className="mx-3 text-muted-foreground">Median {money(total.median, country)}</span>
-          <span className="text-muted-foreground">
-            Annual payroll {money(total.total, country)}
-          </span>
-        </>
-      )}
-    </p>
   );
 }

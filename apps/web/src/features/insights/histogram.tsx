@@ -1,21 +1,30 @@
 import type { Distribution } from '@acme/shared';
 import { formatCount, money } from '@/lib/format';
+import { valueX } from './histogram-geometry';
 
 /** SVG layout in viewBox units (not a tunable): total size and the margins left for axis labels. */
-const CHART = { W: 560, H: 180, LEFT: 36, TOP: 8, BOTTOM: 22 };
+const CHART = { W: 560, H: 190, LEFT: 36, TOP: 18, BOTTOM: 22 };
 const { W, H, LEFT, TOP, BOTTOM } = CHART;
 
 type Bucket = Distribution['buckets'][number];
+/** The middle half and the median of the same people, drawn behind the bars. */
+export interface Spread {
+  p25: number;
+  median: number;
+  p75: number;
+}
 
 /** Salary histogram: one colour, bars anchored to the baseline, a table view for exact numbers. */
 export function Histogram({
   data,
   countryCode,
   name,
+  spread,
 }: {
   data: Distribution;
   countryCode: string;
   name: string;
+  spread?: Spread;
 }) {
   const { buckets } = data;
   const max = Math.max(...buckets.map((b) => b.count), 1);
@@ -30,9 +39,12 @@ export function Histogram({
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label={`${name}: ${formatCount(total)} people in ${buckets.length} salary ranges, most common ${range(tallest)}.`}
+        aria-label={`${name}: ${formatCount(total)} people in ${buckets.length} salary ranges, most common ${range(tallest)}.${spread ? ` Median ${money(spread.median, countryCode)}, middle half ${money(spread.p25, countryCode)} to ${money(spread.p75, countryCode)}.` : ''}`}
         className="block h-auto w-full max-w-2xl"
       >
+        {spread && (
+          <SpreadMarks spread={spread} buckets={buckets} countryCode={countryCode} y0={y(0)} />
+        )}
         {[0, max].map((t) => (
           <text
             key={t}
@@ -60,8 +72,51 @@ export function Histogram({
         ))}
         <XAxisLabels buckets={buckets} bw={bw} countryCode={countryCode} />
       </svg>
+      {spread && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          Shaded band: the middle half of salaries (p25 to p75). Line: the median.
+        </p>
+      )}
       <DistributionTable buckets={buckets} name={name} range={range} />
     </div>
+  );
+}
+
+function SpreadMarks({
+  spread,
+  buckets,
+  countryCode,
+  y0,
+}: {
+  spread: Spread;
+  buckets: Bucket[];
+  countryCode: string;
+  y0: number;
+}) {
+  const x = (v: number) => valueX(buckets, v, LEFT, W);
+  const median = x(spread.median);
+  const flip = median > W - 150;
+  return (
+    <g>
+      <rect
+        x={x(spread.p25)}
+        y={TOP}
+        width={x(spread.p75) - x(spread.p25)}
+        height={y0 - TOP}
+        className="fill-band-soft"
+      >
+        <title>{`Middle half of pay: ${money(spread.p25, countryCode)} to ${money(spread.p75, countryCode)}`}</title>
+      </rect>
+      <line x1={median} x2={median} y1={TOP - 4} y2={y0} className="stroke-foreground" />
+      <text
+        x={median + (flip ? -5 : 5)}
+        y={TOP - 6}
+        textAnchor={flip ? 'end' : 'start'}
+        className="tnum fill-foreground text-[11px] font-semibold"
+      >
+        {`Median ${money(spread.median, countryCode)}`}
+      </text>
+    </g>
   );
 }
 

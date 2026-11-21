@@ -69,7 +69,7 @@ if `groupBy` does not include `country`, exactly one `country` is required → e
 
 | Endpoint | Extra params | Returns |
 |---|---|---|
-| `GET /api/insights/stats` | `groupBy` = 1–2 of country, department, jobTitle, level, gender, employmentType | `[{ group, count, min, p25, median, p75, max, avg, total, currency }]` |
+| `GET /api/insights/stats` | `groupBy` = 1–2 of country, department, jobTitle, level, gender, employmentType | `[{ group, count, min, p25, median, p75, max, avg, total, avgCompaRatio, outOfBandCount, compaP25, compaP75, currency }]`. The compa-ratio fields use the band median over everyone, so filters do not change a person's ratio; `outOfBandCount` counts ratios below `compaRatio.extremeLow` or above `extremeHigh`; `compaP25`/`compaP75` give the spread (review when wider than `compaRatio.maxReviewSpread`). |
 | `GET /api/insights/distribution` | `buckets` (default 20, max 50) | `{ currency, buckets: [{ from, to, count }] }` |
 | `GET /api/insights/gender-gap` | `groupBy` (as above, without gender) | `[{ group, femaleMedian, maleMedian, femaleCount, maleCount, gapPct \| null, currency }]` |
 

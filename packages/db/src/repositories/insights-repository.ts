@@ -1,6 +1,7 @@
 import { config, type DistributionQuery, type GenderGapQuery, type StatsQuery } from '@acme/shared';
 import { type Expression, sql } from 'kysely';
 import type { Db } from '../client.ts';
+import { compaRatioSql, onBand, withBands } from './bands.ts';
 import { employeeFilters } from './filters.ts';
 
 const COLUMN = {
@@ -17,6 +18,10 @@ const salary = sql.ref('employees.salaryMinor');
 /** round() on numeric (not double) so halves round up, then back to a whole minor unit. */
 const whole = (x: Expression<unknown>) => sql<number>`round((${x})::numeric)::bigint`;
 const pct = (p: number) => whole(sql`percentile_cont(${p}) within group (order by ${salary})`);
+const ratio = compaRatioSql;
+const ratioPct = (p: number) =>
+  sql<number>`round((percentile_cont(${p}) within group (order by ${ratio}))::numeric, ${sql.lit(config.compaRatio.decimals)})`;
+const outOfBand = sql<number>`count(*) filter (where ${ratio} < ${config.compaRatio.extremeLow} or ${ratio} > ${config.compaRatio.extremeHigh})`;
 const genderMedian = (g: 'female' | 'male') =>
   whole(
     sql`percentile_cont(0.5) within group (order by ${salary}) filter (where ${sql.ref('employees.gender')} = ${g})`,
@@ -28,9 +33,10 @@ function groupedBase(db: Db, q: StatsQuery | GenderGapQuery) {
   const cols = (q.groupBy as Dimension[]).map((d) => COLUMN[d]);
   // Currency is determined by country, so grouping by it never splits a group.
   // Level is an enum, so ordering by it sorts by seniority.
-  return db
+  return withBands(db)
     .selectFrom('employees')
     .innerJoin('countries', 'countries.code', 'employees.countryCode')
+    .innerJoin('bands', onBand)
     .where((eb) => employeeFilters(eb, q))
     .select((eb) => [
       ...cols.map((c, i) => eb.ref(c).as(`g${i}`)),
@@ -63,18 +69,28 @@ export class InsightsRepository {
         sql<number>`max(${salary})`.as('max'),
         whole(sql`avg(${salary})`).as('avg'),
         sql<number>`sum(${salary})`.as('total'),
+        sql<number>`round(avg(${ratio}), ${sql.lit(config.compaRatio.decimals)})`.as(
+          'avgCompaRatio',
+        ),
+        outOfBand.as('outOfBandCount'),
+        ratioPct(0.25).as('compaP25'),
+        ratioPct(0.75).as('compaP75'),
       ])
       .execute();
-    return rows.map(({ currency, count, min, p25, median, p75, max, avg, total, ...g }) => ({
-      group: toGroup(q.groupBy, g),
-      count,
-      min,
-      p25,
-      median,
-      p75,
-      max,
-      avg,
-      total,
+    return rows.map(({ currency, ...r }) => ({
+      group: toGroup(q.groupBy, r),
+      count: r.count,
+      min: r.min,
+      p25: r.p25,
+      median: r.median,
+      p75: r.p75,
+      max: r.max,
+      avg: r.avg,
+      total: r.total,
+      avgCompaRatio: r.avgCompaRatio,
+      outOfBandCount: r.outOfBandCount,
+      compaP25: r.compaP25,
+      compaP75: r.compaP75,
       currency,
     }));
   }

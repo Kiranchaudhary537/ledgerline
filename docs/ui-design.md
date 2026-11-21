@@ -17,7 +17,7 @@ Status: **direction A (Ledger) chosen.** Style tile source: [design/style-tile.h
 |---|---|---|
 | Employees | Find someone | The search field and the table |
 | Employee | Change pay safely | Current salary, where it sits in its band, and its history |
-| Insights | Answer a pay question | The role-by-level table for the chosen country |
+| Insights | Find who is paid out of line | Needs attention: the people furthest below and above their band |
 | Login | Get in | The form |
 
 ## The one memorable element: the band rail
@@ -88,12 +88,14 @@ Employee
 
 Insights
 │ Pay in [India ▾]   Department▾ Level▾                              │
-│ 2,812 people   Median ₹17,90,000   Annual payroll ₹512 Cr          │
-│ Role                Level   People   p25 ━━●━━ p75      Median    │
-│ Software Engineer   Senior    155   ━━━━━●━━━━          ₹23,60,000│
-│ …                                                                 │
-│ Distribution (histogram)          Gender gap by role              │
-│ Countries overview (each in its own currency)                     │
+│ 2,812 people  Median ₹17,90,000  Payroll ₹512 Cr  Avg compa 1.01  4% outside band │
+│ Needs attention                                                    │
+│ Furthest below band        See all │ Furthest above band  See all │
+│ ▼0.62 Asha Rao  QA, Mid   ₹9,00,000│ ▲1.40 Dee Park …              │
+│ Pay by role: People  Outside band  Compa spread  ladder  Median range│
+│ Gender gap by role (dot plot, zero line, sorted by gap)            │
+│ Salary distribution (median line, shaded p25-p75)                  │
+│ Countries (click a row to switch the page to it)                   │
 ```
 
 (`·` above is shorthand in this sketch only; the built UI uses separate lines or columns.)
@@ -124,3 +126,7 @@ Insights
 ## Compa-ratio (in v1)
 
 Salary ÷ median of the same country × job title × level × employment type (e.g. `0.94` = 6% below the middle). Shown as a column in the employee list and on the employee page next to the band rail. It has no currency, so it **can be sorted across countries**. Colour only marks the extremes (< 0.85, > 1.15); the number is always shown.
+
+## Insights page (v2)
+
+Focal point: **Needs attention**, the five people furthest below and above their band (`GET /api/employees?sort=compaRatio:asc|desc&pageSize=5`, only those outside 0.85 to 1.15), with the compa-ratio as the large figure. The scorecard above it is one quiet sentence; only "% outside their band" is bold. Pay by role keeps the shared-scale ladder and adds people outside band and compa spread (the widest level's p75 minus p25, flagged quietly above `compaRatio.maxReviewSpread`). Gender gap is a dot plot (one hue, direction in words, "Not enough data" rows have no dot, table behind "View as table"). The histogram shows the median line and the p25 to p75 shading.
