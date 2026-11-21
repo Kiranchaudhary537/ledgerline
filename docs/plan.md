@@ -69,8 +69,8 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 - [ ] `docs/ui-design.md`: brief (user, one job per screen), tokens (4–6 colours, one typeface with tabular figures, type scale, radius by hierarchy), ASCII wireframes, anti-slop checklist
 - [ ] Style tile in 2 directions with real seed rows (table row, salary form, one chart) → **user picks one**
 - [ ] Replace shadcn defaults with the chosen tokens
-- [ ] App shell, router, `lib/api.ts`, error handling (toast, inline fields, 401 → login, 409 banner)
-- [ ] Login page
+- [x] App shell, router, `lib/api.ts`, error handling (toast, inline fields, 401 → login, 409 banner)
+- [x] Login page
 - [ ] 🔴 Employee list: table, search, filters, sort, paging – all in URL
 - [ ] Employee detail + salary history timeline
 - [ ] 🔴 Forms: add / edit (side sheet), change salary, delete confirm
