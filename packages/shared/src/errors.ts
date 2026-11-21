@@ -6,6 +6,7 @@ export const ERRORS = {
   UNAUTHENTICATED: { status: 401, message: 'Please log in to continue.' },
   INVALID_CREDENTIALS: { status: 401, message: 'Email or password is incorrect.' },
   NOT_FOUND: { status: 404, message: 'This employee no longer exists.' },
+  ROUTE_NOT_FOUND: { status: 404, message: 'This page does not exist.' },
   EMAIL_TAKEN: { status: 409, message: 'This email is already used by another employee.' },
   STALE_VERSION: {
     status: 409,

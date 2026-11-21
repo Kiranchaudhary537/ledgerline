@@ -21,6 +21,7 @@ One error shape, defined once in `packages/shared/src/errors.ts`, used by API an
 | `UNAUTHENTICATED` | 401 | Please log in to continue. |
 | `INVALID_CREDENTIALS` | 401 | Email or password is incorrect. |
 | `NOT_FOUND` | 404 | This employee no longer exists. |
+| `ROUTE_NOT_FOUND` | 404 | This page does not exist. |
 | `EMAIL_TAKEN` | 409 | This email is already used by another employee. |
 | `STALE_VERSION` | 409 | Someone else changed this employee. Reload to see the latest. |
 | `RATE_LIMITED` | 429 | Too many attempts. Try again in a minute. |
@@ -34,6 +35,7 @@ One error shape, defined once in `packages/shared/src/errors.ts`, used by API an
   - Zod error → `VALIDATION_FAILED` + `fields`
   - Postgres unique violation → `EMAIL_TAKEN`
   - DB connection error → `SERVICE_UNAVAILABLE`
+  - Malformed JSON body → `VALIDATION_FAILED`; unknown URL → `ROUTE_NOT_FOUND`
   - anything else → `INTERNAL` (full error logged with `requestId`, never sent)
 
 ## UI side
