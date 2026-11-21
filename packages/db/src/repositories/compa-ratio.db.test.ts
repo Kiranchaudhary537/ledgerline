@@ -3,9 +3,10 @@ import { listQuerySchema } from '@acme/shared';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { createTestDb, resetDb } from '../testing.ts';
 import type { Employees } from '../types.ts';
-import { exportEmployees, getEmployee, listEmployees } from './employees.ts';
+import { EmployeeRepository } from './employee-repository.ts';
 
 const db = createTestDb();
+const employees = new EmployeeRepository(db);
 afterAll(() => db.destroy());
 
 let n = 0;
@@ -42,7 +43,7 @@ beforeEach(async () => {
     .execute();
 });
 
-const list = (q: Record<string, string>) => listEmployees(db, listQuerySchema.parse(q));
+const list = (q: Record<string, string>) => employees.list(listQuerySchema.parse(q));
 
 describe('compa-ratio (salary ÷ median of country × title × level × employment type)', () => {
   it('is computed per band, ignoring deleted employees', async () => {
@@ -63,8 +64,8 @@ describe('compa-ratio (salary ÷ median of country × title × level × employme
 
   it('is included in detail and export', async () => {
     const { data } = await list({ q: 'Low' });
-    expect((await getEmployee(db, data[0]!.id))?.compaRatio).toBe(0.5);
-    const rows = await exportEmployees(db, {}, 'compaRatio:asc');
+    expect((await employees.get(data[0]!.id))?.compaRatio).toBe(0.5);
+    const rows = await employees.export({}, 'compaRatio:asc');
     expect(rows.map((e) => e.compaRatio)).toEqual([0.5, 0.5, 1, 1, 1.5, 1.5]);
   });
 });

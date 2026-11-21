@@ -1,15 +1,26 @@
-import type { Db } from '@acme/db';
+import {
+  DepartmentRepository,
+  type Db,
+  EmployeeRepository,
+  InsightsRepository,
+  SessionRepository,
+  UserRepository,
+} from '@acme/db';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
 import { config } from '@acme/shared';
 import Fastify, { type FastifyServerOptions, LogController } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { errorHandler, sendError } from './errors.ts';
+import { AuthService } from './modules/auth/service.ts';
 import { authRoutes } from './modules/auth/routes.ts';
+import { EmployeeService } from './modules/employees/service.ts';
 import { employeeRoutes } from './modules/employees/routes.ts';
 import { healthRoutes } from './modules/health/routes.ts';
-import { metaRoutes } from './modules/meta/routes.ts';
 import { insightsRoutes } from './modules/insights/routes.ts';
+import { InsightsService } from './modules/insights/service.ts';
+import { metaRoutes } from './modules/meta/routes.ts';
+import { MetaService } from './modules/meta/service.ts';
 import { authPlugin } from './plugins/auth.ts';
 
 export interface AppOptions {
@@ -76,14 +87,20 @@ export function buildApp({
     hook: 'preHandler', // after onRequest auth and body parsing, so keys can use both
     keyGenerator: (request) => String(request.user?.id ?? request.ip),
   });
-  authPlugin(app, { db });
+  // Repositories (SQL) → services (rules) → routes, built once here.
+  const auth = new AuthService(new UserRepository(db), new SessionRepository(db));
+  const employees = new EmployeeService(new EmployeeRepository(db));
+  const insights = new InsightsService(new InsightsRepository(db));
+  const meta = new MetaService(new DepartmentRepository(db));
+
+  authPlugin(app, { auth });
   // Registered after the plugins above load, so they apply to every route.
   app.register(async (routes) => {
     healthRoutes(routes, { db });
-    authRoutes(routes, { db, cookieSecure });
-    employeeRoutes(routes, { db });
-    metaRoutes(routes, { db });
-    insightsRoutes(routes, { db });
+    authRoutes(routes, { auth, cookieSecure });
+    employeeRoutes(routes, { employees });
+    metaRoutes(routes, { meta });
+    insightsRoutes(routes, { insights });
   });
   return app;
 }

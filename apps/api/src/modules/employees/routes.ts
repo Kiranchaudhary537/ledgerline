@@ -1,4 +1,3 @@
-import type { Db } from '@acme/db';
 import {
   config,
   employeeCreateSchema,
@@ -9,7 +8,7 @@ import {
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { AppError } from '../../errors.ts';
-import * as service from './service.ts';
+import type { EmployeeService } from './service.ts';
 
 const idSchema = z.coerce.number().int().positive();
 
@@ -20,39 +19,41 @@ function parseId(params: unknown): number {
   return result.data;
 }
 
-export function employeeRoutes(app: FastifyInstance, { db }: { db: Db }) {
-  app.get('/api/employees', (request) => service.list(db, listQuerySchema.parse(request.query)));
+export function employeeRoutes(
+  app: FastifyInstance,
+  { employees }: { employees: EmployeeService },
+) {
+  app.get('/api/employees', (request) => employees.list(listQuerySchema.parse(request.query)));
 
   // Static path, so find-my-way picks it over `/api/employees/:id`.
   app.get('/api/employees/export.csv', async (request, reply) => {
     const { sort, page: _p, pageSize: _s, ...filters } = listQuerySchema.parse(request.query);
-    const csv = await service.exportCsv(db, filters, sort);
+    const csv = await employees.exportCsv(filters, sort);
     return reply
       .header('Content-Type', 'text/csv; charset=utf-8')
       .header('Content-Disposition', `attachment; filename="${config.csv.filename}"`)
       .send(csv);
   });
 
-  app.get('/api/employees/:id', (request) => service.get(db, parseId(request.params)));
+  app.get('/api/employees/:id', (request) => employees.get(parseId(request.params)));
 
   app.post('/api/employees', async (request, reply) => {
     const input = employeeCreateSchema.parse(request.body);
-    const employee = await service.create(db, input, request.user!.id);
+    const employee = await employees.create(input, request.user!.id);
     return reply.status(201).send(employee);
   });
 
   app.patch('/api/employees/:id', (request) =>
-    service.update(db, parseId(request.params), employeeUpdateSchema.parse(request.body)),
+    employees.update(parseId(request.params), employeeUpdateSchema.parse(request.body)),
   );
 
   app.delete('/api/employees/:id', async (request, reply) => {
-    await service.remove(db, parseId(request.params));
+    await employees.remove(parseId(request.params));
     return reply.status(204).send();
   });
 
   app.post('/api/employees/:id/salary-changes', (request) =>
-    service.changeEmployeeSalary(
-      db,
+    employees.changeSalary(
       parseId(request.params),
       salaryChangeSchema.parse(request.body),
       request.user!.id,
@@ -60,6 +61,6 @@ export function employeeRoutes(app: FastifyInstance, { db }: { db: Db }) {
   );
 
   app.get('/api/employees/:id/salary-history', (request) =>
-    service.salaryHistory(db, parseId(request.params)),
+    employees.salaryHistory(parseId(request.params)),
   );
 }

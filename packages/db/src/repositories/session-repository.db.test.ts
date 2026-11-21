@@ -1,8 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { createSession, deleteSession, findSessionUser } from './sessions.ts';
+import { SessionRepository } from './session-repository.ts';
 import { createTestDb, resetDb } from '../testing.ts';
 
 const db = createTestDb();
+const sessions = new SessionRepository(db);
 beforeEach(() => resetDb(db));
 afterAll(() => db.destroy());
 
@@ -16,7 +17,7 @@ const addUser = () =>
 describe('sessions', () => {
   it('stores only the hash of the token', async () => {
     const { id } = await addUser();
-    const token = await createSession(db, id);
+    const token = await sessions.create(id);
     expect(Buffer.from(token, 'base64url')).toHaveLength(32);
     const rows = await db.selectFrom('sessions').selectAll().execute();
     expect(rows).toHaveLength(1);
@@ -26,8 +27,8 @@ describe('sessions', () => {
 
   it('finds the user for a live session and expires after 8 hours', async () => {
     const { id } = await addUser();
-    const token = await createSession(db, id);
-    expect(await findSessionUser(db, token)).toEqual({
+    const token = await sessions.create(id);
+    expect(await sessions.findUser(token)).toEqual({
       id,
       email: 'hr@acme.example',
       name: 'Hana HR',
@@ -40,13 +41,13 @@ describe('sessions', () => {
       .updateTable('sessions')
       .set({ expiresAt: new Date(Date.now() - 1000) })
       .execute();
-    expect(await findSessionUser(db, token)).toBeUndefined();
+    expect(await sessions.findUser(token)).toBeUndefined();
   });
 
   it('deletes a session', async () => {
     const { id } = await addUser();
-    const token = await createSession(db, id);
-    await deleteSession(db, token);
-    expect(await findSessionUser(db, token)).toBeUndefined();
+    const token = await sessions.create(id);
+    await sessions.delete(token);
+    expect(await sessions.findUser(token)).toBeUndefined();
   });
 });

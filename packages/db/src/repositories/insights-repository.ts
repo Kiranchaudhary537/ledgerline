@@ -44,95 +44,103 @@ function groupedBase(db: Db, q: StatsQuery | GenderGapQuery) {
 const toGroup = (dims: string[], row: Record<string, unknown>) =>
   Object.fromEntries(dims.map((d, i) => [d, row[`g${i}`]])) as Record<string, string>;
 
-export async function getStats(db: Db, q: StatsQuery) {
-  const rows = await groupedBase(db, q)
-    .select([
-      sql<number>`count(*)`.as('count'),
-      sql<number>`min(${salary})`.as('min'),
-      pct(0.25).as('p25'),
-      pct(0.5).as('median'),
-      pct(0.75).as('p75'),
-      sql<number>`max(${salary})`.as('max'),
-      whole(sql`avg(${salary})`).as('avg'),
-      sql<number>`sum(${salary})`.as('total'),
-    ])
-    .execute();
-  return rows.map(({ currency, count, min, p25, median, p75, max, avg, total, ...g }) => ({
-    group: toGroup(q.groupBy, g),
-    count,
-    min,
-    p25,
-    median,
-    p75,
-    max,
-    avg,
-    total,
-    currency,
-  }));
-}
-
 const minGroup = config.insights.genderGapMinGroupSize;
 
-/** Medians are returned whenever that gender has anyone; only gapPct is null below 5 per gender. */
-export async function getGenderGap(db: Db, q: GenderGapQuery) {
-  const rows = await groupedBase(db, q)
-    .select([
-      genderMedian('female').as('femaleMedian'),
-      genderMedian('male').as('maleMedian'),
-      genderCount('female').as('femaleCount'),
-      genderCount('male').as('maleCount'),
-    ])
-    .execute();
-  return rows.map(({ currency, femaleMedian, maleMedian, femaleCount, maleCount, ...g }) => ({
-    group: toGroup(q.groupBy, g),
-    femaleMedian: femaleMedian as number | null,
-    maleMedian: maleMedian as number | null,
-    femaleCount,
-    maleCount,
-    gapPct:
-      femaleCount >= minGroup && maleCount >= minGroup
-        ? Math.round(((maleMedian - femaleMedian) / maleMedian) * 1000) / 10
-        : null,
-    currency,
-  }));
-}
+export class InsightsRepository {
+  private readonly db: Db;
 
-/** Equal-width buckets from min to max: [from, to) each, except the last which includes max. */
-export async function getDistribution(db: Db, q: DistributionQuery) {
-  const filtered = db
-    .selectFrom('employees')
-    .innerJoin('countries', 'countries.code', 'employees.countryCode')
-    .where((eb) => employeeFilters(eb, q));
-  const range = await filtered
-    .select([
-      sql<number | null>`min(${salary})`.as('min'),
-      sql<number>`max(${salary})`.as('max'),
-      sql<string>`min(countries.currency)`.as('currency'),
-    ])
-    .executeTakeFirstOrThrow();
-  if (range.min == null) return { currency: null as string | null, buckets: [] };
+  constructor(db: Db) {
+    this.db = db;
+  }
 
-  const { min, max } = range;
-  const n = max === min ? 1 : q.buckets;
-  const bounds = Array.from({ length: n + 1 }, (_, i) =>
-    i === n ? max : Math.round(min + ((max - min) * i) / n),
-  );
-  // width_bucket(x, thresholds) = how many inner boundaries are <= x, i.e. the 0-based bucket.
-  const inner = bounds.slice(1, -1);
-  const counts = await filtered
-    .select([
-      sql<number>`width_bucket(${salary}, ARRAY[${sql.join(inner)}]::bigint[])`.as('bucket'),
-      sql<number>`count(*)`.as('count'),
-    ])
-    .groupBy('bucket')
-    .execute();
-  const byBucket = new Map(counts.map((c) => [c.bucket, c.count]));
-  return {
-    currency: range.currency as string | null,
-    buckets: bounds.slice(0, -1).map((from, i) => ({
-      from,
-      to: bounds[i + 1] as number,
-      count: byBucket.get(i) ?? 0,
-    })),
-  };
+  async stats(q: StatsQuery) {
+    const rows = await groupedBase(this.db, q)
+      .select([
+        sql<number>`count(*)`.as('count'),
+        sql<number>`min(${salary})`.as('min'),
+        pct(0.25).as('p25'),
+        pct(0.5).as('median'),
+        pct(0.75).as('p75'),
+        sql<number>`max(${salary})`.as('max'),
+        whole(sql`avg(${salary})`).as('avg'),
+        sql<number>`sum(${salary})`.as('total'),
+      ])
+      .execute();
+    return rows.map(({ currency, count, min, p25, median, p75, max, avg, total, ...g }) => ({
+      group: toGroup(q.groupBy, g),
+      count,
+      min,
+      p25,
+      median,
+      p75,
+      max,
+      avg,
+      total,
+      currency,
+    }));
+  }
+
+  /** Medians are returned whenever that gender has anyone; only gapPct is null below 5 per gender. */
+  async genderGap(q: GenderGapQuery) {
+    const rows = await groupedBase(this.db, q)
+      .select([
+        genderMedian('female').as('femaleMedian'),
+        genderMedian('male').as('maleMedian'),
+        genderCount('female').as('femaleCount'),
+        genderCount('male').as('maleCount'),
+      ])
+      .execute();
+    return rows.map(({ currency, femaleMedian, maleMedian, femaleCount, maleCount, ...g }) => ({
+      group: toGroup(q.groupBy, g),
+      femaleMedian: femaleMedian as number | null,
+      maleMedian: maleMedian as number | null,
+      femaleCount,
+      maleCount,
+      gapPct:
+        femaleCount >= minGroup && maleCount >= minGroup
+          ? Math.round(((maleMedian - femaleMedian) / maleMedian) * 1000) / 10
+          : null,
+      currency,
+    }));
+  }
+
+  /** Equal-width buckets from min to max: [from, to) each, except the last which includes max. */
+  async distribution(q: DistributionQuery) {
+    const filtered = this.db
+      .selectFrom('employees')
+      .innerJoin('countries', 'countries.code', 'employees.countryCode')
+      .where((eb) => employeeFilters(eb, q));
+    const range = await filtered
+      .select([
+        sql<number | null>`min(${salary})`.as('min'),
+        sql<number>`max(${salary})`.as('max'),
+        sql<string>`min(countries.currency)`.as('currency'),
+      ])
+      .executeTakeFirstOrThrow();
+    if (range.min == null) return { currency: null as string | null, buckets: [] };
+
+    const { min, max } = range;
+    const n = max === min ? 1 : q.buckets;
+    const bounds = Array.from({ length: n + 1 }, (_, i) =>
+      i === n ? max : Math.round(min + ((max - min) * i) / n),
+    );
+    // width_bucket(x, thresholds) = how many inner boundaries are <= x, i.e. the 0-based bucket.
+    const inner = bounds.slice(1, -1);
+    const counts = await filtered
+      .select([
+        sql<number>`width_bucket(${salary}, ARRAY[${sql.join(inner)}]::bigint[])`.as('bucket'),
+        sql<number>`count(*)`.as('count'),
+      ])
+      .groupBy('bucket')
+      .execute();
+    const byBucket = new Map(counts.map((c) => [c.bucket, c.count]));
+    return {
+      currency: range.currency as string | null,
+      buckets: bounds.slice(0, -1).map((from, i) => ({
+        from,
+        to: bounds[i + 1] as number,
+        count: byBucket.get(i) ?? 0,
+      })),
+    };
+  }
 }

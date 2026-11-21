@@ -1,7 +1,7 @@
 import { createTestDb, resetDb } from '@acme/db/testing';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { buildApp } from './app.ts';
-import { loginCookie } from './testing.ts';
+import { buildApp } from '../../app.ts';
+import { loginCookie } from '../../testing.ts';
 
 const db = createTestDb();
 beforeEach(() => resetDb(db));

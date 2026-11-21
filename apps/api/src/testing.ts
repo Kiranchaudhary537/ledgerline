@@ -1,4 +1,4 @@
-import { createSession, type Db, hashPassword } from '@acme/db';
+import { type Db, hashPassword, SessionRepository } from '@acme/db';
 import { config } from '@acme/shared';
 import type { buildApp } from './app.ts';
 
@@ -32,5 +32,5 @@ export async function createTestUser(
 /** Creates a user and a session directly (no login request): returns a `cookie` header value. */
 export async function loginCookie(_app: ReturnType<typeof buildApp>, db: Db): Promise<string> {
   const user = await createTestUser(db);
-  return `${config.cookie.sessionName}=${await createSession(db, user.id)}`;
+  return `${config.cookie.sessionName}=${await new SessionRepository(db).create(user.id)}`;
 }

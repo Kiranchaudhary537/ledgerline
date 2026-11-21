@@ -3,9 +3,10 @@ import type { Insertable } from 'kysely';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createTestDb, resetDb } from '../testing.ts';
 import type { Employees } from '../types.ts';
-import { getDistribution, getGenderGap, getStats } from './insights.ts';
+import { InsightsRepository } from './insights-repository.ts';
 
 const db = createTestDb();
+const insights = new InsightsRepository(db);
 afterAll(() => db.destroy());
 
 const base: Insertable<Employees> = {
@@ -62,7 +63,7 @@ beforeAll(async () => {
 
 describe('getStats', () => {
   it('computes exact stats per group, rounding to whole minor units', async () => {
-    const rows = await getStats(db, { country: ['IN'], groupBy: ['department'] });
+    const rows = await insights.stats({ country: ['IN'], groupBy: ['department'] });
     expect(rows).toEqual([
       // 100, 101, 101: avg 100.67 -> 101; p25 pos .5 -> 100.5 -> 101; total 302
       {
@@ -109,7 +110,7 @@ describe('getStats', () => {
   });
 
   it('groups by two dimensions, ordering levels by seniority', async () => {
-    const rows = await getStats(db, { country: ['IN'], groupBy: ['level', 'department'] });
+    const rows = await insights.stats({ country: ['IN'], groupBy: ['level', 'department'] });
     expect(rows.map((r) => [r.group, r.count])).toEqual([
       [{ level: 'junior', department: 'Customer Support' }, 3],
       [{ level: 'mid', department: 'Sales' }, 2],
@@ -118,7 +119,7 @@ describe('getStats', () => {
   });
 
   it('gives each country its own currency', async () => {
-    const rows = await getStats(db, { groupBy: ['country'] });
+    const rows = await insights.stats({ groupBy: ['country'] });
     // IN total 46000 + 4000 + 302 = 50302 over 15 people; deleted excluded
     expect(rows.map((r) => [r.group, r.count, r.total, r.currency])).toEqual([
       [{ country: 'DE' }, 1, 7000, 'EUR'],
@@ -127,7 +128,7 @@ describe('getStats', () => {
   });
 
   it('applies filters', async () => {
-    const rows = await getStats(db, {
+    const rows = await insights.stats({
       country: ['IN'],
       gender: ['female'],
       groupBy: ['department'],
@@ -144,7 +145,7 @@ describe('getStats', () => {
 
 describe('getGenderGap', () => {
   it('computes the gap and nulls it below 5 people per gender', async () => {
-    const rows = await getGenderGap(db, { country: ['IN'], groupBy: ['department'] });
+    const rows = await insights.genderGap({ country: ['IN'], groupBy: ['department'] });
     expect(rows).toEqual([
       // no men: maleMedian null
       {
@@ -188,7 +189,7 @@ describe('getDistribution', () => {
 
   it('splits min..max into equal buckets', async () => {
     // min 1000, max 10000, 3 buckets of 3000: [1000,4000) [4000,7000) [7000,10000]
-    const d = await getDistribution(db, { ...eng, buckets: 3 });
+    const d = await insights.distribution({ ...eng, buckets: 3 });
     expect(d).toEqual({
       currency: 'INR',
       buckets: [
@@ -201,13 +202,13 @@ describe('getDistribution', () => {
 
   it('includes empty buckets', async () => {
     // 9 buckets of 1000; nobody earns 6000..6999
-    const d = await getDistribution(db, { ...eng, buckets: 9 });
+    const d = await insights.distribution({ ...eng, buckets: 9 });
     expect(d.buckets.map((b) => b.count)).toEqual([1, 2, 1, 2, 1, 0, 1, 1, 1]);
     expect(d.buckets[5]).toEqual({ from: 6000, to: 7000, count: 0 });
   });
 
   it('returns one bucket when all salaries are equal', async () => {
-    const d = await getDistribution(db, {
+    const d = await insights.distribution({
       country: ['IN'],
       department: ['Sales'],
       gender: ['female'],
@@ -217,7 +218,7 @@ describe('getDistribution', () => {
   });
 
   it('returns no buckets for an empty set', async () => {
-    const d = await getDistribution(db, { country: ['IN'], department: ['Finance'], buckets: 5 });
+    const d = await insights.distribution({ country: ['IN'], department: ['Finance'], buckets: 5 });
     expect(d.buckets).toEqual([]);
   });
 });
