@@ -58,7 +58,7 @@ function createRandom(seed: number) {
   return {
     next,
     between: (min: number, max: number) => min + next() * (max - min),
-    pick: <T>(items: readonly T[]): T => items[Math.floor(next() * items.length)]!,
+    pick: <T>(items: readonly T[]): T => items[Math.floor(next() * items.length)] as T, // index is always in range: next() < 1
     weighted<T>(items: Weighted<T>): T {
       const total = items.reduce((sum, [, w]) => sum + w, 0);
       let roll = next() * total;
@@ -66,7 +66,7 @@ function createRandom(seed: number) {
         roll -= weight;
         if (roll < 0) return value;
       }
-      return items.at(-1)![0];
+      return (items.at(-1) as [T, number])[0]; // rounding left a sliver of the roll: take the last item
     },
   };
 }
@@ -166,15 +166,15 @@ export function generateEmployees({
       const raise = promotion
         ? random.between(...seedConfig.promotionRaise)
         : random.between(...seedConfig.annualRaise);
-      const later = salaries[0]!;
+      const later = salaries[0] as number; // starts with one element and only grows
       const earlier = Math.min(Math.round(later / (1 + raise) / step) * step, later - step);
       salaries.unshift(Math.max(earlier, step));
       reasons.unshift(promotion ? 'Promotion' : 'Annual review');
     }
     const history: SeedSalaryChange[] = salaries.map((newSalaryMinor, k) => ({
-      oldSalaryMinor: k === 0 ? null : salaries[k - 1]!,
+      oldSalaryMinor: k === 0 ? null : (salaries[k - 1] as number),
       newSalaryMinor,
-      reason: k === 0 ? 'Starting salary' : reasons[k - 1]!,
+      reason: k === 0 ? 'Starting salary' : (reasons[k - 1] as string),
       changedAt: addDays(hireDate, k * 365),
     }));
 
