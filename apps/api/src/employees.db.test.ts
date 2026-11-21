@@ -45,7 +45,11 @@ describe('GET /api/employees', () => {
     const all = (await get('/api/employees')).json();
     expect(all).toMatchObject({ page: 1, pageSize: 25, total: 3 });
     expect(all.data.map((e: { fullName: string }) => e.fullName)).toEqual(['Anna', 'Bob', 'Cara']);
-    expect(all.data[0]).toMatchObject({ currency: 'EUR', countryCode: 'DE' });
+    expect(all.data[0]).toMatchObject({
+      currency: 'EUR',
+      countryCode: 'DE',
+      compaRatio: expect.any(Number),
+    });
 
     const filtered = (await get('/api/employees?country=IN&gender=male&sort=name:desc')).json();
     expect(filtered.data.map((e: { fullName: string }) => e.fullName)).toEqual(['Cara', 'Bob']);
@@ -73,7 +77,12 @@ describe('GET /api/employees/:id', () => {
     const e = await seed();
     const ok = await get(`/api/employees/${e.id}`);
     expect(ok.statusCode).toBe(200);
-    expect(ok.json()).toMatchObject({ id: e.id, currency: 'INR', hireDate: '2021-04-12' });
+    expect(ok.json()).toMatchObject({
+      id: e.id,
+      currency: 'INR',
+      hireDate: '2021-04-12',
+      compaRatio: expect.any(Number),
+    });
     expect((await get('/api/employees/99999')).statusCode).toBe(404);
     expect((await get('/api/employees/abc')).json().code).toBe('NOT_FOUND');
     expect((await get('/api/employees/-1')).statusCode).toBe(404);
@@ -92,6 +101,20 @@ describe('writes', () => {
     const dup = await send('POST', '/api/employees', base);
     expect(dup.statusCode).toBe(409);
     expect(dup.json()).toMatchObject({ code: 'EMAIL_TAKEN', fields: { email: 'Already in use' } });
+    await app.close();
+  });
+
+  it('rejects a job title from another department, and an unknown country, on create', async () => {
+    const { app, send } = await setup();
+    const title = await send('POST', '/api/employees', { ...base, jobTitle: 'Recruiter' });
+    expect(title.statusCode).toBe(400);
+    expect(title.json()).toMatchObject({
+      code: 'VALIDATION_FAILED',
+      fields: { jobTitle: 'Choose a job title in this department' },
+    });
+    const country = await send('POST', '/api/employees', { ...base, countryCode: 'XX' });
+    expect(country.statusCode).toBe(400);
+    expect(country.json().fields.countryCode).toBe('Choose a country');
     await app.close();
   });
 
@@ -232,7 +255,7 @@ describe('GET /api/meta/filters', () => {
     expect(body.countries).toContainEqual({ code: 'JP', name: 'Japan', currency: 'JPY' });
     expect(body.departments).toContainEqual({
       name: 'Product',
-      jobTitles: ['Product Manager', 'Product Designer'],
+      jobTitles: ['Product Designer', 'Product Manager'],
     });
     expect(body.levels).toEqual(['junior', 'mid', 'senior', 'lead', 'principal']);
     expect(body.employmentTypes).toEqual(['full_time', 'part_time', 'contract']);

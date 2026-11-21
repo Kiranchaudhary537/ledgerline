@@ -37,7 +37,12 @@ const seed = () =>
       emp({ salaryMinor: 1000 }),
       emp({ salaryMinor: 3000 }),
       emp({ salaryMinor: 2000, gender: 'male' }),
-      emp({ salaryMinor: 500, countryCode: 'DE', department: 'Sales' }),
+      emp({
+        salaryMinor: 500,
+        countryCode: 'DE',
+        department: 'Sales',
+        jobTitle: 'Account Executive',
+      }),
     ] as never) // rows are loosely typed; the DB enforces the real constraints
     .execute();
 

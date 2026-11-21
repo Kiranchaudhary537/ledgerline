@@ -34,6 +34,7 @@ One error shape, defined once in `packages/shared/src/errors.ts`, used by API an
 - One Fastify error handler turns everything into the shape:
   - Zod error → `VALIDATION_FAILED` + `fields`
   - Postgres unique violation → `EMAIL_TAKEN`
+  - Postgres foreign key violation on `employees_department_job_title_fkey` → `VALIDATION_FAILED` with `fields.jobTitle`; on the country key → `fields.countryCode`
   - DB connection error → `SERVICE_UNAVAILABLE`
   - Malformed JSON body → `VALIDATION_FAILED`; unknown URL → `ROUTE_NOT_FOUND`
   - anything else → `INTERNAL` (full error logged with `requestId`, never sent)

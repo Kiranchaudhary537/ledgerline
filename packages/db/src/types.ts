@@ -3,7 +3,7 @@
  * Please do not edit it manually.
  */
 
-import type { CountryCode, Department, JobTitle } from "@acme/shared";
+import type { CountryCode } from "@acme/shared";
 import type { ColumnType } from "kysely";
 
 export type EmploymentType = "contract" | "full_time" | "part_time";
@@ -26,11 +26,15 @@ export interface Countries {
   name: string;
 }
 
+export interface Departments {
+  name: string;
+}
+
 export interface Employees {
   countryCode: CountryCode;
   createdAt: Generated<Timestamp>;
   deletedAt: Timestamp | null;
-  department: Department;
+  department: string;
   email: string;
   employeeCode: Generated<string>;
   employmentType: EmploymentType;
@@ -38,11 +42,16 @@ export interface Employees {
   gender: Gender;
   hireDate: string;
   id: Generated<number>;
-  jobTitle: JobTitle;
+  jobTitle: string;
   level: Level;
   salaryMinor: number;
   updatedAt: Generated<Timestamp>;
   version: Generated<number>;
+}
+
+export interface JobTitles {
+  department: string;
+  title: string;
 }
 
 export interface SalaryChanges {
@@ -72,7 +81,9 @@ export interface Users {
 
 export interface DB {
   countries: Countries;
+  departments: Departments;
   employees: Employees;
+  jobTitles: JobTitles;
   salaryChanges: SalaryChanges;
   sessions: Sessions;
   users: Users;

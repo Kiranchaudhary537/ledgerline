@@ -1,6 +1,7 @@
 import { sql } from 'kysely';
 import type { Db } from '../client.ts';
 import { upsertCountries } from '../countries.ts';
+import { upsertDepartments } from '../departments.ts';
 import { hashPassword } from '../password.ts';
 import { generateEmployees } from './generate.ts';
 
@@ -37,6 +38,7 @@ export async function seedDatabase(
   await db.transaction().execute(async (trx) => {
     await clearData(trx);
     await upsertCountries(trx);
+    await upsertDepartments(trx);
     await trx
       .insertInto('users')
       .values({ email: adminEmail, name: 'HR Manager', passwordHash })

@@ -18,7 +18,6 @@ import {
   type EmployeeUpdate,
   type Filters,
   getCountry,
-  isTitleInDepartment,
   type ListQuery,
   type SalaryChange,
   type SalaryChangeInput,
@@ -60,18 +59,6 @@ export async function create(db: Db, input: EmployeeCreate, changedBy: number) {
 }
 
 export async function update(db: Db, id: number, input: EmployeeUpdate): Promise<Employee> {
-  // Only one of the pair sent: the schema cannot check it, so compare with the stored value.
-  if (!input.department !== !input.jobTitle) {
-    const stored = await getEmployee(db, id);
-    if (!stored) throw new AppError('NOT_FOUND');
-    const department = input.department ?? stored.department;
-    const jobTitle = input.jobTitle ?? stored.jobTitle;
-    if (!isTitleInDepartment(jobTitle, department)) {
-      throw new AppError('VALIDATION_FAILED', {
-        jobTitle: 'Choose a job title in this department',
-      });
-    }
-  }
   return unwrap(await updateEmployee(db, id, input));
 }
 

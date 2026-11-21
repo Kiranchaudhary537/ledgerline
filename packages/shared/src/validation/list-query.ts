@@ -1,13 +1,6 @@
 import { z } from 'zod';
-import {
-  COUNTRY_CODES,
-  DEPARTMENT_NAMES,
-  EMPLOYMENT_TYPES,
-  GENDERS,
-  JOB_TITLES,
-  LEVELS,
-} from '../constants.ts';
-import { commaList, optionalParam, paramWithDefault } from './common.ts';
+import { COUNTRY_CODES, EMPLOYMENT_TYPES, GENDERS, LEVELS } from '../constants.ts';
+import { commaList, enumList, nameSchema, optionalParam, paramWithDefault } from './common.ts';
 
 /** Filters shared by the employee list, CSV export and insights. */
 export const filterFields = {
@@ -18,12 +11,12 @@ export const filterFields = {
       .min(2, { error: 'Type at least 2 characters' })
       .max(100, { error: 'Search is too long' }),
   ),
-  country: optionalParam(commaList(COUNTRY_CODES)),
-  department: optionalParam(commaList(DEPARTMENT_NAMES)),
-  jobTitle: optionalParam(commaList(JOB_TITLES)),
-  level: optionalParam(commaList(LEVELS)),
-  employmentType: optionalParam(commaList(EMPLOYMENT_TYPES)),
-  gender: optionalParam(commaList(GENDERS)),
+  country: optionalParam(enumList(COUNTRY_CODES)),
+  department: optionalParam(commaList(nameSchema)),
+  jobTitle: optionalParam(commaList(nameSchema)),
+  level: optionalParam(enumList(LEVELS)),
+  employmentType: optionalParam(enumList(EMPLOYMENT_TYPES)),
+  gender: optionalParam(enumList(GENDERS)),
 };
 
 export const SORT_OPTIONS = [
