@@ -15,7 +15,7 @@ function PopoverContent({
         align="start"
         sideOffset={4}
         className={cn(
-          'z-50 max-h-80 min-w-56 overflow-y-auto overscroll-contain rounded-lg border border-border bg-card p-1 shadow-[var(--shadow-overlay)]',
+          'cut-s z-50 max-h-80 min-w-56 overflow-y-auto overscroll-contain p-1 shadow-overlay',
           className,
         )}
         {...props}

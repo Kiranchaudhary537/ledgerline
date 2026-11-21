@@ -11,7 +11,7 @@ export function Sidebar() {
   return (
     <nav
       aria-label="Main"
-      className="sticky top-14 flex h-[calc(100dvh-3.5rem)] w-[72px] shrink-0 flex-col items-center gap-2 border-r border-border bg-card py-3"
+      className="sticky top-14 flex h-[calc(100dvh-3.5rem)] w-20 shrink-0 flex-col items-center gap-2 border-r border-rule bg-paper-2 py-3"
     >
       {items.map(({ to, label, Icon }) => (
         <NavLink
@@ -20,8 +20,8 @@ export function Sidebar() {
           title={label}
           className={({ isActive }) =>
             cn(
-              'flex w-14 flex-col items-center gap-1 rounded-lg py-2 text-[11px] text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-              isActive && 'bg-primary-soft font-semibold text-primary hover:text-primary',
+              'cut-s flex w-16 flex-col items-center gap-1 border-transparent bg-transparent py-2 text-xs text-muted hover:text-ink',
+              isActive && 'border-accent bg-accent-wash font-medium text-accent hover:text-accent',
             )
           }
         >

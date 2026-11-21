@@ -13,8 +13,8 @@ import { TopBar } from './components/TopBar';
 function ShellSkeleton() {
   return (
     <div aria-busy="true">
-      <div className="h-14 bg-ink" />
-      <div className="m-6 h-8 w-48 motion-safe:animate-pulse rounded-md bg-muted" />
+      <div className="h-14 bg-graphite" />
+      <div className="m-6 h-8 w-48 motion-safe:animate-pulse rounded-sm bg-paper-3" />
       <span className="sr-only">Loading…</span>
     </div>
   );
@@ -48,7 +48,7 @@ export function ProtectedLayout() {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-md focus:bg-card focus:p-2"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:cut-s focus:bg-paper focus:p-2"
       >
         Skip to content
       </a>
@@ -61,7 +61,7 @@ export function ProtectedLayout() {
       />
       <div className="flex">
         <Sidebar />
-        <main id="main" className="mx-auto min-w-0 max-w-[1280px] flex-1 px-6 py-6">
+        <main id="main" className="mx-auto min-w-0 max-w-[1280px] flex-1 px-4 py-6 sm:px-6">
           <Outlet />
         </main>
       </div>

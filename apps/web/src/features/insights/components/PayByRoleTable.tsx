@@ -13,8 +13,7 @@ import { groupByRole, type RoleGroup } from '@/features/insights/model/pay-roles
 import { formatCount, label, money } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
-const linkClass =
-  'underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+const linkClass = 'underline-offset-4 hover:underline';
 
 function PayLadder({
   role,
@@ -28,9 +27,9 @@ function PayLadder({
   const left = railPosition(scale, role.lowMedian);
   return (
     <div className="tnum relative h-9">
-      <div className="absolute inset-x-0 top-[17px] h-px bg-border" />
+      <div className="absolute inset-x-0 top-[17px] h-px bg-rule-2" />
       <div
-        className="absolute top-[17px] h-px bg-muted-foreground"
+        className="absolute top-[17px] h-0.5 bg-accent-2"
         style={{ left: `${left}%`, width: `${railPosition(scale, role.highMedian) - left}%` }}
       />
       {role.levels.map((l) => (
@@ -38,7 +37,7 @@ function PayLadder({
           key={l.group.level}
           role="img"
           aria-label={`${label(l.group.level ?? '')} median ${money(l.median, countryCode)}`}
-          className="absolute top-[9px] flex size-4.5 -translate-x-1/2 items-center justify-center rounded-full bg-primary text-[10px] leading-none font-semibold text-primary-foreground"
+          className="absolute top-[7px] flex size-5 -translate-x-1/2 items-center justify-center rounded-[3px] bg-accent text-xs leading-none font-medium text-accent-ink"
           style={{ left: `${railPosition(scale, l.median)}%` }}
         >
           {(l.group.level ?? '').charAt(0).toUpperCase()}
@@ -74,14 +73,14 @@ function RoleRow({
           aria-expanded={expanded}
           aria-label={`${role.jobTitle} levels`}
           onClick={onToggle}
-          className="mr-1 inline-flex size-6 items-center justify-center rounded-sm align-middle text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+          className="mr-1 inline-flex size-6 items-center justify-center rounded-sm align-middle text-muted hover:bg-paper-3 hover:text-ink"
         >
           <ChevronRight
             aria-hidden
             className={cn('size-4 motion-safe:transition-transform', expanded && 'rotate-90')}
           />
         </button>
-        <Link to={roleLink(country, role.jobTitle)} className={`font-semibold ${linkClass}`}>
+        <Link to={roleLink(country, role.jobTitle)} className={`font-medium ${linkClass}`}>
           {role.jobTitle}
         </Link>
       </Td>

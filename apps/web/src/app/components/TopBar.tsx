@@ -12,11 +12,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { SessionUser } from '@/features/auth/api/session';
 import { initials } from '@/features/employees/shared/model/people';
-import { toneOf } from '@/lib/tone';
 import type { Crumb } from '@/app/breadcrumbs';
 
-const onInk =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-foreground';
+/** The ring on graphite needs the lighter cobalt to keep 3:1. */
+const onBar = 'focus-visible:outline-accent-2';
 
 interface Props {
   crumbs: Crumb[];
@@ -28,18 +27,22 @@ interface Props {
 
 export function TopBar({ crumbs, user, onAddEmployee, onLogout, loggingOut }: Props) {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 bg-ink px-4 text-ink-foreground">
-      <Link to="/employees" translate="no" className={`font-semibold ${onInk}`}>
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 bg-graphite px-4 text-graphite-ink">
+      <Link
+        to="/employees"
+        translate="no"
+        className={`font-display text-lg font-semibold tracking-display ${onBar}`}
+      >
         ACME&nbsp;Pay
       </Link>
       <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
-        <ol className="flex items-center gap-2 text-ink-muted">
+        <ol className="flex items-center gap-2 text-graphite-muted">
           {crumbs.map((c, i) => (
             <Fragment key={c.label}>
               {i > 0 && <li aria-hidden>/</li>}
-              <li className={i === crumbs.length - 1 ? 'truncate text-ink-foreground' : ''}>
+              <li className={i === crumbs.length - 1 ? 'truncate text-graphite-ink' : ''}>
                 {c.to ? (
-                  <Link to={c.to} className={`hover:text-ink-foreground ${onInk}`}>
+                  <Link to={c.to} className={`hover:text-graphite-ink ${onBar}`}>
                     {c.label}
                   </Link>
                 ) : (
@@ -55,20 +58,19 @@ export function TopBar({ crumbs, user, onAddEmployee, onLogout, loggingOut }: Pr
         aria-label="Add employee"
         title="Add employee"
         onClick={onAddEmployee}
-        className={`inline-flex size-9 items-center justify-center rounded-full bg-accent text-accent-foreground hover:brightness-95 ${onInk}`}
+        className={`key key-icon ${onBar}`}
       >
         <Plus aria-hidden className="size-5" />
       </button>
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label={`Account menu for ${user.name}`}
-          className={`flex items-center gap-2 rounded-full py-1 pr-2 pl-1 hover:bg-white/10 ${onInk}`}
+          className={`cut-s flex items-center gap-2 border-transparent bg-transparent py-1 pr-2 pl-1 hover:bg-graphite-2 data-[state=open]:bg-graphite-2 ${onBar}`}
         >
           <Avatar
             initials={initials(user.name)}
-            tone={toneOf(user.name)}
             size="sm"
-            className="bg-white/15 text-ink-foreground"
+            className="bg-graphite-2 text-graphite-ink"
           />
           <span className="hidden sm:inline">{user.name}</span>
         </DropdownMenuTrigger>

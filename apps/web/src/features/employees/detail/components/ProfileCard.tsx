@@ -32,10 +32,10 @@ export function ProfileCard({
           Edit details
         </Button>
       </CardHeader>
-      <dl className="grid gap-x-10 gap-y-4 border-t border-border p-5 sm:grid-cols-2">
+      <dl className="grid gap-x-10 gap-y-4 border-t border-rule p-5 sm:grid-cols-2">
         {facts.map(([term, value]) => (
           <div key={term} className="min-w-0">
-            <dt className="text-xs text-muted-foreground">{term}</dt>
+            <dt className="text-xs text-muted">{term}</dt>
             <dd className="break-words">{value}</dd>
           </div>
         ))}

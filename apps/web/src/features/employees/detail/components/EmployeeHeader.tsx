@@ -11,10 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, StatusPill } from '@/components/ui/pill';
+import { Avatar, Status } from '@/components/ui/pill';
 import { initials } from '@/features/employees/shared/model/people';
 import { formatCount, formatDate } from '@/lib/format';
-import { toneOf } from '@/lib/tone';
 import { cn } from '@/lib/utils';
 
 export interface PagerView {
@@ -35,14 +34,13 @@ interface Props {
   onChangeSalary: () => void;
 }
 
-const roundButton =
-  'inline-flex size-9 items-center justify-center rounded-full border border-border bg-card hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+const roundButton = 'key key-icon';
 
 function Meta({ term, children }: { term: string; children: ReactNode }) {
   return (
     <div className="min-w-0">
-      <dt className="text-xs text-muted-foreground">{term}</dt>
-      <dd className="font-semibold break-words">{children}</dd>
+      <dt className="text-xs text-muted">{term}</dt>
+      <dd className="font-medium break-words">{children}</dd>
     </div>
   );
 }
@@ -60,7 +58,7 @@ function StepLink({
     return (
       <span
         aria-disabled
-        className={cn(roundButton, 'cursor-not-allowed opacity-40')}
+        className={cn(roundButton, 'cursor-not-allowed opacity-55')}
         role="img"
         aria-label={`${label} (none)`}
       >
@@ -95,22 +93,24 @@ export function EmployeeHeader({
         <ArrowLeft aria-hidden className="size-4" />
       </Link>
       <div className="flex items-center gap-3">
-        <Avatar initials={initials(e.fullName)} tone={toneOf(e.fullName)} size="lg" />
+        <Avatar initials={initials(e.fullName)} size="lg" />
         <div className="space-y-1">
-          <h1 className="text-2xl leading-tight font-semibold">{e.fullName}</h1>
-          <StatusPill>Active</StatusPill>
+          <h1 className="text-2xl leading-tight">{e.fullName}</h1>
+          <Status>Active</Status>
         </div>
       </div>
-      <div aria-hidden className="hidden h-10 w-px bg-border lg:block" />
+      <div aria-hidden className="hidden h-10 w-px bg-rule lg:block" />
       <dl className="grid flex-1 grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
-        <Meta term="Employee code">{e.employeeCode}</Meta>
+        <Meta term="Employee code">
+          <span className="font-outlier text-xs">{e.employeeCode}</span>
+        </Meta>
         <Meta term="Department">{e.department}</Meta>
         <Meta term="Country">{countryName}</Meta>
         <Meta term="Hire date">{formatDate(e.hireDate)}</Meta>
       </dl>
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex flex-wrap items-center gap-2">
         {pager && (
-          <div className="tnum flex items-center gap-2 text-muted-foreground">
+          <div className="tnum flex items-center gap-2 text-muted">
             <StepLink to={pager.prevTo} label="Previous employee">
               <ChevronLeft aria-hidden className="size-4" />
             </StepLink>

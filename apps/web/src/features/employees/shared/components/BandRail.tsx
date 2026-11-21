@@ -39,13 +39,13 @@ export function BandRail({
       .join('');
   return (
     <div role="img" aria-label={summary} className="tnum relative h-9">
-      <div className="absolute inset-x-0 top-[13px] h-0.5 bg-border" />
+      <div className="absolute inset-x-0 top-[13px] h-0.5 bg-rule-2" />
       <div
-        className="absolute top-[9px] h-2.5 rounded-sm bg-band-soft"
+        className="absolute top-[9px] h-2.5 rounded-[2px] bg-accent-2"
         style={{ left: `${layout.p25}%`, width: `${layout.p75 - layout.p25}%` }}
       />
       <div
-        className="absolute top-[5px] h-[18px] w-0.5 bg-muted-foreground"
+        className="absolute top-[5px] h-[18px] w-0.5 bg-ink"
         style={{ left: `${layout.median}%` }}
       />
       {markers.map((m, i) => (
@@ -53,8 +53,8 @@ export function BandRail({
           key={m.kind}
           className={
             m.kind === 'current'
-              ? 'absolute top-[7px] -ml-[7px] size-3.5 rounded-full bg-primary shadow-[0_0_0_3px_var(--background)]'
-              : 'absolute top-[7px] -ml-[7px] size-3.5 rounded-full border-2 border-primary bg-background'
+              ? 'absolute top-[7px] -ml-[7px] size-3.5 rounded-full bg-accent ring-3 ring-paper'
+              : 'absolute top-[7px] -ml-[7px] size-3.5 rounded-full border-2 border-accent bg-paper'
           }
           style={{ left: `${layout.values[i]}%` }}
         />
@@ -64,7 +64,7 @@ export function BandRail({
           // p25 hangs left of its mark and p75 right of its, so close marks never overlap labels.
           <span
             key={i}
-            className={`absolute top-6 text-xs whitespace-nowrap text-muted-foreground ${i ? '' : '-translate-x-full'}`}
+            className={`absolute top-6 text-xs whitespace-nowrap text-muted ${i ? '' : '-translate-x-full'}`}
             style={{ left: `${i ? layout.p75 : layout.p25}%` }}
           >
             {money(v, countryCode)}

@@ -17,7 +17,7 @@ export function InsightCard({
       <CardHeader className="items-start pb-3">
         <div className="space-y-1">
           <CardTitle id={titleId}>{title}</CardTitle>
-          {description && <p className="max-w-2xl text-muted-foreground">{description}</p>}
+          {description && <p className="max-w-2xl text-muted">{description}</p>}
         </div>
       </CardHeader>
       {children}

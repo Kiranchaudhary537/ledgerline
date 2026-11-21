@@ -51,12 +51,12 @@ export function Histogram({
             x={LEFT - 6}
             y={y(t) + 4}
             textAnchor="end"
-            className="tnum fill-muted-foreground text-[11px]"
+            className="tnum fill-muted text-xs"
           >
             {formatCount(t)}
           </text>
         ))}
-        <line x1={LEFT} x2={W} y1={y(0)} y2={y(0)} className="stroke-border" />
+        <line x1={LEFT} x2={W} y1={y(0)} y2={y(0)} className="stroke-rule" />
         {buckets.map((b, i) => (
           <rect
             key={b.from}
@@ -64,8 +64,8 @@ export function Histogram({
             y={y(b.count)}
             width={Math.max(bw - 2, 1)}
             height={y(0) - y(b.count)}
-            rx={2}
-            className="fill-primary"
+            rx={1}
+            className="fill-accent"
           >
             <title>{`${range(b)}: ${formatCount(b.count)} people`}</title>
           </rect>
@@ -73,7 +73,7 @@ export function Histogram({
         <XAxisLabels buckets={buckets} bw={bw} countryCode={countryCode} />
       </svg>
       {spread && (
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1 text-xs text-muted">
           Shaded band: the middle half of salaries (p25 to p75). Line: the median.
         </p>
       )}
@@ -103,16 +103,16 @@ function SpreadMarks({
         y={TOP}
         width={x(spread.p75) - x(spread.p25)}
         height={y0 - TOP}
-        className="fill-band-soft"
+        className="fill-accent-wash"
       >
         <title>{`Middle half of pay: ${money(spread.p25, countryCode)} to ${money(spread.p75, countryCode)}`}</title>
       </rect>
-      <line x1={median} x2={median} y1={TOP - 4} y2={y0} className="stroke-foreground" />
+      <line x1={median} x2={median} y1={TOP - 4} y2={y0} className="stroke-ink" />
       <text
         x={median + (flip ? -5 : 5)}
         y={TOP - 6}
         textAnchor={flip ? 'end' : 'start'}
-        className="tnum fill-foreground text-[11px] font-semibold"
+        className="tnum fill-ink text-xs font-medium"
       >
         {`Median ${money(spread.median, countryCode)}`}
       </text>
@@ -141,7 +141,7 @@ function XAxisLabels({
             x={last ? W : LEFT + i * bw}
             y={H - 6}
             textAnchor={i === 0 ? 'start' : last ? 'end' : 'middle'}
-            className="tnum fill-muted-foreground text-[11px]"
+            className="tnum fill-muted text-xs"
           >
             {money(last ? buckets[i]!.to : buckets[i]!.from, countryCode)}
           </text>
@@ -162,22 +162,20 @@ function DistributionTable({
 }) {
   return (
     <details className="mt-2">
-      <summary className="cursor-pointer text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-        View as table
-      </summary>
+      <summary className="cursor-pointer text-muted hover:text-ink">View as table</summary>
       <table className="tnum mt-2 w-full max-w-md border-collapse">
         <caption className="sr-only">{name}</caption>
         <thead>
           <tr>
             <th
               scope="col"
-              className="border-b border-border pb-1.5 text-left text-xs font-semibold text-muted-foreground"
+              className="border-b border-rule pb-1.5 text-left text-xs font-medium text-muted"
             >
               Salary range
             </th>
             <th
               scope="col"
-              className="border-b border-border pb-1.5 text-right text-xs font-semibold text-muted-foreground"
+              className="border-b border-rule pb-1.5 text-right text-xs font-medium text-muted"
             >
               People
             </th>
@@ -186,8 +184,8 @@ function DistributionTable({
         <tbody>
           {buckets.map((b) => (
             <tr key={b.from}>
-              <td className="h-8 border-b border-border">{range(b)}</td>
-              <td className="h-8 border-b border-border text-right">{formatCount(b.count)}</td>
+              <td className="h-8 border-b border-rule">{range(b)}</td>
+              <td className="h-8 border-b border-rule text-right">{formatCount(b.count)}</td>
             </tr>
           ))}
         </tbody>

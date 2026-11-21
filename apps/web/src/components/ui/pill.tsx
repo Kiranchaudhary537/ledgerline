@@ -1,48 +1,35 @@
+import { CircleCheck } from 'lucide-react';
 import type * as React from 'react';
-import { TONE_COUNT } from '@/lib/tone';
 import { cn } from '@/lib/utils';
 
-/** Static class names so Tailwind can see them; index = tone from `toneOf`. */
-const DOT = ['bg-cat-1', 'bg-cat-2', 'bg-cat-3', 'bg-cat-4', 'bg-cat-5', 'bg-cat-6'] as const;
-const TINT = [
-  'bg-cat-1/20',
-  'bg-cat-2/20',
-  'bg-cat-3/20',
-  'bg-cat-4/20',
-  'bg-cat-5/20',
-  'bg-cat-6/20',
-] as const;
+/** Static class names so Tailwind can see them; index = position on the cobalt ramp (light to dark). */
+const RAMP = ['bg-ramp-1', 'bg-ramp-2', 'bg-ramp-3', 'bg-ramp-4', 'bg-ramp-5'] as const;
+export const rampColor = (step: number) => RAMP[Math.min(Math.max(step, 0), RAMP.length - 1)];
 
-const toneIndex = (tone: number) => ((tone % TONE_COUNT) + TONE_COUNT) % TONE_COUNT;
-export const toneDot = (tone: number) => DOT[toneIndex(tone)];
-
-export function Dot({ tone, className }: { tone: number; className?: string }) {
+/** A legend swatch: it names one step of the ramp, so it always sits beside its label. */
+export function Swatch({ step, className }: { step: number; className?: string }) {
   return (
     <span
       aria-hidden
-      className={cn('inline-block size-2 rounded-full', toneDot(tone), className)}
+      className={cn('inline-block size-2.5 rounded-[2px]', rampColor(step), className)}
     />
   );
 }
 
-const pillBase =
-  'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap';
-
-/** Neutral pill with a coloured dot: category (department, level, reason). */
-export function DotPill({ tone, children }: { tone: number; children: React.ReactNode }) {
+/** Cut chip for a category (department, level, reason): text on a paper-2 well, no colour of its own. */
+export function Chip({ children }: { children: React.ReactNode }) {
   return (
-    <span className={cn(pillBase, 'border border-border bg-muted text-foreground')}>
-      <Dot tone={tone} />
+    <span className="cut-s inline-flex items-center bg-paper-2 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-ink-2">
       {children}
     </span>
   );
 }
 
-/** Green status pill ("Active"). */
-export function StatusPill({ children }: { children: React.ReactNode }) {
+/** Status is text with one icon, never a filled chip. */
+export function Status({ children }: { children: React.ReactNode }) {
   return (
-    <span className={cn(pillBase, 'bg-success-soft text-success')}>
-      <span aria-hidden className="size-1.5 rounded-full bg-success" />
+    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success">
+      <CircleCheck aria-hidden className="size-4" />
       {children}
     </span>
   );
@@ -50,12 +37,10 @@ export function StatusPill({ children }: { children: React.ReactNode }) {
 
 export function Avatar({
   initials,
-  tone,
   size = 'md',
   className,
 }: {
   initials: string;
-  tone: number;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }) {
@@ -63,11 +48,10 @@ export function Avatar({
     <span
       aria-hidden
       className={cn(
-        'inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-foreground select-none',
-        TINT[toneIndex(tone)],
+        'cut-s inline-flex shrink-0 items-center justify-center bg-paper-3 font-medium text-ink-2 select-none',
         size === 'sm' && 'size-7 text-xs',
         size === 'md' && 'size-9 text-sm',
-        size === 'lg' && 'size-14 text-lg',
+        size === 'lg' && 'size-14 font-display text-lg',
         className,
       )}
     >

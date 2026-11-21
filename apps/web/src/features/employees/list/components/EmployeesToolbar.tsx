@@ -45,12 +45,12 @@ export function EmployeesToolbar({
   );
 
   return (
-    <div role="group" aria-label="Filters" className="space-y-2 p-4">
+    <div role="group" aria-label="Filters" className="space-y-2 border-b border-rule p-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-xs">
           <Search
             aria-hidden
-            className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-subtle"
+            className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted"
           />
           <input
             type="search"
@@ -61,7 +61,7 @@ export function EmployeesToolbar({
             spellCheck={false}
             value={searchText}
             onChange={(e) => onSearchText(e.target.value)}
-            className="h-9 w-full rounded-md border border-border bg-card pr-2.5 pl-8 text-foreground placeholder:text-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="field pr-2.5 pl-8"
           />
         </div>
         {FILTERS.filter((f) => !f.secondary).map(menu)}
@@ -79,7 +79,7 @@ export function EmployeesToolbar({
         )}
       </div>
       {searchText.trim().length === 1 && (
-        <p className="text-xs text-muted-foreground">Type at least 2 characters to search.</p>
+        <p className="text-xs text-muted">Type at least 2 characters to search.</p>
       )}
       {moreOpen && (
         <div className="flex flex-wrap items-center gap-2">

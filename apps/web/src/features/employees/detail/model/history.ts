@@ -15,12 +15,12 @@ export interface HistoryRow {
   changedBy: string;
 }
 
-/** Pill text and category colour per kind; "other" shows the reason as written. */
-export const REASON_PILL: Record<ReasonKind, { text: string | null; tone: number }> = {
-  start: { text: 'Starting salary', tone: 1 },
-  review: { text: 'Annual review', tone: 0 },
-  promotion: { text: 'Promotion', tone: 3 },
-  other: { text: null, tone: 2 },
+/** Chip text per kind; "other" shows the reason as written. */
+export const REASON_PILL: Record<ReasonKind, { text: string | null }> = {
+  start: { text: 'Starting salary' },
+  review: { text: 'Annual review' },
+  promotion: { text: 'Promotion' },
+  other: { text: null },
 };
 
 export type HistoryKey = 'date' | 'from' | 'to' | 'change' | 'reason' | 'by';

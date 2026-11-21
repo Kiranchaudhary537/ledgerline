@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { DotPill } from '@/components/ui/pill';
+import { Chip } from '@/components/ui/pill';
 import { EmptyState, Failed, RowsSkeleton } from '@/components/ui/states';
 import { SortButton, Table, Td, Th, rowHover } from '@/components/ui/table';
 import {
@@ -83,7 +83,7 @@ export function HistoryCard({ rows, error, onRetry, countryCode }: Props) {
                     <Td>{formatDate(r.changedAt)}</Td>
                     <Td align="right">
                       {r.oldMinor === null ? (
-                        <span className="text-subtle">—</span>
+                        <span className="text-muted">None</span>
                       ) : (
                         money(r.oldMinor, countryCode)
                       )}
@@ -91,7 +91,7 @@ export function HistoryCard({ rows, error, onRetry, countryCode }: Props) {
                     <Td align="right">{money(r.newMinor, countryCode)}</Td>
                     <Td align="right">{r.change === null ? '' : formatPercent(r.change)}</Td>
                     <Td className="max-w-[28ch] truncate" title={r.reason}>
-                      <DotPill tone={pill.tone}>{pill.text ?? r.reason}</DotPill>
+                      <Chip>{pill.text ?? r.reason}</Chip>
                     </Td>
                     <Td>{r.changedBy}</Td>
                   </tr>

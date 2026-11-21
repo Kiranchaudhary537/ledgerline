@@ -29,7 +29,7 @@ export function InsightsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-semibold">Insights</h1>
+      <h1 className="text-2xl">Insights</h1>
       <InsightsToolbar state={state} options={options.data} set={set} />
       <SummaryCard total={total} country={country} countryName={countryName(country)} />
 
@@ -67,7 +67,7 @@ export function InsightsPage() {
               skeleton={
                 <div
                   aria-hidden
-                  className="mx-5 mb-5 h-44 rounded-md bg-muted motion-safe:animate-pulse"
+                  className="mx-5 mb-5 h-44 rounded-sm bg-paper-3 motion-safe:animate-pulse"
                 />
               }
             >

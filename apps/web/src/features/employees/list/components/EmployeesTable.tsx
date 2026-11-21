@@ -55,7 +55,7 @@ export function EmployeesTable({ rows, loading, state, update, countryName, onAc
               <tr key={i} aria-hidden>
                 {columns.map((c) => (
                   <Td key={c.id}>
-                    <div className="h-3.5 w-3/4 rounded-sm bg-muted motion-safe:animate-pulse" />
+                    <div className="h-3.5 w-3/4 rounded-sm bg-paper-3 motion-safe:animate-pulse" />
                   </Td>
                 ))}
               </tr>
