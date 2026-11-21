@@ -31,7 +31,8 @@ const failure = (promise: Promise<unknown>) =>
     (e: unknown) => e,
   );
 
-describe('AuthService.login', () => {
+// Real-strength scrypt (OWASP params, ~128 MB per hash) is slow when all test files run in parallel.
+describe('AuthService.login', { timeout: 30_000 }, () => {
   it('returns the user and a session token for correct credentials', async () => {
     const { service, created } = build();
     expect(await service.login('hr@acme.example', 'correct-horse-battery')).toEqual({

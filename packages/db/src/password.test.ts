@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { hashPassword, verifyPassword } from './password.ts';
 
-describe('password hashing', () => {
+// Real-strength scrypt (OWASP params, ~128 MB per hash) is slow when all test files run in parallel.
+describe('password hashing', { timeout: 30_000 }, () => {
   it('verifies the right password and rejects a wrong one', async () => {
     const stored = await hashPassword('correct horse battery staple');
     expect(await verifyPassword('correct horse battery staple', stored)).toBe(true);
