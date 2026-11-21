@@ -23,7 +23,7 @@ describe('generateEmployees', () => {
   });
 
   it('produces only employees the API itself would accept', () => {
-    for (const { history: _, ...e } of employees) {
+    for (const { history: _history, ...e } of employees) {
       expect(employeeCreateSchema.safeParse(e).success, e.email).toBe(true);
     }
   });
@@ -31,11 +31,7 @@ describe('generateEmployees', () => {
   it('gives every employee a unique email built from their name', () => {
     expect(new Set(employees.map((e) => e.email)).size).toBe(employees.length);
     for (const e of employees.slice(0, 200)) {
-      const [first] = e.fullName
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .toLowerCase()
-        .split(' ');
+      const [first] = e.fullName.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().split(' ');
       expect(e.email.startsWith(`${first}.`), `${e.fullName} → ${e.email}`).toBe(true);
     }
   });
