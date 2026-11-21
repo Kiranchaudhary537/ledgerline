@@ -7,7 +7,15 @@ export default defineConfig({
         test: {
           name: 'unit',
           include: ['{apps,packages}/*/src/**/*.test.ts'],
-          exclude: ['**/*.db.test.ts'],
+          exclude: ['**/*.db.test.ts', 'apps/web/**'],
+        },
+      },
+      {
+        test: {
+          name: 'web',
+          include: ['apps/web/src/**/*.test.{ts,tsx}'],
+          environment: 'jsdom',
+          setupFiles: ['apps/web/src/test-setup.ts'],
         },
       },
       {
