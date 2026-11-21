@@ -1,3 +1,5 @@
+import type { ZodError } from 'zod';
+
 /** Every error the API can return. Messages are shown to the HR manager as-is. */
 export const ERRORS = {
   VALIDATION_FAILED: { status: 400, message: 'Please fix the highlighted fields.' },
@@ -26,4 +28,14 @@ export interface ApiErrorBody {
   /** Form errors only: field name → short message. */
   fields?: Record<string, string>;
   requestId?: string;
+}
+
+/** Turns a Zod error into `fields`: first message per top-level field. */
+export function fieldErrors(error: ZodError): Record<string, string> {
+  const fields: Record<string, string> = {};
+  for (const issue of error.issues) {
+    const key = String(issue.path[0] ?? '_');
+    fields[key] ??= issue.message;
+  }
+  return fields;
 }

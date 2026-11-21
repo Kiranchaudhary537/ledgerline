@@ -16,10 +16,10 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 ## M1 – Shared (`packages/shared`)
 
-- [ ] Constants: 8 countries (currency, locale, minor unit), departments → job titles, levels, employment types, genders
-- [ ] 🔴 Money: major ↔ minor units, format by locale (INR, EUR, JPY with 0 decimals, bad input)
-- [ ] 🔴 Errors: code table (status + message), `ApiError` shape
-- [ ] 🔴 Schemas: employee create/edit, salary change, list query (multi values, salary-sort rule, pageSize cap), insights query (one-country rule)
+- [x] Constants: 8 countries (currency, locale, minor unit), departments → job titles, levels, employment types, genders
+- [x] 🔴 Money: major ↔ minor units, format by locale (INR, EUR, JPY with 0 decimals, bad input)
+- [x] 🔴 Errors: code table (status + message), `ApiError` shape
+- [x] 🔴 Schemas: employee create/edit, salary change, list query (multi values, salary-sort rule, pageSize cap), insights query (one-country rule)
 
 ## M2 – Database (`packages/db`)
 
