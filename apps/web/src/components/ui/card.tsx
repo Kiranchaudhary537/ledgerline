@@ -1,17 +1,9 @@
 import type * as React from 'react';
 import { cn } from '@/lib/utils';
 
-/** White surface: 12px radius, 1px soft border, one very light shadow. */
+/** A cut panel: paper, a 1px rule, two opposite corners bevelled. Never a shadow beside the border. */
 function Card({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      className={cn(
-        'rounded-xl border border-border bg-card text-foreground shadow-[var(--shadow-card)]',
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <div className={cn('cut text-ink', className)} {...props} />;
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
@@ -24,7 +16,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function CardTitle({ className, ...props }: React.ComponentProps<'h2'>) {
-  return <h2 className={cn('text-lg font-semibold', className)} {...props} />;
+  return <h2 className={cn('text-lg', className)} {...props} />;
 }
 
 export { Card, CardHeader, CardTitle };

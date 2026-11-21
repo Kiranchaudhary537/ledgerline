@@ -16,12 +16,11 @@ const medians = (r: GenderGapRow, country: string) =>
   `men ${r.maleMedian === null ? 'none' : money(r.maleMedian, country)} (${formatCount(r.maleCount)})`;
 
 function GapText({ pct }: { pct: number | null }) {
-  if (pct === null) return <span className="text-muted-foreground">Not enough data</span>;
+  if (pct === null) return <span className="text-muted">Not enough data</span>;
   const { value, note } = gapParts(pct);
   return (
     <>
-      <span className="font-semibold">{value}</span>{' '}
-      <span className="text-muted-foreground">{note}</span>
+      <span className="font-medium">{value}</span> <span className="text-muted">{note}</span>
     </>
   );
 }
@@ -30,16 +29,16 @@ function Track({ pct, limit }: { pct: number | null; limit: number }) {
   const at = pct === null ? 50 : gapPosition(limit, pct);
   return (
     <div aria-hidden className="relative h-8">
-      <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
-      <div className="absolute inset-y-1 left-1/2 w-px bg-muted-foreground" />
+      <div className="absolute inset-x-0 top-1/2 h-px bg-rule-2" />
+      <div className="absolute inset-y-1 left-1/2 w-px bg-ink-2" />
       {pct !== null && (
         <>
           <div
-            className="absolute top-1/2 h-0.5 -translate-y-1/2 bg-band-soft"
+            className="absolute top-1/2 h-0.5 -translate-y-1/2 bg-accent-2"
             style={{ left: `${Math.min(50, at)}%`, width: `${Math.abs(at - 50)}%` }}
           />
           <div
-            className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary"
+            className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent ring-2 ring-paper"
             style={{ left: `${at}%` }}
           />
         </>
@@ -55,10 +54,7 @@ function GapDotPlot({ rows, country }: { rows: GenderGapRow[]; country: string }
   const limit = gapLimit(rows);
   return (
     <div className="px-5">
-      <div
-        aria-hidden
-        className={`${rowGrid} border-b border-border pb-1 text-xs text-muted-foreground`}
-      >
+      <div aria-hidden className={`${rowGrid} border-b border-rule pb-1 text-xs text-muted`}>
         <span />
         <span className="tnum flex justify-between">
           <span>{limit}% women paid more</span>
@@ -72,7 +68,7 @@ function GapDotPlot({ rows, country }: { rows: GenderGapRow[]; country: string }
           <li
             key={r.group.jobTitle}
             title={medians(r, country)}
-            className={`${rowGrid} border-b border-border last:border-b-0`}
+            className={`${rowGrid} border-b border-rule last:border-b-0`}
           >
             <span className="truncate">{r.group.jobTitle}</span>
             <Track pct={r.gapPct} limit={limit} />
@@ -89,16 +85,16 @@ function GapDotPlot({ rows, country }: { rows: GenderGapRow[]; country: string }
 function GapTable({ rows, country }: { rows: GenderGapRow[]; country: string }) {
   const side = (n: number, median: number | null) =>
     n === 0 || median === null ? (
-      <span className="text-muted-foreground">No one</span>
+      <span className="text-muted">No one</span>
     ) : (
       <>
         {money(median, country)}
-        <span className="text-xs text-muted-foreground"> ({formatCount(n)})</span>
+        <span className="text-xs text-muted"> ({formatCount(n)})</span>
       </>
     );
   return (
-    <details className="border-t border-border">
-      <summary className="cursor-pointer px-5 py-3 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+    <details className="border-t border-rule">
+      <summary className="cursor-pointer px-5 py-3 text-muted hover:text-ink">
         View as table
       </summary>
       <div className="overflow-x-auto">
@@ -131,9 +127,7 @@ function GapTable({ rows, country }: { rows: GenderGapRow[]; country: string }) 
 
 export function GenderGapPlot({ rows, country }: { rows: GenderGapRow[]; country: string }) {
   if (rows.length === 0) {
-    return (
-      <p className="px-5 pb-5 text-muted-foreground">No roles to compare for these filters.</p>
-    );
+    return <p className="px-5 pb-5 text-muted">No roles to compare for these filters.</p>;
   }
   return (
     <>

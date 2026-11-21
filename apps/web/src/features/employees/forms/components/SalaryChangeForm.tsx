@@ -46,7 +46,7 @@ function ProposalSummary({
           ]}
         />
       )}
-      <p className="tnum text-xs text-muted-foreground" aria-live="polite">
+      <p className="tnum text-xs text-muted" aria-live="polite">
         {proposalText(employee.salaryMinor, proposed, band)}
       </p>
     </div>

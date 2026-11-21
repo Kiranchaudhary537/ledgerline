@@ -1,4 +1,4 @@
-import { LEVELS, type Employee } from '@acme/shared';
+import type { Employee } from '@acme/shared';
 import { createColumnHelper } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { Link } from 'react-router';
@@ -9,11 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, DotPill } from '@/components/ui/pill';
+import { Avatar, Chip } from '@/components/ui/pill';
 import { SortButton } from '@/components/ui/table';
 import { initials } from '@/features/employees/shared/model/people';
 import { label, money } from '@/lib/format';
-import { toneOf } from '@/lib/tone';
 import {
   COLUMNS,
   nextSort,
@@ -38,8 +37,7 @@ export type RowAction = 'edit' | 'salary' | 'delete';
 
 const col = createColumnHelper<Employee>();
 const spec = (id: ColumnId) => COLUMNS.find((c) => c.id === id) as ColumnSpec;
-const linkClass =
-  'font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+const linkClass = 'font-medium underline-offset-4 hover:underline';
 
 interface Ctx {
   state: ListState;
@@ -57,7 +55,7 @@ function RowMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Actions for ${employee.fullName}`}
-        className="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring data-[state=open]:bg-muted"
+        className="key key-flat key-sm key-icon"
       >
         <MoreHorizontal aria-hidden className="size-4" />
       </DropdownMenuTrigger>
@@ -101,7 +99,7 @@ export function employeeColumns({ state, update, countryName, onAction }: Ctx) {
       id: 'code',
       meta: meta('code'),
       header: header('code'),
-      cell: (c) => <span className="text-muted-foreground">{c.getValue()}</span>,
+      cell: (c) => <span className="font-outlier text-xs text-muted">{c.getValue()}</span>,
     }),
     col.accessor('fullName', {
       id: 'name',
@@ -109,7 +107,7 @@ export function employeeColumns({ state, update, countryName, onAction }: Ctx) {
       header: header('name'),
       cell: (c) => (
         <span className="flex items-center gap-2.5">
-          <Avatar initials={initials(c.getValue())} tone={toneOf(c.getValue())} size="sm" />
+          <Avatar initials={initials(c.getValue())} size="sm" />
           <Link to={employeeLink(c.row.original.id, state)} className={linkClass}>
             {c.getValue()}
           </Link>
@@ -120,7 +118,7 @@ export function employeeColumns({ state, update, countryName, onAction }: Ctx) {
       id: 'department',
       meta: meta('department'),
       header: header('department'),
-      cell: (c) => <DotPill tone={toneOf(c.getValue())}>{c.getValue()}</DotPill>,
+      cell: (c) => <Chip>{c.getValue()}</Chip>,
     }),
     col.accessor('jobTitle', {
       id: 'jobTitle',
@@ -131,7 +129,7 @@ export function employeeColumns({ state, update, countryName, onAction }: Ctx) {
       id: 'level',
       meta: meta('level'),
       header: header('level'),
-      cell: (c) => <DotPill tone={LEVELS.indexOf(c.getValue())}>{label(c.getValue())}</DotPill>,
+      cell: (c) => <Chip>{label(c.getValue())}</Chip>,
     }),
     col.accessor('countryCode', {
       id: 'country',

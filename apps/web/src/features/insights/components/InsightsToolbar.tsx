@@ -21,7 +21,7 @@ export function InsightsToolbar({ state, options, set }: Props) {
 
   return (
     <Card className="flex flex-wrap items-center gap-2 p-4">
-      <label htmlFor="insights-country" className="text-muted-foreground">
+      <label htmlFor="insights-country" className="text-muted">
         Pay in
       </label>
       <Select

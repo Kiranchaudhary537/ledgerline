@@ -42,8 +42,8 @@ export function railLayout(
 export const BAND_MARKS = ['min', 'p25', 'median', 'p75', 'max'] as const;
 export type BandMark = (typeof BAND_MARKS)[number];
 
-/** Category colour (0..5, see lib/tone.ts) of each band mark, shared by every band display. */
-export const MARK_TONE: Record<BandMark, number> = { min: 1, p25: 5, median: 0, p75: 2, max: 3 };
+/** Step on the cobalt ramp (0 light to 4 dark) of each band mark, shared by every band display. */
+export const MARK_STEP: Record<BandMark, number> = { min: 0, p25: 1, median: 2, p75: 3, max: 4 };
 
 /**
  * The band as four consecutive segments (min→p25, p25→median, median→p75, p75→max), each as a share

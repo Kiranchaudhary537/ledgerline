@@ -14,8 +14,8 @@ export function EmployeesHeader({
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-semibold">Employees</h1>
-        <p className="tnum text-muted-foreground" aria-live="polite">
+        <h1 className="text-2xl">Employees</h1>
+        <p className="tnum text-muted" aria-live="polite">
           {total === undefined ? ' ' : `${formatCount(total)} employees`}
         </p>
       </div>

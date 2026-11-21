@@ -1,175 +1,160 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Cobalt (deal 3/3, seed internal-compensation-tool-manager-a805·acb59c1e·2026-11-21·r0) · redesign: full
+ * nav: graphite top bar with breadcrumb and one keycap add action, narrow paper-2 icon rail · signature: the pay band, a cobalt lightness ramp with the person's tick, the same scale on the salary, summary and ladder views · states: loading, empty, error, full
+ * axes: light+dark/grotesk-sans/cool · posture: restrained · contrast: pass · modes: light+dark · data: real, seeded · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V3 · weakest: V, Cobalt is a calm product-chrome register and the information architecture is the owner's, so variety comes from the cut corners and keycaps only; the ASCII field was left out because an app has no hero to carry it */
 @import 'tailwindcss';
+@import '@fontsource/familjen-grotesk/600.css';
 @import '@fontsource/ibm-plex-sans/400.css';
-@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import './tokens.css';
+@import './base.css' layer(base);
 
-/*
- * Design tokens live here and only here (direction "Ledger Desk" in docs/ui-design.md):
- * ink top bar, cool canvas, white cards, one green, one yellow accent, six category colours.
- */
-:root {
-  color-scheme: light;
-  --background: #f2f4f8; /* canvas */
-  --card: #ffffff;
-  --foreground: #15181d;
-  --muted-foreground: #545e6b;
-  --subtle: #6b7482;
-  --border: #e3e7ee;
-  --muted: #f1f3f7;
-  --ink: #101317;
-  --ink-foreground: #f4f6f9;
-  --ink-muted: #a4adba;
-  --primary: #1d5a41;
-  --primary-foreground: #ffffff;
-  --primary-soft: #e3f0e9;
-  --band-soft: #cfe6da;
-  --accent: #f6c445;
-  --accent-foreground: #17191c;
-  --success: #17724a;
-  --success-soft: #def3e7;
-  --destructive: #b3261e;
-  --ring: #1d5a41;
-  --cat-1: #2f8f6b;
-  --cat-2: #3d6fd8;
-  --cat-3: #d98a1f;
-  --cat-4: #8b5cc9;
-  --cat-5: #d4516b;
-  --cat-6: #1f9fb0;
-  --radius: 8px;
-  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.05);
-  --shadow-overlay: 0 12px 32px rgb(16 24 40 / 0.18);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    color-scheme: dark;
-    --background: #0f1216;
-    --card: #171b21;
-    --foreground: #e9edf2;
-    --muted-foreground: #a0a9b6;
-    --subtle: #8a94a2;
-    --border: #272d36;
-    --muted: #1d222a;
-    --ink: #0a0c0f;
-    --ink-foreground: #f1f4f8;
-    --ink-muted: #98a2b0;
-    --primary: #46b184;
-    --primary-foreground: #06150e;
-    --primary-soft: #1b2f27;
-    --band-soft: #24433a;
-    --accent: #f0c040;
-    --success: #5fcf95;
-    --success-soft: #173226;
-    --destructive: #f0847c;
-    --ring: #46b184;
-    --cat-1: #4cc194;
-    --cat-2: #6b9bf0;
-    --cat-3: #eba649;
-    --cat-4: #b18be6;
-    --cat-5: #ee7f93;
-    --cat-6: #4cc0cf;
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
-    --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.55);
+@layer components {
+  /* Panels, chips and fields are cut on two opposite corners; a plain radius is the fallback. */
+  .cut,
+  .cut-s {
+    border: var(--rule-hair) solid var(--color-rule);
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
   }
-}
-
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --background: #0f1216;
-  --card: #171b21;
-  --foreground: #e9edf2;
-  --muted-foreground: #a0a9b6;
-  --subtle: #8a94a2;
-  --border: #272d36;
-  --muted: #1d222a;
-  --ink: #0a0c0f;
-  --ink-foreground: #f1f4f8;
-  --ink-muted: #98a2b0;
-  --primary: #46b184;
-  --primary-foreground: #06150e;
-  --primary-soft: #1b2f27;
-  --band-soft: #24433a;
-  --accent: #f0c040;
-  --success: #5fcf95;
-  --success-soft: #173226;
-  --destructive: #f0847c;
-  --ring: #46b184;
-  --cat-1: #4cc194;
-  --cat-2: #6b9bf0;
-  --cat-3: #eba649;
-  --cat-4: #b18be6;
-  --cat-5: #ee7f93;
-  --cat-6: #4cc0cf;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
-  --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.55);
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-subtle: var(--subtle);
-  --color-border: var(--border);
-  --color-ink: var(--ink);
-  --color-ink-foreground: var(--ink-foreground);
-  --color-ink-muted: var(--ink-muted);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary-soft: var(--primary-soft);
-  --color-band-soft: var(--band-soft);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-success: var(--success);
-  --color-success-soft: var(--success-soft);
-  --color-destructive: var(--destructive);
-  --color-ring: var(--ring);
-  --color-cat-1: var(--cat-1);
-  --color-cat-2: var(--cat-2);
-  --color-cat-3: var(--cat-3);
-  --color-cat-4: var(--cat-4);
-  --color-cat-5: var(--cat-5);
-  --color-cat-6: var(--cat-6);
-  --radius-md: var(--radius);
-  --radius-lg: 10px;
-  --radius-xl: 12px;
-  --font-sans: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
-  /* Type scale, ratio 1.2: 12 / 14 / 17 / 20 / 24 / 29 */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 0.875rem;
-  --text-lg: 1.0625rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.8125rem;
-}
-
-h1,
-h2,
-h3 {
-  text-wrap: balance;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
-  line-height: 1.45;
-  font-feature-settings: 'zero';
-  touch-action: manipulation;
-}
-
-.tnum {
-  font-variant-numeric: tabular-nums;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  [data-state='open'].sheet {
-    animation: sheet-in 160ms ease-out;
+  .cut-s {
+    border-radius: var(--radius-input);
   }
-  tbody tr td {
-    transition: background-color 120ms ease;
+  @supports (corner-shape: bevel) {
+    .cut {
+      border-radius: var(--cut-l) 4px var(--cut-l) 4px;
+      corner-shape: bevel round bevel round;
+    }
+    .cut-s {
+      border-radius: var(--cut) 3px var(--cut) 3px;
+      corner-shape: bevel round bevel round;
+    }
+  }
+
+  /* Keycaps: a real bottom edge that lifts on hover and sinks on press. One solid cobalt key per screen. */
+  .key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    height: 36px;
+    padding-inline: var(--space-md);
+    border: var(--rule-hair) solid var(--color-rule-2);
+    border-radius: var(--radius-input);
+    background: var(--color-key-face);
+    color: var(--color-ink);
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: var(--shadow-key);
+    transition:
+      transform var(--dur-micro) var(--ease-out),
+      box-shadow var(--dur-micro) var(--ease-out),
+      background-color var(--dur-micro) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .key:hover:not(:disabled, .key-flat, [aria-disabled='true']) {
+      transform: translateY(-1px);
+    }
+  }
+  .key:active:not(:disabled, .key-flat, [aria-disabled='true']),
+  .key[aria-expanded='true']:not(.key-flat),
+  .key[data-state='open']:not(.key-flat) {
+    transform: translateY(3px);
+    box-shadow: var(--shadow-key-press);
+  }
+  .key:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .key[aria-disabled='true'] {
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .key-primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent-edge);
+    color: var(--color-accent-ink);
+    box-shadow: var(--shadow-key-accent);
+  }
+  .key-danger {
+    background: var(--color-error);
+    border-color: color-mix(in oklab, var(--color-error) 60%, var(--color-ink));
+    color: var(--color-paper);
+    box-shadow: 0 3px 0 0 color-mix(in oklab, var(--color-error) 60%, var(--color-ink));
+  }
+  .key-sm {
+    height: 32px;
+    padding-inline: var(--space-sm);
+  }
+  .key-icon {
+    width: 36px;
+    padding: 0;
+  }
+  /* No edge: for actions that sit inside a row of text. */
+  .key-flat {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    color: var(--color-ink-2);
+  }
+  @media (hover: hover) {
+    .key-flat:hover:not(:disabled) {
+      background: var(--color-paper-3);
+      color: var(--color-ink);
+      transform: none;
+    }
+  }
+  .key-flat:active:not(:disabled),
+  .key-flat[data-state='open'] {
+    transform: none;
+    background: var(--color-paper-3);
+    box-shadow: none;
+  }
+
+  .field {
+    height: 36px;
+    width: 100%;
+    border: var(--rule-hair) solid var(--color-muted);
+    border-radius: var(--radius-input);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding-inline: var(--space-sm);
+    outline: 2px solid transparent;
+    outline-offset: -3px;
+    transition: background-color var(--dur-micro) var(--ease-out);
+  }
+  @supports (corner-shape: bevel) {
+    .field {
+      border-radius: var(--cut) 3px var(--cut) 3px;
+      corner-shape: bevel round bevel round;
+    }
+  }
+  .field::placeholder {
+    color: var(--color-muted);
+  }
+  @media (hover: hover) {
+    .field:hover:not(:disabled) {
+      background: var(--color-paper-2);
+    }
+  }
+  .field:focus-visible {
+    outline-color: var(--color-focus);
+    border-color: var(--color-ink-2);
+  }
+  .field[aria-invalid='true'] {
+    border-color: var(--color-error);
+  }
+  .field:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .sheet {
+    animation: sheet-in var(--dur-short) var(--ease-out);
   }
 }
 
@@ -178,4 +163,14 @@ body {
     transform: translateX(24px);
     opacity: 0;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    animation: none;
+  }
+}
+
+tbody tr td {
+  transition: background-color var(--dur-micro) var(--ease-out);
 }

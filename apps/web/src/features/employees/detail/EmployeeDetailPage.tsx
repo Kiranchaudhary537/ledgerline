@@ -22,7 +22,7 @@ const TABS = ['profile', 'salary', 'history'] as const;
 type Tab = (typeof TABS)[number];
 
 function DetailSkeleton() {
-  const bar = 'rounded-sm bg-muted motion-safe:animate-pulse';
+  const bar = 'rounded-sm bg-paper-3 motion-safe:animate-pulse';
   return (
     <div className="space-y-4" aria-busy="true">
       <div className={`${bar} h-24 w-full`} />

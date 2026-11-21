@@ -1,0 +1,162 @@
+/* Cobalt tokens (Hallmark). Colours, faces, sizes, radii, shadows and easings are a static Tailwind theme, so each is a utility (bg-paper, text-ink, font-display, rounded-card) and a plain variable. */
+@theme static {
+  --color-paper: oklch(98.6% 0.005 250);
+  --color-paper-2: oklch(96.2% 0.008 252);
+  --color-paper-3: oklch(93% 0.011 252);
+  --color-ink: oklch(21% 0.028 262);
+  --color-ink-2: oklch(36% 0.022 260);
+  --color-muted: oklch(50% 0.018 258);
+  --color-rule: oklch(90% 0.009 252);
+  --color-rule-2: oklch(83% 0.012 252);
+  --color-graphite: oklch(21% 0.024 262);
+  --color-graphite-2: oklch(26.5% 0.026 262);
+  --color-graphite-ink: oklch(93% 0.01 250);
+  --color-graphite-muted: oklch(69% 0.022 256);
+  --color-accent: oklch(52% 0.19 258);
+  --color-accent-2: oklch(76% 0.13 254);
+  --color-accent-wash: oklch(95% 0.028 256);
+  --color-accent-ink: oklch(98.6% 0.005 250);
+  --color-focus: oklch(52% 0.19 258);
+  --color-accent-deep: oklch(43% 0.2 262);
+  --color-accent-edge: oklch(39% 0.16 260);
+  --color-ramp-1: oklch(88% 0.05 256);
+  --color-ramp-2: oklch(78% 0.1 257);
+  --color-ramp-3: oklch(66% 0.15 258);
+  --color-ramp-4: oklch(54% 0.19 259);
+  --color-ramp-5: oklch(42% 0.18 261);
+  --color-key-face: oklch(99.4% 0.003 250);
+  --color-key-edge: oklch(80% 0.016 254);
+  --color-error: oklch(52% 0.19 27);
+  --color-success: oklch(50% 0.12 150);
+  --font-display: 'Familjen Grotesk', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-outlier: 'JetBrains Mono', ui-monospace, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.2rem;
+  --text-xl: 1.44rem;
+  --text-2xl: 1.728rem;
+  --text-3xl: 2.074rem;
+  --radius-card: 8px;
+  --radius-input: 6px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px oklch(21% 0.028 262 / 0.06);
+  --shadow-key:
+    0 3px 0 0 var(--color-key-edge), 0 6px 8px -4px oklch(21% 0.028 262 / 0.28),
+    inset 0 1px 0 oklch(100% 0 0 / 0.9);
+  --shadow-key-accent:
+    0 3px 0 0 var(--color-accent-edge), 0 6px 8px -4px oklch(30% 0.12 260 / 0.45),
+    inset 0 1px 0 oklch(100% 0 0 / 0.22);
+  --shadow-key-press: inset 0 1px 2px oklch(21% 0.028 262 / 0.14);
+  --shadow-overlay: 0 12px 32px -8px oklch(21% 0.028 262 / 0.25);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --tracking-display: -0.028em;
+}
+:root {
+  color-scheme: light;
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+  --space-4xl: 144px;
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+  --container: 1440px;
+  --gutter: 24px;
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-sticky-nav: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+  --cut: 8px;
+  --cut-l: 16px;
+  --rule-hair: 1px;
+  --display-weight: 600;
+}
+/* Dark is a second rendering of the same system, derived not inverted: hue never moves, elevation is lightness, shadows are off. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-paper: oklch(15.5% 0.012 258);
+  --color-paper-2: oklch(18.5% 0.014 258);
+  --color-paper-3: oklch(22.5% 0.016 258);
+  --color-ink: oklch(94.5% 0.01 250);
+  --color-ink-2: oklch(82% 0.014 252);
+  --color-muted: oklch(69% 0.018 256);
+  --color-rule: oklch(29% 0.02 258);
+  --color-rule-2: oklch(38% 0.024 258);
+  --color-graphite: oklch(11.5% 0.02 262);
+  --color-graphite-2: oklch(17% 0.024 262);
+  --color-graphite-ink: oklch(93% 0.01 250);
+  --color-graphite-muted: oklch(69% 0.022 256);
+  --color-accent: oklch(63% 0.16 258);
+  --color-accent-2: oklch(80% 0.11 254);
+  --color-accent-wash: oklch(25% 0.06 258);
+  --color-accent-ink: oklch(14% 0.03 262);
+  --color-focus: oklch(70% 0.15 258);
+  --color-accent-deep: oklch(72% 0.14 258);
+  --color-accent-edge: oklch(40% 0.13 260);
+  --color-ramp-1: oklch(34% 0.07 258);
+  --color-ramp-2: oklch(46% 0.11 258);
+  --color-ramp-3: oklch(57% 0.14 258);
+  --color-ramp-4: oklch(68% 0.14 258);
+  --color-ramp-5: oklch(80% 0.1 257);
+  --color-key-face: oklch(24% 0.016 260);
+  --color-key-edge: oklch(9% 0.012 262);
+  --color-error: oklch(71% 0.16 27);
+  --color-success: oklch(73% 0.14 150);
+  --shadow-card: none;
+  --shadow-overlay: none;
+  --shadow-key: 0 3px 0 0 var(--color-key-edge), inset 0 1px 0 oklch(100% 0 0 / 0.06);
+  --shadow-key-accent: 0 3px 0 0 var(--color-accent-edge), inset 0 1px 0 oklch(100% 0 0 / 0.2);
+  --shadow-key-press: inset 0 1px 2px oklch(0% 0 0 / 0.4);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --color-paper: oklch(15.5% 0.012 258);
+    --color-paper-2: oklch(18.5% 0.014 258);
+    --color-paper-3: oklch(22.5% 0.016 258);
+    --color-ink: oklch(94.5% 0.01 250);
+    --color-ink-2: oklch(82% 0.014 252);
+    --color-muted: oklch(69% 0.018 256);
+    --color-rule: oklch(29% 0.02 258);
+    --color-rule-2: oklch(38% 0.024 258);
+    --color-graphite: oklch(11.5% 0.02 262);
+    --color-graphite-2: oklch(17% 0.024 262);
+    --color-graphite-ink: oklch(93% 0.01 250);
+    --color-graphite-muted: oklch(69% 0.022 256);
+    --color-accent: oklch(63% 0.16 258);
+    --color-accent-2: oklch(80% 0.11 254);
+    --color-accent-wash: oklch(25% 0.06 258);
+    --color-accent-ink: oklch(14% 0.03 262);
+    --color-focus: oklch(70% 0.15 258);
+    --color-accent-deep: oklch(72% 0.14 258);
+    --color-accent-edge: oklch(40% 0.13 260);
+    --color-ramp-1: oklch(34% 0.07 258);
+    --color-ramp-2: oklch(46% 0.11 258);
+    --color-ramp-3: oklch(57% 0.14 258);
+    --color-ramp-4: oklch(68% 0.14 258);
+    --color-ramp-5: oklch(80% 0.1 257);
+    --color-key-face: oklch(24% 0.016 260);
+    --color-key-edge: oklch(9% 0.012 262);
+    --color-error: oklch(71% 0.16 27);
+    --color-success: oklch(73% 0.14 150);
+    --shadow-card: none;
+    --shadow-overlay: none;
+    --shadow-key: 0 3px 0 0 var(--color-key-edge), inset 0 1px 0 oklch(100% 0 0 / 0.06);
+    --shadow-key-accent: 0 3px 0 0 var(--color-accent-edge), inset 0 1px 0 oklch(100% 0 0 / 0.2);
+    --shadow-key-press: inset 0 1px 2px oklch(0% 0 0 / 0.4);
+  }
+}
