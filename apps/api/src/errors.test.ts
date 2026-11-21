@@ -102,6 +102,12 @@ describe('error handler', () => {
     expect(res.json().code).toBe('ROUTE_NOT_FOUND');
   });
 
+  it('reports server processing time, so latency can be split from network time', async () => {
+    app = await appWithRoute(() => 'ok');
+    const res = await app.inject({ method: 'GET', url: '/api/nope' });
+    expect(res.headers['server-timing']).toMatch(/^app;dur=\d+(\.\d+)?$/);
+  });
+
   it('asks crawlers not to index any response', async () => {
     app = await appWithRoute(() => 'ok');
     const res = await app.inject({ method: 'GET', url: '/api/nope' });
