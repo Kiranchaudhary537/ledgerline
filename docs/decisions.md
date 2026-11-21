@@ -47,7 +47,8 @@ Full design: [system-design.md](system-design.md)
 | Salary sort | Only when one country is filtered | Always | ₹ vs € can't be compared without FX |
 | Errors | One shared shape + code list ([error-handling.md](error-handling.md)) | Ad hoc errors | Same messages in API and UI |
 | Folder layout | By feature ([structure.md](structure.md)) | By file type | Change one feature in one place |
-| Visual direction | A – Ledger (IBM Plex Sans, verdigris, compact rows, rules not cards) | B – Review | Dense, exact, fits a pay ledger; chosen by user from style tile |
+| Visual direction | "Desk": dark top bar, icon rail, white cards, dot pills, tabs (user's reference HR app) | A – Ledger (rules, no cards), B – Review | User supplied a reference UI; familiar HR-tool layout. Ledger kept in `docs/design/style-tile.html` as history |
+| Web structure | `features/<feature>/<sub>/{api,model,components}`; logic in `model/` (pure, tested), data in `api/`, display in `components/` | Flat feature folders | Business logic separated from UI; easy to find and test |
 | Compa-ratio | removed | — | Product decision: not needed for v1 |
 | UI design | `frontend-design` skill | Default shadcn look, `ui-ux-pro-max` | Choices made for this brief, not picked from a preset catalog |
 | UI audit | `web-design-guidelines` (Vercel, rules pinned in repo) | Manual review only | 100+ checks: a11y, focus, forms, states, copy |

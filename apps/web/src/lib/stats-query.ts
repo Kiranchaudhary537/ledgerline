@@ -1,4 +1,4 @@
-import type { InsightsStatsRow } from '@acme/shared';
+import type { StatsRow } from '@acme/shared';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 
@@ -6,6 +6,6 @@ import { api } from '@/lib/api';
 export const useStatsQuery = (params: URLSearchParams, enabled = true) =>
   useQuery({
     queryKey: ['insights', 'stats', params.toString()],
-    queryFn: () => api<InsightsStatsRow[]>(`/api/insights/stats?${params}`),
+    queryFn: () => api<StatsRow[]>(`/api/insights/stats?${params}`),
     enabled,
   });
