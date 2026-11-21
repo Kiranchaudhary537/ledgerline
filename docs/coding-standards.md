@@ -15,18 +15,24 @@ Rules every change follows. Reviews (human or AI) check code against this file.
 | Group by feature: `modules/<feature>/{routes,service,repository}.ts`. | |
 | `erasableSyntaxOnly`: declare class fields explicitly (no `constructor(private x)`), no `enum`, no `namespace`. | See `AppError`. |
 
-## No hard-coding
+## No hard-coding: one config
+
+**All tunable values live in one file: `packages/shared/src/config.ts`.** To change behaviour (page sizes, session length, rate limits, seed size, compa-ratio thresholds…), edit only that file. It starts with a comment saying so, and every value has a one-line comment with its unit and why it has that value.
+
+- Used by API, seed and web alike (it has no Node-only code, so the browser can import it).
+- **Secrets and per-environment infrastructure** (`DATABASE_URL`, `PORT`, `NODE_ENV`, seed admin password) are not in that file: they come from environment variables, read and validated once in `apps/api/src/env.ts` (and the seed CLI). Nothing else reads `process.env`.
+- Code imports the value from config; no literal duplicates of it anywhere.
 
 | Kind of value | Where it lives |
 |---|---|
-| Anything that differs per environment or might be tuned in production (URLs, ports, session length, rate limits, cookie security) | `apps/api/src/config.ts` — env var with a default, validated by Zod at boot |
+| Tunables (limits, sizes, durations, thresholds) | `packages/shared/src/config.ts` |
+| Secrets, URLs, ports, environment | env vars → `apps/api/src/env.ts` |
 | Fixed domain facts used in logic (levels, employment types, genders) | `packages/shared/src/constants.ts`, with a comment why it is code |
-| Reference data that the business owns (departments, job titles, countries) | Database / maintained package — never a literal list in code |
-| User-facing messages | `ERRORS` table (`packages/shared/src/errors.ts`) or the component that shows them — never inline in services |
-| Numbers with meaning | Named constant next to its use, with a unit in the name: `SESSION_TTL_HOURS`, `BATCH_SIZE`, `BAND_SPREAD` |
-| Repeated string keys (cookie name, query keys, route paths used twice) | One named constant |
+| Business-owned reference data (departments, job titles, countries) | Database / maintained package — never a literal list in code |
+| User-facing messages | `ERRORS` table (`packages/shared/src/errors.ts`) or the component that shows them |
+| Repeated string keys (cookie name, query keys) | `config.ts` or one named constant |
 
-Allowed literals: `0`, `1`, array indexes, test fixtures, and values whose meaning is obvious at the use site (`.slice(0, 10)` on an ISO date with a comment).
+Allowed literals: `0`, `1`, array indexes, test fixtures.
 
 ## Types and errors
 
@@ -40,7 +46,8 @@ Allowed literals: `0`, `1`, array indexes, test fixtures, and values whose meani
 - Names say what, in domain words: `changeSalary`, `compaRatio`, `bandMedian` — not `handle`, `data2`, `process`.
 - Booleans read as questions: `isStale`, `hasOneCountry`.
 - A function does one thing; if it needs a comment to separate steps, split it. Aim for < 30 lines.
-- Comments explain *why*, not *what*. Known limits use `// shortcut: <limit>, <when to upgrade>`.
+- **Comments only for decisions and important facts**: why a choice was made, a security or data-loss reason, a non-obvious constraint, a known limit (`// shortcut: <limit>, <when to upgrade>`). No comments that repeat what the code says (`// returns the user`, `// loop over rows`). If code needs a comment to be understood, rename or split it first.
+- Doc comments (`/** */`) only on exported functions/classes whose contract is not obvious from the name and types.
 
 ## Tests
 
