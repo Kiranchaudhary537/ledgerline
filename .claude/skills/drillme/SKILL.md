@@ -3,7 +3,7 @@ name: drillme
 description: Drill the user round by round on a project's design, scope, build plan and commit process, then write the agreed answers into docs/. Use when the user says "drill me", "drillme", or wants their decisions locked down before building.
 ---
 
-Follow the `mattpocock-skills:grilling` method: build a design tree, ask the whole **frontier** each round (numbered, each with ➡️ a recommended answer, worded so "yes" accepts it), and wait for answers before the next round. Look up facts yourself (read the repo, `design.md`, `assignment.md`). Only decisions go to the user.
+Follow the `mattpocock-skills:grilling` method: build a design tree, ask the whole **frontier** each round (numbered, each with ➡️ a recommended answer, worded so "yes" accepts it), and wait for answers before the next round. Look up facts yourself (read the repo and its docs). Only decisions go to the user.
 
 Cover these four branches until no question in any of them is left open:
 
