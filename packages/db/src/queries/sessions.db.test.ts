@@ -36,7 +36,10 @@ describe('sessions', () => {
     const hours = (new Date(row.expiresAt).getTime() - Date.now()) / 3_600_000;
     expect(hours).toBeGreaterThan(7.9);
     expect(hours).toBeLessThanOrEqual(8);
-    await db.updateTable('sessions').set({ expiresAt: new Date(Date.now() - 1000) }).execute();
+    await db
+      .updateTable('sessions')
+      .set({ expiresAt: new Date(Date.now() - 1000) })
+      .execute();
     expect(await findSessionUser(db, token)).toBeUndefined();
   });
 

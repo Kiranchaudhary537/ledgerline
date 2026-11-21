@@ -1,15 +1,28 @@
 import type { Db } from '@acme/db';
+import cookie from '@fastify/cookie';
+import rateLimit from '@fastify/rate-limit';
 import Fastify, { type FastifyServerOptions, LogController } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { errorHandler, sendError } from './errors.ts';
+import { authRoutes } from './modules/auth/routes.ts';
 import { healthRoutes } from './modules/health/routes.ts';
+import { authPlugin } from './plugins/auth.ts';
 
 export interface AppOptions {
   db: Db;
   logger?: FastifyServerOptions['logger'];
+  /** Send the session cookie over HTTPS only. True in production. */
+  cookieSecure?: boolean;
 }
 
-export function buildApp({ db, logger = true }: AppOptions) {
+declare module 'fastify' {
+  interface FastifyInstance {
+    /** Every route registered so far, so tests can check them all. */
+    registeredRoutes: { method: string; url: string }[];
+  }
+}
+
+export function buildApp({ db, logger = true, cookieSecure = false }: AppOptions) {
   const app = Fastify({
     logger,
     genReqId: () => randomUUID(),
@@ -35,6 +48,26 @@ export function buildApp({ db, logger = true }: AppOptions) {
   app.setErrorHandler(errorHandler);
   app.setNotFoundHandler((request, reply) => sendError(reply, request, 'ROUTE_NOT_FOUND'));
 
-  healthRoutes(app, { db });
+  app.decorate('registeredRoutes', []);
+  app.addHook('onRoute', (route) => {
+    for (const method of [route.method].flat()) {
+      app.registeredRoutes.push({ method, url: route.url });
+    }
+  });
+
+  app.register(cookie);
+  // Default 300/min per user (IP before login); the login route sets its own limit.
+  app.register(rateLimit, {
+    max: 300,
+    timeWindow: '1 minute',
+    hook: 'preHandler', // after onRequest auth and body parsing, so keys can use both
+    keyGenerator: (request) => String(request.user?.id ?? request.ip),
+  });
+  authPlugin(app, { db });
+  // Registered after the plugins above load, so they apply to every route.
+  app.register(async (routes) => {
+    healthRoutes(routes, { db });
+    authRoutes(routes, { db, cookieSecure });
+  });
   return app;
 }

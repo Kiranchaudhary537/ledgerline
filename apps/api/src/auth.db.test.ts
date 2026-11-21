@@ -69,7 +69,10 @@ describe('auth', () => {
     const user = await createTestUser(db);
     const app = buildApp({ db, logger: false });
     const res = await login(app, user.email, user.password);
-    await db.updateTable('sessions').set({ expiresAt: new Date(Date.now() - 1000) }).execute();
+    await db
+      .updateTable('sessions')
+      .set({ expiresAt: new Date(Date.now() - 1000) })
+      .execute();
     const me = await app.inject({
       method: 'GET',
       url: '/api/auth/me',

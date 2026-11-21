@@ -4,7 +4,11 @@ import { loadConfig } from './config.ts';
 
 const config = loadConfig();
 const db = createDb(config.DATABASE_URL);
-const app = buildApp({ db, logger: { level: 'info' } });
+const app = buildApp({
+  db,
+  logger: { level: 'info' },
+  cookieSecure: config.NODE_ENV === 'production',
+});
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, async () => {
