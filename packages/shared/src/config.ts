@@ -70,7 +70,6 @@ export const config = deepFreeze({
 
   ui: {
     searchDebounceMs: 300, // milliseconds: wait for a pause in typing before querying
-    menuSearchMinOptions: 12, // options: a filter menu longer than this gets a search box
     queryRetries: 2, // retries for failed reads (5xx / network only; 4xx never retry)
     sessionStaleMs: 300_000, // milliseconds: how long a checked login is trusted before re-asking
   },

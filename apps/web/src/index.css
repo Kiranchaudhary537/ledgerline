@@ -3,70 +3,136 @@
 @import '@fontsource/ibm-plex-sans/600.css';
 
 /*
- * Design tokens live here and only here: direction A "Ledger" from docs/ui-design.md.
- * Paper, ink, graphite, rule, band (verdigris) and alert, in light and dark.
+ * Design tokens live here and only here (direction "Ledger Desk" in docs/ui-design.md):
+ * ink top bar, cool canvas, white cards, one green, one yellow accent, six category colours.
  */
 :root {
   color-scheme: light;
-  --background: #f6f7f5;
-  --foreground: #1e2622;
-  --muted-foreground: #5b6661;
-  --border: #d8ddd9;
-  --primary: #2f6f62;
-  --primary-foreground: #f6f7f5;
-  --band-soft: #cfe1db;
-  --muted: #e9ede9;
-  --destructive: #a3312b;
-  --ring: #2f6f62;
-  --radius: 4px;
-  --shadow-overlay: 0 8px 28px rgb(30 38 34 / 0.18);
+  --background: #f2f4f8; /* canvas */
+  --card: #ffffff;
+  --foreground: #15181d;
+  --muted-foreground: #545e6b;
+  --subtle: #6b7482;
+  --border: #e3e7ee;
+  --muted: #f1f3f7;
+  --ink: #101317;
+  --ink-foreground: #f4f6f9;
+  --ink-muted: #a4adba;
+  --primary: #1d5a41;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e3f0e9;
+  --band-soft: #cfe6da;
+  --accent: #f6c445;
+  --accent-foreground: #17191c;
+  --success: #17724a;
+  --success-soft: #def3e7;
+  --destructive: #b3261e;
+  --ring: #1d5a41;
+  --cat-1: #2f8f6b;
+  --cat-2: #3d6fd8;
+  --cat-3: #d98a1f;
+  --cat-4: #8b5cc9;
+  --cat-5: #d4516b;
+  --cat-6: #1f9fb0;
+  --radius: 8px;
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-overlay: 0 12px 32px rgb(16 24 40 / 0.18);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --background: #1b211e;
-    --foreground: #e6ece8;
-    --muted-foreground: #9da9a3;
-    --border: #313a36;
-    --primary: #6fb5a4;
-    --primary-foreground: #14201c;
-    --band-soft: #26443d;
-    --muted: #252d29;
-    --destructive: #e8857d;
-    --ring: #6fb5a4;
-    --shadow-overlay: 0 8px 28px rgb(0 0 0 / 0.5);
+    --background: #0f1216;
+    --card: #171b21;
+    --foreground: #e9edf2;
+    --muted-foreground: #a0a9b6;
+    --subtle: #8a94a2;
+    --border: #272d36;
+    --muted: #1d222a;
+    --ink: #0a0c0f;
+    --ink-foreground: #f1f4f8;
+    --ink-muted: #98a2b0;
+    --primary: #46b184;
+    --primary-foreground: #06150e;
+    --primary-soft: #1b2f27;
+    --band-soft: #24433a;
+    --accent: #f0c040;
+    --success: #5fcf95;
+    --success-soft: #173226;
+    --destructive: #f0847c;
+    --ring: #46b184;
+    --cat-1: #4cc194;
+    --cat-2: #6b9bf0;
+    --cat-3: #eba649;
+    --cat-4: #b18be6;
+    --cat-5: #ee7f93;
+    --cat-6: #4cc0cf;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.55);
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --background: #1b211e;
-  --foreground: #e6ece8;
-  --muted-foreground: #9da9a3;
-  --border: #313a36;
-  --primary: #6fb5a4;
-  --primary-foreground: #14201c;
-  --band-soft: #26443d;
-  --muted: #252d29;
-  --destructive: #e8857d;
-  --ring: #6fb5a4;
-  --shadow-overlay: 0 8px 28px rgb(0 0 0 / 0.5);
+  --background: #0f1216;
+  --card: #171b21;
+  --foreground: #e9edf2;
+  --muted-foreground: #a0a9b6;
+  --subtle: #8a94a2;
+  --border: #272d36;
+  --muted: #1d222a;
+  --ink: #0a0c0f;
+  --ink-foreground: #f1f4f8;
+  --ink-muted: #98a2b0;
+  --primary: #46b184;
+  --primary-foreground: #06150e;
+  --primary-soft: #1b2f27;
+  --band-soft: #24433a;
+  --accent: #f0c040;
+  --success: #5fcf95;
+  --success-soft: #173226;
+  --destructive: #f0847c;
+  --ring: #46b184;
+  --cat-1: #4cc194;
+  --cat-2: #6b9bf0;
+  --cat-3: #eba649;
+  --cat-4: #b18be6;
+  --cat-5: #ee7f93;
+  --cat-6: #4cc0cf;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.55);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-subtle: var(--subtle);
   --color-border: var(--border);
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-muted: var(--ink-muted);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
   --color-band-soft: var(--band-soft);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
   --color-destructive: var(--destructive);
   --color-ring: var(--ring);
+  --color-cat-1: var(--cat-1);
+  --color-cat-2: var(--cat-2);
+  --color-cat-3: var(--cat-3);
+  --color-cat-4: var(--cat-4);
+  --color-cat-5: var(--cat-5);
+  --color-cat-6: var(--cat-6);
   --radius-md: var(--radius);
-  --radius-lg: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
   --font-sans: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
   /* Type scale, ratio 1.2: 12 / 14 / 17 / 20 / 24 / 29 */
   --text-xs: 0.75rem;
@@ -91,6 +157,7 @@ body {
   font-size: 0.875rem;
   line-height: 1.45;
   font-feature-settings: 'zero';
+  touch-action: manipulation;
 }
 
 .tnum {

@@ -1,6 +1,6 @@
 import { ERRORS } from '@acme/shared';
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { ApiError, api } from './api.ts';
+import { ApiError, api } from '@/lib/api';
 
 function mockFetch(res: Response | Error) {
   const fn = vi.fn(() => (res instanceof Error ? Promise.reject(res) : Promise.resolve(res)));

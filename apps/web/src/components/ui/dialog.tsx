@@ -21,13 +21,13 @@ function DialogContent({
 }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-foreground/30" />
+      <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-ink/50" />
       <DialogPrimitive.Content
         className={cn(
-          'fixed z-50 flex flex-col gap-4 overflow-y-auto overscroll-contain border border-border bg-background p-6 shadow-[var(--shadow-overlay)]',
+          'fixed z-50 flex flex-col gap-4 overflow-y-auto overscroll-contain border border-border bg-card p-6 shadow-[var(--shadow-overlay)]',
           side
-            ? 'sheet inset-y-0 right-0 w-full max-w-md rounded-l-lg'
-            : 'top-1/2 left-1/2 max-h-[90dvh] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg',
+            ? 'sheet inset-y-0 right-0 w-full max-w-md rounded-l-xl'
+            : 'top-1/2 left-1/2 max-h-[90dvh] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl',
           className,
         )}
         {...props}
