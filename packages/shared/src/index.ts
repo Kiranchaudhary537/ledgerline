@@ -7,3 +7,5 @@ export * from './validation/insights.ts';
 export * from './validation/list-query.ts';
 export * from './validation/salary-change.ts';
 export { emailSchema } from './validation/common.ts';
+export * from './api/employees.ts';
+export * from './api/insights.ts';
