@@ -21,9 +21,9 @@ Validation: `packages/shared/src/validation/list-query.ts`
 | Param | Type | Rule |
 |---|---|---|
 | `q` | text | name / email / code contains; 2+ chars |
-| `country` | multi (`IN,DE`) | known country codes |
-| `department` | multi | from fixed list |
-| `jobTitle` | multi | from fixed list |
+| `country` | multi (`IN,DE`) | ISO country codes (all countries with a currency) |
+| `department` | multi | non-empty text, max 80 (known values: `GET /api/meta/filters`) |
+| `jobTitle` | multi | non-empty text, max 80 |
 | `level` | multi | Junior, Mid, Senior, Lead, Principal |
 | `employmentType` | multi | full_time, part_time, contract |
 | `gender` | multi | female, male |
@@ -42,12 +42,12 @@ Validation: `packages/shared/src/validation/list-query.ts`
 | `GET /api/employees` | `{ data: Employee[], page, pageSize, total }` (filters above) |
 | `GET /api/employees/:id` | `Employee`, or `404 NOT_FOUND` (deleted, missing or non-numeric id) |
 | `POST /api/employees` | `201 Employee`; duplicate active email → `409 EMAIL_TAKEN` with `fields.email` |
-| `PATCH /api/employees/:id` `{ ...fields, version }` | `Employee` (version + 1); no salary here. Stale → `409 STALE_VERSION`. Sending only one of `department` / `jobTitle` checks the pair against the stored employee → `400` with `fields.jobTitle` |
+| `PATCH /api/employees/:id` `{ ...fields, version }` | `Employee` (version + 1); no salary here. Stale → `409 STALE_VERSION`. A `department` / `jobTitle` pair that is not in the database (also when only one of the two is sent) → `400` with `fields.jobTitle`; an unknown `countryCode` → `400` with `fields.countryCode` |
 | `DELETE /api/employees/:id` | `204` (soft delete), or `404` |
 | `POST /api/employees/:id/salary-changes` `{ newSalaryMinor, reason, version }` | `Employee`; writes a history row in the same transaction. Stale → `409`, missing → `404` |
 | `GET /api/employees/:id/salary-history` | `SalaryChange[]`, newest first; `404` if the employee does not exist |
 | `GET /api/employees/export.csv` | Same filters and `sort` as the list, no paging |
-| `GET /api/meta/filters` | `{ countries: [{ code, name, currency }], departments: [{ name, jobTitles }], levels, employmentTypes, genders }` |
+| `GET /api/meta/filters` | Departments and job titles come from the database, countries from the ISO list. `{ countries: [{ code, name, currency }], departments: [{ name, jobTitles }], levels, employmentTypes, genders }` |
 
 Types (`packages/shared/src/api/employees.ts`):
 - `Employee`: `id, employeeCode, fullName, email, department, jobTitle, level, countryCode, currency, employmentType, gender, hireDate (YYYY-MM-DD), salaryMinor, compaRatio, version, createdAt, updatedAt` (timestamps ISO strings; `currency` derived from the country).
