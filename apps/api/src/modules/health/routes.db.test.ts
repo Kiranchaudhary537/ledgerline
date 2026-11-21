@@ -11,7 +11,14 @@ describe('GET /api/health', () => {
     const app = buildApp({ db, logger: false });
     const res = await app.inject({ method: 'GET', url: '/api/health' });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ status: 'ok' });
+    expect(res.json()).toEqual({ status: 'ok', version: 'dev' });
+    await app.close();
+  });
+
+  it('reports the deployed commit, so a deploy can wait for the new version', async () => {
+    const app = buildApp({ db, logger: false, version: 'abc1234' });
+    const res = await app.inject({ method: 'GET', url: '/api/health' });
+    expect(res.json()).toEqual({ status: 'ok', version: 'abc1234' });
     await app.close();
   });
 
