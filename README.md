@@ -2,7 +2,7 @@
 
 Web app for an HR Manager to manage salaries of 10,000 employees and see how the org pays people.
 
-Docs: [requirements](docs/requirements.md) · [decisions](docs/decisions.md) · [plan](docs/plan.md) · [API](docs/api.md) · [system design](docs/system-design.md)
+Docs: [coding standards](docs/coding-standards.md) · [requirements](docs/requirements.md) · [decisions](docs/decisions.md) · [plan](docs/plan.md) · [API](docs/api.md) · [system design](docs/system-design.md)
 
 ## Run locally
 
