@@ -105,7 +105,10 @@ describe('listEmployees', () => {
       (await listEmployees(db, query(q))).data.map((e) => e.id);
     expect(await ordered({})).toEqual(ids);
     expect(await ordered({ sort: 'name:desc' })).toEqual(ids);
-    expect([...(await ordered({ pageSize: 2 })), ...(await ordered({ pageSize: 2, page: 2 }))]).toEqual(ids);
+    expect([
+      ...(await ordered({ pageSize: 2 })),
+      ...(await ordered({ pageSize: 2, page: 2 })),
+    ]).toEqual(ids);
   });
 
   it('pages and reports the total of all matches', async () => {
