@@ -1,5 +1,5 @@
 import { money } from '@/lib/format';
-import { railLayout, type Band } from './band-geometry';
+import { railLayout, type Band, type RailScale } from './band-geometry';
 
 export interface RailMarker {
   value: number;
@@ -12,14 +12,20 @@ export function BandRail({
   band,
   countryCode,
   markers,
+  scale,
+  showLabels = true,
 }: {
   band: Band;
   countryCode: string;
   markers: RailMarker[];
+  /** Shared scale for rails that are compared side by side. */
+  scale?: RailScale;
+  showLabels?: boolean;
 }) {
   const layout = railLayout(
     band,
     markers.map((m) => m.value),
+    scale,
   );
   const summary =
     `Pay band: middle half ${money(band.p25, countryCode)} to ${money(band.p75, countryCode)}, ` +
@@ -49,18 +55,16 @@ export function BandRail({
           style={{ left: `${layout.values[i]}%` }}
         />
       ))}
-      <span
-        className="absolute top-6 -translate-x-1/2 text-xs whitespace-nowrap text-muted-foreground"
-        style={{ left: `${layout.p25}%` }}
-      >
-        {money(band.p25, countryCode)}
-      </span>
-      <span
-        className="absolute top-6 -translate-x-1/2 text-xs whitespace-nowrap text-muted-foreground"
-        style={{ left: `${layout.p75}%` }}
-      >
-        {money(band.p75, countryCode)}
-      </span>
+      {showLabels &&
+        [band.p25, band.p75].map((v, i) => (
+          <span
+            key={i}
+            className="absolute top-6 -translate-x-1/2 text-xs whitespace-nowrap text-muted-foreground"
+            style={{ left: `${i ? layout.p75 : layout.p25}%` }}
+          >
+            {money(v, countryCode)}
+          </span>
+        ))}
     </div>
   );
 }

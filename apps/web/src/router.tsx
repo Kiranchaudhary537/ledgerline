@@ -4,7 +4,7 @@ import { LoginPage } from '@/features/auth/login-page';
 import { loginUrl } from '@/features/auth/session';
 import { EmployeeDetailPage } from '@/features/employees/employee-detail-page';
 import { EmployeesPage } from '@/features/employees/employees-page';
-import { InsightsPage } from '@/pages';
+import { InsightsPage } from '@/features/insights/insights-page';
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },

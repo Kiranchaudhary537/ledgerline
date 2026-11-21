@@ -49,7 +49,7 @@ describe('login page', () => {
   });
 
   test('on success goes to next', async () => {
-    stubFetch(() => Response.json({ user })); // login and /me both answer with the user
+    stubFetch((url) => Response.json(url.startsWith('/api/insights') ? [] : { user })); // login and /me both answer with the user
     const router = renderApp('/login?next=%2Finsights');
     await fill('hr@acme.test', 'pw');
     await waitFor(() => expect(router.state.location.pathname).toBe('/insights'));

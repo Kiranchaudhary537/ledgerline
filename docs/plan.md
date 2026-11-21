@@ -74,7 +74,7 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 - [x] 🔴 Employee list: table, search, filters, sort, paging – all in URL
 - [x] Employee detail + salary history timeline
 - [x] 🔴 Forms: add / edit (side sheet), change salary, delete confirm
-- [ ] Insights page: country picker, KPIs, pay by role, distribution, gender gap, countries overview; row → filtered list
+- [x] Insights page: country picker, KPIs, pay by role, distribution, gender gap, countries overview; row → filtered list
 
 ## M10 – Deploy
 

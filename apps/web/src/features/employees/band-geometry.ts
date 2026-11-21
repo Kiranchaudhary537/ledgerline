@@ -8,12 +8,27 @@ export interface Band {
 
 const clamp = (n: number) => Math.min(100, Math.max(0, n));
 
-/** Maps money values to 0..100 positions on the rail. The scale grows to include `values`. */
-export function railLayout(band: Band, values: number[]) {
-  const lo = Math.min(band.min, ...values) * 0.97;
-  const hi = Math.max(band.max, ...values) * 1.03;
-  const span = hi - lo || 1;
-  const at = (v: number) => clamp(((v - lo) / span) * 100);
+export interface RailScale {
+  lo: number;
+  hi: number;
+}
+
+/** One scale that fits every band (and value), so several rails line up. */
+export function railScale(bands: Band[], values: number[] = []): RailScale {
+  return {
+    lo: Math.min(...bands.map((b) => b.min), ...values) * 0.97,
+    hi: Math.max(...bands.map((b) => b.max), ...values) * 1.03,
+  };
+}
+
+/** Maps money values to 0..100 positions on the rail. Without `scale`, it fits this band and `values`. */
+export function railLayout(
+  band: Band,
+  values: number[],
+  scale: RailScale = railScale([band], values),
+) {
+  const span = scale.hi - scale.lo || 1;
+  const at = (v: number) => clamp(((v - scale.lo) / span) * 100);
   return {
     p25: at(band.p25),
     median: at(band.median),
