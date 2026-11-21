@@ -13,7 +13,7 @@ export function useInsightsUrl() {
   const [params, setParams] = useSearchParams();
   const url = useMemo(() => parseInsightsState(params), [params]);
 
-  const overview = useStats({ country: '', department: [], level: [] }, 'country');
+  const overview = useStats({ country: '', jobTitle: '', level: '' }, 'country');
 
   const state: InsightsState = {
     ...url,

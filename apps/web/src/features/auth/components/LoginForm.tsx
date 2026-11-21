@@ -49,7 +49,7 @@ export function LoginForm({ pending, fieldErrors, formError, onSubmit }: Props) 
         />
       </Field>
       {formError && (
-        <p role="alert" className="text-sm text-error">
+        <p role="alert" className="text-sm text-destructive">
           {formError}
         </p>
       )}

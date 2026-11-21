@@ -1,5 +1,7 @@
 import { Check, ChevronDown, Search } from 'lucide-react';
 import { useId, useState, type KeyboardEvent } from 'react';
+import { buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { formatCount } from '@/lib/format';
 import { filterByLabel, moveActive } from '@/lib/option-search';
@@ -51,20 +53,24 @@ export function MultiSelect({ name, options, selected, onChange, searchable = fa
       }}
     >
       <PopoverTrigger
-        className={cn('key gap-1.5', selected.length > 0 && 'border-accent text-accent')}
+        className={cn(
+          buttonVariants({ variant: 'secondary' }),
+          'gap-1.5',
+          selected.length > 0 && 'border-primary text-primary',
+        )}
       >
         {name}
         {selected.length > 0 && <span className="tnum font-medium">{selected.length}</span>}
-        <ChevronDown aria-hidden className="size-4 text-muted" />
+        <ChevronDown aria-hidden className="size-4 text-muted-foreground" />
       </PopoverTrigger>
       <PopoverContent aria-label={`${name} filter`} className="p-0">
         {searchable && (
-          <div className="relative border-b border-rule p-2">
+          <div className="relative border-b p-2">
             <Search
               aria-hidden
-              className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted"
+              className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground"
             />
-            <input
+            <Input
               type="search"
               name={`search-${name}`}
               aria-label={`Search ${name}`}
@@ -81,7 +87,7 @@ export function MultiSelect({ name, options, selected, onChange, searchable = fa
                 setActive(0);
               }}
               onKeyDown={onKeyDown}
-              className="field h-8 pr-2 pl-8"
+              className="h-8 pr-2 pl-8"
             />
           </div>
         )}
@@ -96,7 +102,7 @@ export function MultiSelect({ name, options, selected, onChange, searchable = fa
           className="max-h-60 overflow-y-auto p-1"
         >
           {shown.length === 0 && (
-            <li role="presentation" className="px-2 py-2 text-muted">
+            <li role="presentation" className="px-2 py-2 text-muted-foreground">
               {options.length === 0 ? 'No options' : 'No matches'}
             </li>
           )}
@@ -111,22 +117,22 @@ export function MultiSelect({ name, options, selected, onChange, searchable = fa
                 onClick={() => toggle(o.value)}
                 onMouseMove={() => setActive(i)}
                 className={cn(
-                  'flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5',
-                  i === active && 'bg-accent-wash',
+                  'flex cursor-pointer items-center gap-2 px-2 py-1.5',
+                  i === active && 'bg-accent',
                 )}
               >
                 <span
                   aria-hidden
                   className={cn(
-                    'flex size-4 shrink-0 items-center justify-center rounded-[3px] border border-muted',
-                    checked && 'border-accent bg-accent text-accent-ink',
+                    'flex size-4 shrink-0 items-center justify-center border border-input',
+                    checked && 'border-primary bg-primary text-primary-foreground',
                   )}
                 >
                   {checked && <Check className="size-3" />}
                 </span>
                 {o.label}
                 {o.count !== undefined && (
-                  <span className="tnum ml-auto text-muted">{formatCount(o.count)}</span>
+                  <span className="tnum ml-auto text-muted-foreground">{formatCount(o.count)}</span>
                 )}
               </li>
             );

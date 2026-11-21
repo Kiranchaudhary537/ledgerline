@@ -42,8 +42,14 @@ export function proposedMinor(input: string, countryCode: string) {
 export const PROPOSAL_PROMPT = 'Type the new salary to see where it lands in the band.';
 
 /** "+8.9% from today, above the middle half of the band". */
-export function proposalText(current: number, proposed: number | null, band: StatsRow | undefined) {
+export function proposalText(
+  current: number,
+  proposed: number | null,
+  band: StatsRow | undefined,
+  /** The fraction to show while it is counting up; defaults to the real change. */
+  shownChange = proposed === null ? 0 : percentChange(current, proposed),
+) {
   if (proposed === null) return PROPOSAL_PROMPT;
-  const change = `${formatPercent(percentChange(current, proposed))} from today`;
+  const change = `${formatPercent(shownChange)} from today`;
   return band ? `${change}, ${POSITION_TEXT[bandPosition(proposed, band)]}` : change;
 }

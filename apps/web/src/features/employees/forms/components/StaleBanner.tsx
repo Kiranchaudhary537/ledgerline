@@ -2,8 +2,11 @@ import { Button } from '@/components/ui/button';
 
 export function StaleBanner({ onReload }: { onReload: () => void }) {
   return (
-    <div role="alert" className="flex items-center justify-between gap-3 cut-s border-error p-3">
-      <p className="font-medium text-error">Someone else changed this employee.</p>
+    <div
+      role="alert"
+      className="flex items-center justify-between gap-3 border border-destructive p-3"
+    >
+      <p className="font-medium text-destructive">Someone else changed this employee.</p>
       <Button type="button" variant="secondary" size="sm" onClick={onReload}>
         Reload
       </Button>

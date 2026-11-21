@@ -35,7 +35,7 @@ export function CountriesTable({
                     type="button"
                     aria-current={current || undefined}
                     onClick={() => onSelect(code)}
-                    className={`underline-offset-4 hover:underline ${current ? 'font-medium text-accent' : ''}`}
+                    className={`underline-offset-4 hover:underline ${current ? 'font-medium text-primary' : ''}`}
                   >
                     {countryName(code)}
                   </button>

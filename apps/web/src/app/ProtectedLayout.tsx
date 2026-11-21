@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import { Navigate, Outlet, useLocation, useMatch, useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { useLogout, useSession } from '@/features/auth/api/session';
 import { loginUrl } from '@/features/auth/model/redirect';
 import { useEmployee } from '@/features/employees/shared/api/employee';
-import { EmployeeDialogs } from '@/features/employees/forms/EmployeeDialogs';
 import { ApiError } from '@/lib/api';
 import { breadcrumbs } from './breadcrumbs';
-import { Sidebar } from './components/Sidebar';
-import { TopBar } from './components/TopBar';
+import { AppSidebar } from './components/AppSidebar';
+import { PageActionsSlot } from './components/PageActions';
+import { SiteHeader } from './components/SiteHeader';
 
 function ShellSkeleton() {
   return (
     <div aria-busy="true">
-      <div className="h-14 bg-graphite" />
-      <div className="m-6 h-8 w-48 motion-safe:animate-pulse rounded-sm bg-paper-3" />
+      <div className="h-14 border-b" />
+      <Skeleton className="m-6 h-8 w-48" />
       <span className="sr-only">Loading…</span>
     </div>
   );
@@ -27,7 +30,7 @@ export function ProtectedLayout() {
   const logout = useLogout(() => void navigate('/login'));
   const employeeId = useMatch('/employees/:id')?.params.id;
   const employee = useEmployee(employeeId ?? '');
-  const [adding, setAdding] = useState(false);
+  const [actionsSlot, setActionsSlot] = useState<HTMLElement | null>(null);
 
   if (session.isPending) return <ShellSkeleton />;
   if (session.error instanceof ApiError && session.error.code === 'UNAUTHENTICATED') {
@@ -45,27 +48,34 @@ export function ProtectedLayout() {
   }
 
   return (
-    <>
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:cut-s focus:bg-paper focus:p-2"
-      >
-        Skip to content
-      </a>
-      <TopBar
-        crumbs={breadcrumbs(location.pathname, employeeId ? employee.data?.fullName : undefined)}
-        user={session.data.user}
-        onAddEmployee={() => setAdding(true)}
-        onLogout={() => logout.mutate()}
-        loggingOut={logout.isPending}
-      />
-      <div className="flex">
-        <Sidebar />
-        <main id="main" className="mx-auto min-w-0 max-w-[1280px] flex-1 px-4 py-6 sm:px-6">
-          <Outlet />
-        </main>
-      </div>
-      <EmployeeDialogs kind={adding ? 'create' : null} onClose={() => setAdding(false)} />
-    </>
+    <TooltipProvider delayDuration={300}>
+      <SidebarProvider>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:bg-card focus:p-2"
+        >
+          Skip to content
+        </a>
+        <AppSidebar
+          user={session.data.user}
+          onLogout={() => logout.mutate()}
+          loggingOut={logout.isPending}
+        />
+        <SidebarInset id="main" className="min-w-0">
+          <SiteHeader
+            crumbs={breadcrumbs(
+              location.pathname,
+              employeeId ? employee.data?.fullName : undefined,
+            )}
+            actionsRef={setActionsSlot}
+          />
+          <PageActionsSlot value={actionsSlot}>
+            <div className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-6 sm:px-6">
+              <Outlet />
+            </div>
+          </PageActionsSlot>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

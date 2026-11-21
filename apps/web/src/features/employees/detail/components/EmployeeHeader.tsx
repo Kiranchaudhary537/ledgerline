@@ -2,8 +2,7 @@ import type { Employee } from '@acme/shared';
 import { ArrowLeft, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, Status } from '@/components/ui/pill';
-import { initials } from '@/features/employees/shared/model/people';
-import { formatCount, formatDate } from '@/lib/format';
+import { tenureText } from '@/features/employees/detail/model/tenure';
+import { formatCount, label } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 export interface PagerView {
@@ -31,23 +29,13 @@ interface Props {
   pager: PagerView | null;
   onEdit: () => void;
   onDelete: () => void;
-  onChangeSalary: () => void;
 }
 
-const roundButton = 'key key-icon';
-
-function Meta({ term, children }: { term: string; children: ReactNode }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-xs text-muted">{term}</dt>
-      <dd className="font-medium break-words">{children}</dd>
-    </div>
-  );
-}
+const iconButton = buttonVariants({ variant: 'secondary', size: 'icon' });
 
 function StepLink({
   to,
-  label,
+  label: text,
   children,
 }: {
   to: string | null;
@@ -58,16 +46,16 @@ function StepLink({
     return (
       <span
         aria-disabled
-        className={cn(roundButton, 'cursor-not-allowed opacity-55')}
         role="img"
-        aria-label={`${label} (none)`}
+        aria-label={`${text} (none)`}
+        className={cn(iconButton, 'cursor-not-allowed opacity-55')}
       >
         {children}
       </span>
     );
   }
   return (
-    <Link to={to} aria-label={label} title={label} className={roundButton}>
+    <Link to={to} aria-label={text} title={text} className={iconButton}>
       {children}
     </Link>
   );
@@ -80,51 +68,44 @@ export function EmployeeHeader({
   pager,
   onEdit,
   onDelete,
-  onChangeSalary,
 }: Props) {
   return (
-    <Card className="flex flex-wrap items-center gap-x-6 gap-y-4 p-5">
-      <Link
-        to={backTo}
-        aria-label="Back to employees"
-        title="Back to employees"
-        className={roundButton}
-      >
-        <ArrowLeft aria-hidden className="size-4" />
-      </Link>
-      <div className="flex items-center gap-3">
-        <Avatar initials={initials(e.fullName)} size="lg" />
-        <div className="space-y-1">
-          <h1 className="text-2xl leading-tight">{e.fullName}</h1>
-          <Status>Active</Status>
-        </div>
+    <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+      <div className="min-w-0 space-y-1">
+        <Link
+          to={backTo}
+          aria-label="Back to employees"
+          className="mb-2 inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft aria-hidden className="size-4" />
+          Employees
+        </Link>
+        <h1 className="text-3xl leading-tight">{e.fullName}</h1>
+        <p className="text-base">
+          {e.jobTitle}, {label(e.level)}, {countryName}
+        </p>
+        <p className="text-muted-foreground">
+          {tenureText(e.hireDate, new Date())} · Active ·{' '}
+          <span className="font-mono text-xs">{e.employeeCode}</span>
+        </p>
       </div>
-      <div aria-hidden className="hidden h-10 w-px bg-rule lg:block" />
-      <dl className="grid flex-1 grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
-        <Meta term="Employee code">
-          <span className="font-outlier text-xs">{e.employeeCode}</span>
-        </Meta>
-        <Meta term="Department">{e.department}</Meta>
-        <Meta term="Country">{countryName}</Meta>
-        <Meta term="Hire date">{formatDate(e.hireDate)}</Meta>
-      </dl>
-      <div className="ml-auto flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2 self-end">
         {pager && (
-          <div className="tnum flex items-center gap-2 text-muted">
+          <div className="tnum flex items-center gap-2 text-muted-foreground">
             <StepLink to={pager.prevTo} label="Previous employee">
-              <ChevronLeft aria-hidden className="size-4" />
+              <ChevronLeft aria-hidden />
             </StepLink>
             <span aria-live="polite">
               {formatCount(pager.position)} of {formatCount(pager.total)}
             </span>
             <StepLink to={pager.nextTo} label="Next employee">
-              <ChevronRight aria-hidden className="size-4" />
+              <ChevronRight aria-hidden />
             </StepLink>
           </div>
         )}
         <DropdownMenu>
-          <DropdownMenuTrigger aria-label="More actions" className={roundButton}>
-            <MoreHorizontal aria-hidden className="size-4" />
+          <DropdownMenuTrigger aria-label="More actions" className={iconButton}>
+            <MoreHorizontal aria-hidden />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onSelect={onEdit}>Edit details</DropdownMenuItem>
@@ -134,8 +115,7 @@ export function EmployeeHeader({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button onClick={onChangeSalary}>Change salary</Button>
       </div>
-    </Card>
+    </header>
   );
 }

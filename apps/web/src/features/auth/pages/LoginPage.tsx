@@ -22,7 +22,7 @@ export function LoginPage() {
     });
 
   return (
-    <main className="grid min-h-dvh place-items-center bg-paper-2 px-4">
+    <main className="grid min-h-dvh place-items-center bg-background px-4">
       <Card className="w-full max-w-sm p-8">
         <h1 className="mb-6 text-xl">Log in to ACME Pay</h1>
         <LoginForm

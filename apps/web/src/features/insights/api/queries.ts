@@ -7,11 +7,15 @@ import { insightsApiParams, type InsightsState } from '@/features/insights/model
 const get = <T>(path: string, params: URLSearchParams) => api<T>(`${path}?${params}`);
 
 /** Stats for a grouping. `country` is empty for the all-countries overview. */
-export const useStats = (state: InsightsState, groupBy: string, enabled = true) =>
-  useStatsQuery(insightsApiParams(state, groupBy), enabled);
+export const useStats = (
+  state: InsightsState,
+  groupBy: string,
+  enabled = true,
+  omit: ('jobTitle' | 'level')[] = [],
+) => useStatsQuery(insightsApiParams(state, groupBy, omit), enabled);
 
 export const useGenderGap = (state: InsightsState, enabled: boolean) => {
-  const params = insightsApiParams(state, 'jobTitle');
+  const params = insightsApiParams(state, 'jobTitle', ['jobTitle']);
   return useQuery({
     queryKey: ['insights', 'gender-gap', params.toString()],
     queryFn: () => get<GenderGapRow[]>('/api/insights/gender-gap', params),

@@ -16,9 +16,9 @@ export function Pagination({
   return (
     <nav
       aria-label="Pages"
-      className="tnum flex flex-wrap items-center justify-between gap-3 border-t border-rule px-5 py-3"
+      className="tnum flex flex-wrap items-center justify-between gap-3 border-t px-5 py-3"
     >
-      <span className="text-muted">
+      <span className="text-muted-foreground">
         {formatCount(first)} to {formatCount(last)} of {formatCount(total)}
       </span>
       <div className="flex items-center gap-3">

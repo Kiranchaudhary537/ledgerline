@@ -1,27 +1,26 @@
 import type { StatsRow } from '@acme/shared';
 
+/** The question "what do we pay for [jobTitle] [level] in [country]?"; an empty role or level means any. */
 export interface InsightsState {
   /** Empty until the URL or the default (biggest country) supplies one. */
   country: string;
-  department: string[];
-  level: string[];
+  jobTitle: string;
+  level: string;
 }
-
-const csv = (value: string | null) => (value ? value.split(',').filter(Boolean) : []);
 
 export function parseInsightsState(params: URLSearchParams): InsightsState {
   return {
-    country: csv(params.get('country'))[0] ?? '',
-    department: csv(params.get('department')),
-    level: csv(params.get('level')),
+    country: params.get('country') ?? '',
+    jobTitle: params.get('jobTitle') ?? '',
+    level: params.get('level') ?? '',
   };
 }
 
 export function insightsToParams(state: InsightsState) {
   const params = new URLSearchParams();
-  if (state.country) params.set('country', state.country);
-  if (state.department.length) params.set('department', state.department.join(','));
-  if (state.level.length) params.set('level', state.level.join(','));
+  for (const key of ['country', 'jobTitle', 'level'] as const) {
+    if (state[key]) params.set(key, state[key]);
+  }
   return params;
 }
 
@@ -31,5 +30,18 @@ export function biggestCountry(rows: StatsRow[] | undefined) {
     ?.group.country;
 }
 
-export const insightsApiParams = (state: InsightsState, groupBy: string) =>
-  new URLSearchParams({ groupBy, ...Object.fromEntries(insightsToParams(state)) });
+/** API params for a grouping; `omit` drops parts of the question a section does not follow. */
+export const insightsApiParams = (
+  state: InsightsState,
+  groupBy: string,
+  omit: ('jobTitle' | 'level')[] = [],
+) => {
+  const params = insightsToParams({ ...state, ...Object.fromEntries(omit.map((k) => [k, ''])) });
+  return new URLSearchParams({ groupBy, ...Object.fromEntries(params) });
+};
+
+/** Roles from every department, once each, A to Z: the options of the role picker. */
+export const roleOptions = (departments: { jobTitles: string[] }[] | undefined) =>
+  [...new Set((departments ?? []).flatMap((d) => d.jobTitles))].toSorted((a, b) =>
+    a.localeCompare(b),
+  );

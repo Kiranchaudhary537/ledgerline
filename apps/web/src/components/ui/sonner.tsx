@@ -4,14 +4,14 @@ import { Toaster as Sonner, type ToasterProps } from 'sonner';
 function Toaster(props: ToasterProps) {
   return (
     <Sonner
-      theme="system"
+      theme="light"
       style={
         {
-          '--normal-bg': 'var(--color-paper)',
-          '--normal-text': 'var(--color-ink)',
-          '--normal-border': 'var(--color-rule-2)',
-          '--border-radius': 'var(--radius-card)',
-          fontFamily: 'var(--font-body)',
+          '--normal-bg': 'var(--color-popover)',
+          '--normal-text': 'var(--color-popover-foreground)',
+          '--normal-border': 'var(--color-input)',
+          '--border-radius': '0',
+          fontFamily: 'var(--font-sans)',
         } as React.CSSProperties
       }
       {...props}

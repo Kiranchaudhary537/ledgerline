@@ -4,11 +4,11 @@ import { Fragment, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Table, Td, Th, rowHover } from '@/components/ui/table';
 import {
-  railPosition,
-  railScale,
-  type RailScale,
+  bandScale,
+  scalePosition,
+  type BandScale,
 } from '@/features/employees/shared/model/band-geometry';
-import { BandRail } from '@/features/employees/shared/components/BandRail';
+import { PayBand } from '@/features/employees/shared/components/PayBand';
 import { groupByRole, type RoleGroup } from '@/features/insights/model/pay-roles';
 import { formatCount, label, money } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -21,24 +21,25 @@ function PayLadder({
   countryCode,
 }: {
   role: RoleGroup;
-  scale: RailScale;
+  scale: BandScale;
   countryCode: string;
 }) {
-  const left = railPosition(scale, role.lowMedian);
+  const left = scalePosition(scale, role.lowMedian);
   return (
     <div className="tnum relative h-9">
-      <div className="absolute inset-x-0 top-[17px] h-px bg-rule-2" />
+      <div className="absolute inset-x-0 top-[17px] h-px bg-muted-foreground/30" />
       <div
-        className="absolute top-[17px] h-0.5 bg-accent-2"
-        style={{ left: `${left}%`, width: `${railPosition(scale, role.highMedian) - left}%` }}
+        className="absolute top-[17px] h-0.5 bg-muted-foreground/60"
+        style={{ left: `${left}%`, width: `${scalePosition(scale, role.highMedian) - left}%` }}
       />
       {role.levels.map((l) => (
         <span
           key={l.group.level}
           role="img"
           aria-label={`${label(l.group.level ?? '')} median ${money(l.median, countryCode)}`}
-          className="absolute top-[7px] flex size-5 -translate-x-1/2 items-center justify-center rounded-[3px] bg-accent text-xs leading-none font-medium text-accent-ink"
-          style={{ left: `${railPosition(scale, l.median)}%` }}
+          title={`${label(l.group.level ?? '')}: ${money(l.median, countryCode)}`}
+          className="absolute top-[7px] flex size-5 -translate-x-1/2 items-center justify-center border border-foreground/60 bg-card text-xs leading-none font-medium text-foreground"
+          style={{ left: `${scalePosition(scale, l.median)}%` }}
         >
           {(l.group.level ?? '').charAt(0).toUpperCase()}
         </span>
@@ -51,7 +52,7 @@ const ladderCell = 'w-2/5 min-w-56';
 
 interface RowProps {
   role: RoleGroup;
-  scale: RailScale;
+  scale: BandScale;
   country: string;
 }
 
@@ -73,11 +74,11 @@ function RoleRow({
           aria-expanded={expanded}
           aria-label={`${role.jobTitle} levels`}
           onClick={onToggle}
-          className="mr-1 inline-flex size-6 items-center justify-center rounded-sm align-middle text-muted hover:bg-paper-3 hover:text-ink"
+          className="mr-1 inline-flex size-6 items-center justify-center align-middle text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <ChevronRight
             aria-hidden
-            className={cn('size-4 motion-safe:transition-transform', expanded && 'rotate-90')}
+            className={cn('size-4 transition-transform', expanded && 'rotate-90')}
           />
         </button>
         <Link to={roleLink(country, role.jobTitle)} className={`font-medium ${linkClass}`}>
@@ -112,7 +113,7 @@ function LevelRow({ role, scale, country, row }: RowProps & { row: StatsRow }) {
       </Td>
       <Td align="right">{formatCount(row.count)}</Td>
       <Td className={ladderCell}>
-        <BandRail band={row} countryCode={country} markers={[]} scale={scale} showLabels={false} />
+        <PayBand size="compact" band={row} countryCode={country} scale={scale} />
       </Td>
       <Td align="right">{money(row.median, country)}</Td>
     </tr>
@@ -131,7 +132,7 @@ function useToggleSet() {
 }
 
 export function PayByRoleTable({ rows, country }: { rows: StatsRow[]; country: string }) {
-  const scale = useMemo(() => railScale(rows), [rows]);
+  const scale = useMemo(() => bandScale(rows), [rows]);
   const roles = useMemo(() => groupByRole(rows), [rows]);
   const [open, toggle] = useToggleSet();
 

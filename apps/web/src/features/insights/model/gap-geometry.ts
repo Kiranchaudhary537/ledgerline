@@ -13,6 +13,10 @@ export const gapLimit = (rows: GenderGapRow[]) => {
   return Math.max(STEP, Math.ceil(largest / STEP) * STEP);
 };
 
-/** 0..100 along the track; zero at 50. */
-export const gapPosition = (limit: number, pct: number) =>
-  Math.min(100, Math.max(0, 50 + (pct / limit) * 50));
+/** The number and its direction in words, so colour and position never carry the meaning alone. */
+export const gapParts = (pct: number) =>
+  pct > 0
+    ? { value: `${pct}%`, note: 'women paid less' }
+    : pct < 0
+      ? { value: `${Math.abs(pct)}%`, note: 'women paid more' }
+      : { value: '0%', note: 'no gap' };

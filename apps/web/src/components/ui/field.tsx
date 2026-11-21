@@ -24,7 +24,7 @@ export function Field({
       <Label htmlFor={id}>{label}</Label>
       {children}
       {error && (
-        <p id={`${id}-error`} aria-live="polite" className="text-sm text-error">
+        <p id={`${id}-error`} aria-live="polite" className="text-sm text-destructive">
           {error}
         </p>
       )}

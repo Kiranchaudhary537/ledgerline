@@ -1,9 +1,9 @@
 import type * as React from 'react';
 import { cn } from '@/lib/utils';
 
-/** A cut panel: paper, a 1px rule, two opposite corners bevelled. Never a shadow beside the border. */
+/** A panel: card white, 1px border, square corners, no shadow. */
 function Card({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div className={cn('cut text-ink', className)} {...props} />;
+  return <div className={cn('border bg-card text-card-foreground', className)} {...props} />;
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
@@ -16,7 +16,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function CardTitle({ className, ...props }: React.ComponentProps<'h2'>) {
-  return <h2 className={cn('text-lg', className)} {...props} />;
+  return <h2 className={cn('text-base', className)} {...props} />;
 }
 
 export { Card, CardHeader, CardTitle };

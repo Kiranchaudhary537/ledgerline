@@ -23,8 +23,6 @@ export const REASON_PILL: Record<ReasonKind, { text: string | null }> = {
   other: { text: null },
 };
 
-export type HistoryKey = 'date' | 'from' | 'to' | 'change' | 'reason' | 'by';
-
 /** The reasons HR uses most get their own pill; anything else shows its own text. */
 export function reasonKind(change: Pick<SalaryChange, 'oldSalaryMinor' | 'reason'>): ReasonKind {
   if (change.oldSalaryMinor === null) return 'start';
@@ -46,20 +44,25 @@ export const toHistoryRows = (changes: SalaryChange[]): HistoryRow[] =>
     changedBy: c.changedByName ?? 'Imported',
   }));
 
-const sortValue: Record<HistoryKey, (r: HistoryRow) => string | number> = {
-  date: (r) => r.changedAt,
-  from: (r) => r.oldMinor ?? -1,
-  to: (r) => r.newMinor,
-  change: (r) => r.change ?? -Infinity,
-  reason: (r) => r.reason.toLowerCase(),
-  by: (r) => r.changedBy.toLowerCase(),
-};
+/** Rows in `rows` that were not in `seen`: what just arrived, so only they animate in. */
+export const freshIds = (seen: ReadonlySet<number>, rows: HistoryRow[]) =>
+  new Set(rows.filter((r) => !seen.has(r.id)).map((r) => r.id));
 
-export function sortHistoryRows(rows: HistoryRow[], key: HistoryKey, dir: 'asc' | 'desc') {
-  const value = sortValue[key];
-  const sign = dir === 'asc' ? 1 : -1;
-  return rows.toSorted((a, b) => {
-    const [x, y] = [value(a), value(b)];
-    return (x < y ? -1 : x > y ? 1 : 0) * sign;
-  });
+/** Newest first, as the timeline reads. */
+export const newestFirst = (rows: HistoryRow[]) =>
+  rows.toSorted((a, b) => b.changedAt.localeCompare(a.changedAt));
+
+export interface SalaryStep {
+  /** ms since epoch. */
+  at: number;
+  salaryMinor: number;
+}
+
+/** The salary as a step line: one point per change, then a point at `now` so the last step runs to today. */
+export function salarySteps(rows: HistoryRow[], now: number): SalaryStep[] {
+  const steps = rows
+    .toSorted((a, b) => a.changedAt.localeCompare(b.changedAt))
+    .map((r) => ({ at: Date.parse(r.changedAt), salaryMinor: r.newMinor }));
+  const last = steps.at(-1);
+  return last && last.at < now ? [...steps, { at: now, salaryMinor: last.salaryMinor }] : steps;
 }
