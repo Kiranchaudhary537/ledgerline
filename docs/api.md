@@ -49,4 +49,8 @@ if `groupBy` does not include `country`, exactly one `country` is required → e
 - Percentiles: `percentile_cont` in SQL. Deleted employees excluded.
 - Gap % = (male median − female median) ÷ male median × 100. Positive = women paid less.
 - `gapPct` is `null` when either gender has fewer than 5 people (UI: "Not enough data").
+- Gap rows still return `femaleMedian` / `maleMedian` (`null` if that gender has nobody in the group) and both counts; only `gapPct` is `null`. `gapPct` is rounded to 1 decimal.
+- `group` is an object keyed by the `groupBy` names, e.g. `{ "jobTitle": "Software Engineer", "level": "senior" }`. Rows are ordered by the group values (level by seniority).
+- Stats avg and percentiles are rounded to whole minor units.
+- Distribution buckets are equal-width between the min and max salary of the filtered set, contiguous, in minor units, empty buckets included. Each is `[from, to)`, except the last, which includes `to` (the max). No matching employees → `{ currency: null, buckets: [] }`; all salaries equal → one bucket with `from == to`.
 - Gap % has no currency, so it can be compared across countries.
