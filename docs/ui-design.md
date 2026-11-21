@@ -1,6 +1,6 @@
 # UI design
 
-Status: **draft – waiting for the style tile pick** (direction A or B below).
+Status: **direction A (Ledger) chosen.** Style tile source: [design/style-tile.html](design/style-tile.html) (open locally in a browser).
 
 ## Brief
 
@@ -121,6 +121,6 @@ Insights
 - [ ] `web-design-guidelines` audit run; findings fixed or noted.
 - [ ] Removed one unneeded element.
 
-## Open question for the user
+## Compa-ratio (in v1)
 
-**Compa-ratio** (salary ÷ band median, e.g. `0.94`) is the number HR teams actually use to spot under/over-paid people. Showing it as a column in the employee list (sortable within one country) would make the band rail actionable. It needs one extra window-function column in the list query. Proposed, not yet in scope.
+Salary ÷ median of the same country × job title × level × employment type (e.g. `0.94` = 6% below the middle). Shown as a column in the employee list and on the employee page next to the band rail. It has no currency, so it **can be sorted across countries**. Colour only marks the extremes (< 0.85, > 1.15); the number is always shown.

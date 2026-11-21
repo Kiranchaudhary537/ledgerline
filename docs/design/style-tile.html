@@ -1,0 +1,292 @@
+<title>ACME Pay Style Tile</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Public+Sans:wght@400;600&display=swap">
+<style>
+/* Layout: two directions side by side (stacked on phones), each a miniature of the real app using real seed rows. */
+:root {
+  --page-bg: #EEF0EE;
+  --page-fg: #252B28;
+  --page-muted: #5E6763;
+  --page-rule: #D3D8D4;
+
+  /* A – Ledger */
+  --a-paper: #F6F7F5;
+  --a-ink: #1E2622;
+  --a-graphite: #5B6661;
+  --a-rule: #D8DDD9;
+  --a-band: #2F6F62;
+  --a-band-soft: #CFE1DB;
+  --a-alert: #A3312B;
+
+  /* B – Review */
+  --b-paper: #FFFFFF;
+  --b-ink: #1F2433;
+  --b-graphite: #5D6475;
+  --b-rule: #E3E5EB;
+  --b-band: #3A4FA3;
+  --b-band-soft: #D9DEF3;
+  --b-alert: #B3261E;
+
+  --font-a: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-b: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page-bg: #151917; --page-fg: #E4E8E5; --page-muted: #9AA39F; --page-rule: #2E3532;
+    --a-paper: #1B211E; --a-ink: #E6ECE8; --a-graphite: #9DA9A3; --a-rule: #313A36; --a-band: #6FB5A4; --a-band-soft: #26443D; --a-alert: #E8857D;
+    --b-paper: #1A1D27; --b-ink: #E6E8F0; --b-graphite: #A0A6B8; --b-rule: #2F3445; --b-band: #93A3EC; --b-band-soft: #2B3460; --b-alert: #F08A82;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page-bg: #151917; --page-fg: #E4E8E5; --page-muted: #9AA39F; --page-rule: #2E3532;
+  --a-paper: #1B211E; --a-ink: #E6ECE8; --a-graphite: #9DA9A3; --a-rule: #313A36; --a-band: #6FB5A4; --a-band-soft: #26443D; --a-alert: #E8857D;
+  --b-paper: #1A1D27; --b-ink: #E6E8F0; --b-graphite: #A0A6B8; --b-rule: #2F3445; --b-band: #93A3EC; --b-band-soft: #2B3460; --b-alert: #F08A82;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--page-bg);
+  color: var(--page-fg);
+  font-family: var(--font-a);
+  font-size: 14px;
+  line-height: 1.45;
+  padding-block: 32px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.intro { max-width: 68ch; display: grid; gap: 6px; margin-bottom: 24px; }
+.intro h1 { font-size: 24px; font-weight: 600; margin: 0; text-wrap: balance; }
+.intro p { margin: 0; color: var(--page-muted); }
+
+.directions { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 560px), 1fr)); gap: 24px; }
+
+/* A direction panel maps its own tokens onto shared names, so one set of component rules serves both. */
+.dir { min-width: 0; display: grid; gap: 20px; padding: 20px; border-radius: 8px; background: var(--paper); color: var(--ink); font-family: var(--font); border: 1px solid var(--rule); }
+.dir-a { --paper: var(--a-paper); --ink: var(--a-ink); --graphite: var(--a-graphite); --rule: var(--a-rule); --band: var(--a-band); --band-soft: var(--a-band-soft); --alert: var(--a-alert); --font: var(--font-a); --row: 36px; }
+.dir-b { --paper: var(--b-paper); --ink: var(--b-ink); --graphite: var(--b-graphite); --rule: var(--b-rule); --band: var(--b-band); --band-soft: var(--b-band-soft); --alert: var(--b-alert); --font: var(--font-b); --row: 44px; }
+
+.dir-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.dir-head h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.dir-head p { margin: 0; color: var(--graphite); }
+
+.appbar { display: flex; align-items: center; gap: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
+.appbar strong { font-weight: 600; }
+.appbar a { color: var(--graphite); text-decoration: none; }
+.appbar a[aria-current="page"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--band); padding-bottom: 8px; margin-bottom: -11px; }
+.appbar .who { margin-left: auto; color: var(--graphite); }
+
+.section-title { margin: 0; font-size: 17px; font-weight: 600; }
+.muted { color: var(--graphite); }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-weight: 600; color: var(--graphite); font-size: 12px; padding: 0 10px 6px 0; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+td { height: var(--row); padding: 0 10px 0 0; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+.dir-b td { border-bottom-color: transparent; }
+.dir-b tbody tr + tr td { border-top: 1px solid var(--rule); }
+.num { text-align: right; padding-right: 0; }
+.code { color: var(--graphite); }
+.level { color: var(--graphite); display: block; font-size: 12px; line-height: 1.2; }
+.dir-b .level { display: inline; font-size: 14px; }
+.dir-b .level::before { content: ", "; }
+tbody tr:hover td { background: color-mix(in srgb, var(--band-soft) 40%, transparent); }
+
+/* Band rail */
+.rail-block { display: grid; gap: 8px; }
+.salary-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.salary-line .big { font-size: 29px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.rail { position: relative; height: 34px; }
+.rail .track { position: absolute; left: 0; right: 0; top: 13px; height: 2px; background: var(--rule); }
+.rail .iqr { position: absolute; top: 9px; height: 10px; background: var(--band-soft); border-radius: 2px; }
+.rail .median { position: absolute; top: 5px; width: 2px; height: 18px; background: var(--graphite); }
+.rail .dot { position: absolute; top: 7px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--band); box-shadow: 0 0 0 3px var(--paper); }
+.rail .dot.new { background: var(--paper); border: 2px solid var(--band); box-sizing: border-box; }
+.rail .tick-label { position: absolute; top: 24px; font-size: 12px; color: var(--graphite); transform: translateX(-50%); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rail-caption { margin: 0; color: var(--graphite); font-size: 12px; }
+
+/* Salary change form */
+.form { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--rule); border-radius: 8px; }
+.field { display: grid; gap: 4px; }
+.field label { font-weight: 600; font-size: 12px; }
+.field input { font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; height: 36px; padding: 0 10px; font-variant-numeric: tabular-nums; }
+.field input:focus-visible, button:focus-visible { outline: 2px solid var(--band); outline-offset: 2px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+button { font: inherit; font-weight: 600; height: 36px; padding: 0 14px; border-radius: 4px; cursor: pointer; }
+.primary { background: var(--band); color: var(--paper); border: 1px solid var(--band); }
+.secondary { background: transparent; color: var(--ink); border: 1px solid var(--rule); }
+.primary:hover { filter: brightness(1.08); }
+.secondary:hover { border-color: var(--graphite); }
+
+/* Histogram */
+.chart svg { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--graphite); font-size: 11px; font-family: var(--font); font-variant-numeric: tabular-nums; }
+.chart .bar { fill: var(--band); }
+.chart .bar.hl { fill: var(--ink); }
+.chart .axis { stroke: var(--rule); }
+
+.pick { margin-top: 24px; color: var(--page-muted); max-width: 68ch; }
+@media (prefers-reduced-motion: no-preference) { tbody tr td { transition: background-color 120ms ease; } }
+</style>
+
+<header class="intro">
+  <h1>Pick a direction for ACME Pay</h1>
+  <p>Both use real rows from the seeded database: engineers in India, and the pay band for a Mid Software Engineer there. Same layout, different type, colour and density.</p>
+</header>
+
+<main class="directions">
+  <section class="dir dir-a" aria-labelledby="a-title">
+    <div class="dir-head"><h2 id="a-title">A. Ledger</h2><p>IBM Plex Sans, verdigris, compact rows</p></div>
+    <div data-tile></div>
+  </section>
+  <section class="dir dir-b" aria-labelledby="b-title">
+    <div class="dir-head"><h2 id="b-title">B. Review</h2><p>Public Sans, ink indigo, roomier rows</p></div>
+    <div data-tile></div>
+  </section>
+</main>
+
+<p class="pick">Reply with A or B, or name what to take from each (for example "A's colours with B's spacing").</p>
+
+<template id="tile">
+  <div style="display:grid;gap:20px">
+    <nav class="appbar" aria-label="App">
+      <strong>ACME Pay</strong>
+      <a href="#" aria-current="page">Employees</a>
+      <a href="#">Insights</a>
+      <span class="who">HR Manager</span>
+    </nav>
+
+    <div style="display:grid;gap:8px">
+      <h3 class="section-title">Employees</h3>
+      <p class="muted" style="margin:0">Engineering in India, 5 of 2,812 shown</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Code</th><th>Name</th><th>Role</th><th class="num">Salary</th></tr></thead>
+          <tbody data-rows></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rail-block">
+      <h3 class="section-title">Sandeep Singh</h3>
+      <div class="salary-line"><span class="big" data-current></span><span class="muted">a year</span></div>
+      <div class="rail" data-rail="current" role="img"></div>
+      <p class="rail-caption" data-caption></p>
+    </div>
+
+    <form class="form" data-form>
+      <h3 class="section-title">Change salary</h3>
+      <div class="field">
+        <label data-for="salary">New annual salary (₹)</label>
+        <input data-id="salary" inputmode="numeric" autocomplete="off" value="19,50,000">
+      </div>
+      <div class="field">
+        <label data-for="reason">Reason</label>
+        <input data-id="reason" autocomplete="off" value="Promotion to Senior">
+      </div>
+      <div class="rail" data-rail="preview" role="img"></div>
+      <p class="rail-caption" data-preview-caption></p>
+      <div class="actions"><button type="submit" class="primary">Change salary</button><button type="button" class="secondary">Cancel</button></div>
+    </form>
+
+    <div class="chart" style="display:grid;gap:8px">
+      <h3 class="section-title">Software Engineer pay in India</h3>
+      <p class="muted" style="margin:0">628 people, salaries in lakh (₹1L = ₹1,00,000)</p>
+      <svg data-hist viewBox="0 0 520 170" role="img" aria-label="Histogram of Software Engineer salaries in India"></svg>
+    </div>
+  </div>
+</template>
+
+<script>
+// Real seed data (minor units = paise).
+const rows = [
+  ['ACME-00002', 'Deepika Chopra', 'QA Engineer', 'Mid', 133000000],
+  ['ACME-00022', 'Sandeep Singh', 'Software Engineer', 'Mid', 179000000],
+  ['ACME-00037', 'Ananya Pillai', 'DevOps Engineer', 'Junior', 103000000],
+  ['ACME-00040', 'Aarav Das', 'Software Engineer', 'Principal', 222000000],
+  ['ACME-00042', 'Rajesh Kapoor', 'Software Engineer', 'Mid', 170000000],
+];
+// Software Engineer, Mid, India, full time: min, p25, median, p75, max.
+const band = { min: 154000000, p25: 168000000, median: 175000000, p75: 183750000, max: 199000000 };
+const current = 179000000;
+// Software Engineer salaries in India, buckets of ₹2.5L from ₹10L to ₹40L (edges folded in).
+const hist = [148, 21, 100, 114, 27, 85, 42, 38, 23, 14, 9, 7];
+
+const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+const money = (minor) => inr.format(minor / 100);
+const lakh = (minor) => `₹${(minor / 1e7).toFixed(1).replace(/\.0$/, '')}L`;
+const parseInr = (text) => { const v = Number(String(text).replace(/[,\s]/g, '')); return Number.isFinite(v) && v > 0 ? Math.round(v * 100) : null; };
+
+function drawRail(el, value, { isNew = false } = {}) {
+  const lo = Math.min(band.min, value ?? band.min) * 0.97;
+  const hi = Math.max(band.max, value ?? band.max) * 1.03;
+  const x = (v) => ((v - lo) / (hi - lo)) * 100;
+  el.innerHTML = `
+    <div class="track"></div>
+    <div class="iqr" style="left:${x(band.p25)}%;width:${x(band.p75) - x(band.p25)}%"></div>
+    <div class="median" style="left:${x(band.median)}%"></div>
+    ${isNew ? `<div class="dot" style="left:${x(current)}%" title="Current"></div>` : ''}
+    ${value ? `<div class="dot${isNew ? ' new' : ''}" style="left:${x(value)}%"></div>` : ''}
+    <span class="tick-label" style="left:${x(band.p25)}%">${lakh(band.p25)}</span>
+    <span class="tick-label" style="left:${x(band.p75)}%">${lakh(band.p75)}</span>`;
+  el.setAttribute('aria-label', `Pay band p25 ${money(band.p25)} to p75 ${money(band.p75)}, median ${money(band.median)}${value ? `, marker at ${money(value)}` : ''}`);
+}
+
+function position(value) {
+  if (value < band.p25) return 'below the middle half of the band';
+  if (value > band.p75) return 'above the middle half of the band';
+  return value >= band.median ? 'in the upper middle of the band' : 'in the lower middle of the band';
+}
+
+function drawHist(svg) {
+  const w = 520, h = 170, left = 30, bottom = 22, top = 8;
+  const max = Math.max(...hist);
+  const bw = (w - left) / hist.length;
+  const yTicks = [0, 50, 100, 150];
+  const y = (v) => h - bottom - (v / 150) * (h - bottom - top);
+  let out = yTicks.map((t) => `<text x="${left - 6}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('');
+  out += `<line class="axis" x1="${left}" x2="${w}" y1="${y(0)}" y2="${y(0)}"></line>`;
+  hist.forEach((c, i) => {
+    const from = 100 + i * 25; // in tenths of a lakh: 10.0L + 2.5L per bucket
+    const hl = current / 1e7 >= from / 10 && current / 1e7 < (from + 25) / 10;
+    out += `<rect class="bar${hl ? ' hl' : ''}" x="${left + i * bw + 2}" y="${y(c)}" width="${bw - 4}" height="${y(0) - y(c)}" rx="2"><title>₹${from / 10}L to ₹${(from + 25) / 10}L: ${c} people</title></rect>`;
+  });
+  [0, 4, 8, 12].forEach((i) => out += `<text x="${left + i * bw}" y="${h - 6}" text-anchor="middle">₹${10 + i * 2.5}L</text>`);
+  svg.innerHTML = out;
+  void max;
+}
+
+const template = document.getElementById('tile');
+document.querySelectorAll('.dir').forEach((dir, d) => {
+  const slot = dir.querySelector('[data-tile]');
+  slot.replaceWith(template.content.cloneNode(true));
+  dir.querySelectorAll('[data-id]').forEach((input) => { input.id = `${input.dataset.id}-${d}`; });
+  dir.querySelectorAll('[data-for]').forEach((label) => { label.htmlFor = `${label.dataset.for}-${d}`; });
+
+  dir.querySelector('[data-rows]').innerHTML = rows.map(([code, name, title, level, salary]) =>
+    `<tr><td class="code">${code}</td><td>${name}</td><td>${title}<span class="level">${level}</span></td><td class="num">${money(salary)}</td></tr>`).join('');
+
+  dir.querySelector('[data-current]').textContent = money(current);
+  drawRail(dir.querySelector('[data-rail="current"]'), current);
+  dir.querySelector('[data-caption]').textContent =
+    `Software Engineer, Mid, India: middle half ${money(band.p25)} to ${money(band.p75)}, median ${money(band.median)}. Sandeep is ${position(current)}.`;
+
+  const input = dir.querySelector(`#salary-${d}`);
+  const preview = dir.querySelector('[data-rail="preview"]');
+  const caption = dir.querySelector('[data-preview-caption]');
+  const update = () => {
+    const v = parseInr(input.value);
+    drawRail(preview, v, { isNew: true });
+    caption.textContent = v
+      ? `New salary lands ${position(v)} (${v > current ? '+' : ''}${(((v - current) / current) * 100).toFixed(1)}%).`
+      : 'Enter a salary above 0, for example 19,50,000.';
+  };
+  input.addEventListener('input', update);
+  update();
+  dir.querySelector('[data-form]').addEventListener('submit', (e) => e.preventDefault());
+
+  drawHist(dir.querySelector('[data-hist]'));
+});
+</script>
