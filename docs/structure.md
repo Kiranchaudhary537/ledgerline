@@ -29,7 +29,7 @@ apps/
 packages/
   shared/                   used by api AND web
     src/
-      schemas/              Zod: employee, salary-change, list-query, auth
+      validation/           Zod: employee, salary-change, list-query, insights, auth
       errors.ts             error codes + default messages
       money.ts              minor units ↔ display
       constants.ts          countries, levels, departments, employment types, genders

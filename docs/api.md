@@ -4,7 +4,7 @@ Errors: see [error-handling.md](error-handling.md). All routes need a session ex
 
 ## `GET /api/employees` – list filters
 
-Schema: `packages/shared/src/schemas/list-query.ts`
+Validation: `packages/shared/src/validation/list-query.ts`
 
 | Param | Type | Rule |
 |---|---|---|
