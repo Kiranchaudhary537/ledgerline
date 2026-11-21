@@ -1,11 +1,10 @@
+import { config } from '@acme/shared';
 import { sql } from 'kysely';
 import type { Db } from '../client.ts';
 import { upsertCountries } from '../countries.ts';
 import { upsertDepartments } from '../departments.ts';
 import { hashPassword } from '../password.ts';
 import { generateEmployees } from './generate.ts';
-
-const BATCH_SIZE = 1_000;
 
 /** Removes all app data (keeps the schema). */
 export async function clearData(db: Db): Promise<void> {
@@ -30,7 +29,12 @@ export interface SeedOptions {
 /** Replaces all data with a fresh, deterministic dataset. All or nothing (one transaction). */
 export async function seedDatabase(
   db: Db,
-  { adminEmail, adminPassword, count = 10_000, seed = 42 }: SeedOptions,
+  {
+    adminEmail,
+    adminPassword,
+    count = config.seed.employeeCount,
+    seed = config.seed.randomSeed,
+  }: SeedOptions,
 ): Promise<void> {
   const employees = generateEmployees({ seed, count });
   const passwordHash = await hashPassword(adminPassword);
@@ -41,11 +45,11 @@ export async function seedDatabase(
     await upsertDepartments(trx);
     await trx
       .insertInto('users')
-      .values({ email: adminEmail, name: 'HR Manager', passwordHash })
+      .values({ email: adminEmail, name: config.seed.adminName, passwordHash })
       .execute();
 
     const idByEmail = new Map<string, number>();
-    for (const batch of chunks(employees, BATCH_SIZE)) {
+    for (const batch of chunks(employees, config.seed.batchSize)) {
       const rows = await trx
         .insertInto('employees')
         .values(batch.map(({ history: _history, ...e }) => e))
@@ -57,7 +61,7 @@ export async function seedDatabase(
     const history = employees.flatMap((e) =>
       e.history.map((change) => ({ ...change, employeeId: idByEmail.get(e.email)! })),
     );
-    for (const batch of chunks(history, BATCH_SIZE)) {
+    for (const batch of chunks(history, config.seed.batchSize)) {
       await trx.insertInto('salaryChanges').values(batch).execute();
     }
   });

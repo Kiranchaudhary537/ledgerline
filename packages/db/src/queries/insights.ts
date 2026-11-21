@@ -1,4 +1,4 @@
-import type { DistributionQuery, GenderGapQuery, StatsQuery } from '@acme/shared';
+import { config, type DistributionQuery, type GenderGapQuery, type StatsQuery } from '@acme/shared';
 import { type Expression, sql } from 'kysely';
 import type { Db } from '../client.ts';
 import { employeeFilters } from './filters.ts';
@@ -71,6 +71,8 @@ export async function getStats(db: Db, q: StatsQuery) {
   }));
 }
 
+const minGroup = config.insights.genderGapMinGroupSize;
+
 /** Medians are returned whenever that gender has anyone; only gapPct is null below 5 per gender. */
 export async function getGenderGap(db: Db, q: GenderGapQuery) {
   const rows = await groupedBase(db, q)
@@ -88,7 +90,7 @@ export async function getGenderGap(db: Db, q: GenderGapQuery) {
     femaleCount,
     maleCount,
     gapPct:
-      femaleCount >= 5 && maleCount >= 5
+      femaleCount >= minGroup && maleCount >= minGroup
         ? Math.round(((maleMedian - femaleMedian) / maleMedian) * 1000) / 10
         : null,
     currency,

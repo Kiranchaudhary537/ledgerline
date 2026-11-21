@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { config } from '../config.ts';
 import { enumList, paramWithDefault } from './common.ts';
 import { filterFields } from './list-query.ts';
 
@@ -14,7 +15,11 @@ export type Dimension = (typeof DIMENSIONS)[number];
 
 function groupBy<const T extends readonly [string, ...string[]]>(dimensions: T) {
   return enumList(dimensions)
-    .pipe(z.array(z.string()).max(2, { error: 'Group by at most 2 fields' }))
+    .pipe(
+      z.array(z.string()).max(config.insights.maxGroupByDimensions, {
+        error: `Group by at most ${config.insights.maxGroupByDimensions} fields`,
+      }),
+    )
     .refine((dims) => new Set(dims).size === dims.length, { error: 'Group by each field once' });
 }
 
@@ -41,8 +46,14 @@ export const distributionQuerySchema = z
   .object({
     ...filterFields,
     buckets: paramWithDefault(
-      z.coerce.number().int().min(1).max(50, { error: 'At most 50 buckets' }),
-      20,
+      z.coerce
+        .number()
+        .int()
+        .min(1)
+        .max(config.insights.maxBuckets, {
+          error: `At most ${config.insights.maxBuckets} buckets`,
+        }),
+      config.insights.defaultBuckets,
     ),
   })
   .refine(hasOneCountry, ONE_COUNTRY);

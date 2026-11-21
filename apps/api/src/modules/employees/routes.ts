@@ -1,5 +1,6 @@
 import type { Db } from '@acme/db';
 import {
+  config,
   employeeCreateSchema,
   employeeUpdateSchema,
   listQuerySchema,
@@ -28,7 +29,7 @@ export function employeeRoutes(app: FastifyInstance, { db }: { db: Db }) {
     const csv = await service.exportCsv(db, filters, sort);
     return reply
       .header('Content-Type', 'text/csv; charset=utf-8')
-      .header('Content-Disposition', 'attachment; filename="employees.csv"')
+      .header('Content-Disposition', `attachment; filename="${config.csv.filename}"`)
       .send(csv);
   });
 

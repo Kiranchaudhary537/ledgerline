@@ -1,3 +1,4 @@
+import { config } from '@acme/shared';
 import { CamelCasePlugin, Kysely, PostgresDialect, sql } from 'kysely';
 import pg from 'pg';
 import type { DB } from './types.ts';
@@ -13,7 +14,9 @@ export type Db = Kysely<DB>;
 /** Columns are snake_case in Postgres and camelCase in code (CamelCasePlugin). */
 export function createDb(connectionString: string): Db {
   return new Kysely<DB>({
-    dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString, max: 10 }) }),
+    dialect: new PostgresDialect({
+      pool: new pg.Pool({ connectionString, max: config.db.poolSize }),
+    }),
     plugins: [new CamelCasePlugin()],
   });
 }

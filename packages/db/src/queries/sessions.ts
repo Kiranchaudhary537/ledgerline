@@ -1,3 +1,4 @@
+import { config } from '@acme/shared';
 import { createHash, randomBytes } from 'node:crypto';
 import { sql } from 'kysely';
 import type { Db } from '../client.ts';
@@ -6,10 +7,14 @@ const hashToken = (token: string) => createHash('sha256').update(token).digest('
 
 /** Returns the cookie token. Only its SHA-256 is stored. */
 export async function createSession(db: Db, userId: number): Promise<string> {
-  const token = randomBytes(32).toString('base64url');
+  const token = randomBytes(config.session.tokenBytes).toString('base64url');
   await db
     .insertInto('sessions')
-    .values({ id: hashToken(token), userId, expiresAt: sql<Date>`now() + interval '8 hours'` })
+    .values({
+      id: hashToken(token),
+      userId,
+      expiresAt: sql<Date>`now() + make_interval(secs => ${config.session.ttlSeconds})`,
+    })
     .execute();
   return token;
 }

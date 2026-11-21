@@ -1,6 +1,7 @@
 import type { Db } from '@acme/db';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
+import { config } from '@acme/shared';
 import Fastify, { type FastifyServerOptions, LogController } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { errorHandler, sendError } from './errors.ts';
@@ -70,8 +71,8 @@ export function buildApp({
   app.register(cookie);
   // Default 300/min per user (IP before login); the login route sets its own limit.
   app.register(rateLimit, {
-    max: 300,
-    timeWindow: '1 minute',
+    max: config.rateLimit.apiMax,
+    timeWindow: config.rateLimit.windowMs,
     hook: 'preHandler', // after onRequest auth and body parsing, so keys can use both
     keyGenerator: (request) => String(request.user?.id ?? request.ip),
   });

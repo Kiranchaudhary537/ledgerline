@@ -1,5 +1,6 @@
 import { findSessionUser } from '@acme/db';
 import type { Db } from '@acme/db';
+import { config } from '@acme/shared';
 import type { FastifyInstance } from 'fastify';
 import { AppError } from '../errors.ts';
 
@@ -23,7 +24,7 @@ export function authPlugin(app: FastifyInstance, { db }: { db: Db }) {
     const url = request.routeOptions.url;
     // Unknown routes have no url: let them reach the 404 handler.
     if (!url || PUBLIC_ROUTES.has(url)) return;
-    const token = request.cookies.session;
+    const token = request.cookies[config.cookie.sessionName];
     const user = token ? await findSessionUser(db, token) : undefined;
     if (!user) throw new AppError('UNAUTHENTICATED');
     request.user = user;

@@ -1,4 +1,11 @@
-import type { EmployeeCreate, EmployeeUpdate, Filters, ListQuery, SortOption } from '@acme/shared';
+import {
+  config,
+  type EmployeeCreate,
+  type EmployeeUpdate,
+  type Filters,
+  type ListQuery,
+  type SortOption,
+} from '@acme/shared';
 import { type Selectable, sql } from 'kysely';
 import type { Db } from '../client.ts';
 import type { Employees } from '../types.ts';
@@ -67,7 +74,9 @@ function employeesWithCompa(db: Db) {
     )
     .select(QUALIFIED)
     .select(
-      sql<number>`round((employees.salary_minor / bands.median)::numeric, 2)`.as('compaRatio'),
+      sql<number>`round((employees.salary_minor / bands.median)::numeric, ${sql.lit(config.compaRatio.decimals)})`.as(
+        'compaRatio',
+      ),
     );
 }
 
