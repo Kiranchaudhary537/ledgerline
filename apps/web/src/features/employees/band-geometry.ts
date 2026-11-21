@@ -13,13 +13,17 @@ export interface RailScale {
   hi: number;
 }
 
-/** One scale that fits every band (and value), so several rails line up. */
+/** One scale that fits every band (and value) with 5% padding, so several rails line up. */
 export function railScale(bands: Band[], values: number[] = []): RailScale {
-  return {
-    lo: Math.min(...bands.map((b) => b.min), ...values) * 0.97,
-    hi: Math.max(...bands.map((b) => b.max), ...values) * 1.03,
-  };
+  const min = Math.min(...bands.map((b) => b.min), ...values);
+  const max = Math.max(...bands.map((b) => b.max), ...values);
+  const pad = (max - min) * 0.05 || Math.abs(min) * 0.05 || 1;
+  return { lo: min - pad, hi: max + pad };
 }
+
+/** Position 0..100 of one money value on a scale. */
+export const railPosition = (scale: RailScale, v: number) =>
+  clamp(((v - scale.lo) / (scale.hi - scale.lo || 1)) * 100);
 
 /** Maps money values to 0..100 positions on the rail. Without `scale`, it fits this band and `values`. */
 export function railLayout(
@@ -27,8 +31,7 @@ export function railLayout(
   values: number[],
   scale: RailScale = railScale([band], values),
 ) {
-  const span = scale.hi - scale.lo || 1;
-  const at = (v: number) => clamp(((v - scale.lo) / span) * 100);
+  const at = (v: number) => railPosition(scale, v);
   return {
     p25: at(band.p25),
     median: at(band.median),
