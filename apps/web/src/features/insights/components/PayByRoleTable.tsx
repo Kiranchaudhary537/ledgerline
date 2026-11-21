@@ -37,6 +37,7 @@ function PayLadder({
           key={l.group.level}
           role="img"
           aria-label={`${label(l.group.level ?? '')} median ${money(l.median, countryCode)}`}
+          title={`${label(l.group.level ?? '')}: ${money(l.median, countryCode)}`}
           className="absolute top-[7px] flex size-5 -translate-x-1/2 items-center justify-center border border-foreground/60 bg-card text-xs leading-none font-medium text-foreground"
           style={{ left: `${scalePosition(scale, l.median)}%` }}
         >

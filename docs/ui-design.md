@@ -1,6 +1,6 @@
 # UI design
 
-Status: **agreed, not built yet** (replaces the Cobalt direction). History of earlier directions: [design/style-tile.html](design/style-tile.html) and `docs/decisions.md`.
+Status: **built** (replaces the Cobalt direction). History of earlier directions: [design/style-tile.html](design/style-tile.html) and `docs/decisions.md`.
 
 ## Brief
 
@@ -49,3 +49,17 @@ Type: IBM Plex Sans (already installed, tabular figures) for everything; weight 
 - Every data region: loading skeleton, empty (what goes here + the action), error (what broke + retry).
 - Labels sentence case, untracked; no eyebrows; no decorative dots.
 - Charts: shadcn chart components (Recharts), tokens for colour, accessible names, table fallback.
+
+## Motion
+
+Motion shows a state change and nothing else: no entrance stagger on page load, no looping, no parallax. Transform and opacity only, ease-out, never `transition: all`. Durations and the easing are tokens in `tokens.css` (`--dur-micro` 120ms, `--dur-short` 200ms, `--dur-long` 320ms, `--dur-exit` 120ms, `--ease-out`); under `prefers-reduced-motion: reduce` every animation and transition collapses to an instant change, and script-driven numbers (`useTween`) jump to their value.
+
+| Where | What moves |
+|---|---|
+| Pay band | The person's point slides to its place on first render and glides when the value changes (prev/next). In the change-salary preview the proposed point leaves the current one and follows the typed value; the % counts along |
+| After a salary change | The big figure counts old to new; the new history row slides in at the top (only rows that arrive after first paint); the chart line redraws |
+| Charts | One short entrance (360ms) when first drawn |
+| Dialogs, sheets, menus, popovers | Scale 0.96 to 1 plus fade from the trigger; sheets slide 24px; exits are faster than enters |
+| Table | Rows fade in when the data changes; the old rows stay (dimmed) while the next page loads, so nothing jumps; row hover is a colour change |
+| Buttons | `scale(0.97)` while pressed |
+| Sidebar | Collapse is instant (the shadcn block animates width, which is a layout property) |

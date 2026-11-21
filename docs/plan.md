@@ -75,6 +75,7 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 - [x] Employee detail + salary history timeline
 - [x] 🔴 Forms: add / edit (side sheet), change salary, delete confirm
 - [x] Insights page: country picker, KPIs, pay by role, distribution, gender gap, countries overview; row → filtered list
+- [x] Rebuild on the agreed design ([ui-design.md](ui-design.md)): shadcn dashboard shell, light-only tokens, PayBand, one-page person view, question-led Insights, motion
 
 ## M10 – Deploy
 
