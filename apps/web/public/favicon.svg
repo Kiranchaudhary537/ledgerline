@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .rail { fill: #2f6f62; }
+    @media (prefers-color-scheme: dark) { .rail { fill: #6fb5a4; } }
+  </style>
+  <rect x="2" y="14" width="28" height="4" rx="2" opacity=".35" class="rail"/>
+  <rect x="9" y="10" width="14" height="12" rx="2" class="rail"/>
+  <circle cx="16" cy="16" r="3" fill="#fff" opacity=".9"/>
+</svg>

@@ -1,20 +1,15 @@
 import type { GenderGapRow, StatsRow } from '@acme/shared';
 import { useMemo, type ReactNode } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { railScale } from '@/features/employees/band-geometry';
-import { BandRail } from '@/features/employees/band-rail';
 import { MultiSelect, type Option } from '@/features/employees/multi-select';
 import { useFilterOptions } from '@/features/employees/queries';
 import { ApiError } from '@/lib/api';
 import { formatCount, label, money } from '@/lib/format';
 import { Histogram } from './histogram';
+import { PayByRole, td, th } from './pay-by-role';
 import { insightsToParams, parseInsightsState, type InsightsState } from './insights-state';
 import { useDistribution, useGenderGap, useStats } from './queries';
-
-const th =
-  'border-b border-border pr-3 pb-1.5 text-left text-xs font-semibold text-muted-foreground';
-const td = 'h-9 border-b border-border pr-3 whitespace-nowrap';
 
 function Failed({ error, retry }: { error: unknown; retry: () => void }) {
   return (
@@ -47,65 +42,6 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       <h2 className="text-lg font-semibold">{title}</h2>
       {children}
     </section>
-  );
-}
-
-function PayByRole({ rows, country }: { rows: StatsRow[]; country: string }) {
-  const scale = useMemo(() => railScale(rows), [rows]);
-  return (
-    <div className="overflow-x-auto">
-      <table aria-label="Pay by role" className="tnum w-full border-collapse">
-        <thead>
-          <tr>
-            <th scope="col" className={th}>
-              Role
-            </th>
-            <th scope="col" className={th}>
-              Level
-            </th>
-            <th scope="col" className={`${th} text-right`}>
-              People
-            </th>
-            <th scope="col" className={`${th} w-1/2 min-w-48`}>
-              Middle half of pay
-            </th>
-            <th scope="col" className={`${th} pr-0 text-right`}>
-              Median
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => {
-            const { jobTitle = '', level = '' } = r.group;
-            const to = new URLSearchParams({ country, jobTitle, level });
-            return (
-              <tr key={`${jobTitle}/${level}`} className="hover:[&>td]:bg-band-soft/40">
-                <td className={td}>
-                  <Link
-                    to={`/employees?${to}`}
-                    className="font-semibold underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                  >
-                    {jobTitle}
-                  </Link>
-                </td>
-                <td className={td}>{label(level)}</td>
-                <td className={`${td} text-right`}>{formatCount(r.count)}</td>
-                <td className="h-9 w-1/2 min-w-48 border-b border-border pr-6">
-                  <BandRail
-                    band={r}
-                    countryCode={country}
-                    markers={[]}
-                    scale={scale}
-                    showLabels={false}
-                  />
-                </td>
-                <td className={`${td} pr-0 text-right`}>{money(r.median, country)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
   );
 }
 
