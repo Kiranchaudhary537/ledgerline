@@ -61,6 +61,7 @@ export const config = deepFreeze({
     decimals: 2, // digits after the point: 1.07 is precise enough to read at a glance
     extremeLow: 0.85, // ratio: below this a salary is flagged as far under its band median
     extremeHigh: 1.15, // ratio: above this a salary is flagged as far over its band median
+    maxReviewSpread: 0.2, // ratio: p75 - p25 of compa-ratio within one role + level; wider means pay is inconsistent for the same job and needs an explanation (common comp-review rule)
   },
 
   insights: {

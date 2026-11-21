@@ -62,6 +62,11 @@ describe('insights api', () => {
         max: 3000,
         avg: 2000,
         total: 6000,
+        // band median 2000: ratios .5 1 1.5
+        avgCompaRatio: 1,
+        outOfBandCount: 2,
+        compaP25: 0.75,
+        compaP75: 1.25,
         currency: 'INR',
       },
     ]);

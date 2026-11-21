@@ -9,6 +9,12 @@ export interface StatsRow {
   max: number;
   avg: number;
   total: number;
+  /** Compa-ratio figures use the band median over everyone, even when the stats are filtered. */
+  avgCompaRatio: number;
+  /** People with a compa-ratio below config.compaRatio.extremeLow or above extremeHigh. */
+  outOfBandCount: number;
+  compaP25: number;
+  compaP75: number;
   currency: string;
 }
 
