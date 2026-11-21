@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { errorHandler, sendError } from './errors.ts';
 import { authRoutes } from './modules/auth/routes.ts';
 import { healthRoutes } from './modules/health/routes.ts';
+import { insightsRoutes } from './modules/insights/routes.ts';
 import { authPlugin } from './plugins/auth.ts';
 
 export interface AppOptions {
@@ -68,6 +69,7 @@ export function buildApp({ db, logger = true, cookieSecure = false }: AppOptions
   app.register(async (routes) => {
     healthRoutes(routes, { db });
     authRoutes(routes, { db, cookieSecure });
+    insightsRoutes(routes, { db });
   });
   return app;
 }

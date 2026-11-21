@@ -8,7 +8,7 @@ beforeEach(() => resetDb(db));
 afterAll(() => db.destroy());
 
 let n = 0;
-const emp = (o: Record<string, unknown>) => ({
+const emp = (o: Record<string, unknown> = {}) => ({
   fullName: `Person ${++n}`,
   email: `p${n}@acme.example`,
   department: 'Engineering',
@@ -38,7 +38,7 @@ const seed = () =>
       emp({ salaryMinor: 3000 }),
       emp({ salaryMinor: 2000, gender: 'male' }),
       emp({ salaryMinor: 500, countryCode: 'DE', department: 'Sales' }),
-    ])
+    ] as never) // rows are loosely typed; the DB enforces the real constraints
     .execute();
 
 describe('insights api', () => {
@@ -120,7 +120,11 @@ describe('insights api', () => {
   });
 
   it('requires login', async () => {
-    for (const p of ['stats?groupBy=country', 'gender-gap?groupBy=country', 'distribution?country=IN']) {
+    for (const p of [
+      'stats?groupBy=country',
+      'gender-gap?groupBy=country',
+      'distribution?country=IN',
+    ]) {
       expect((await get(`/api/insights/${p}`, false)).statusCode).toBe(401);
     }
   });

@@ -58,7 +58,7 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 ## M8 – Insights API
 
-- [ ] 🔴 `stats`, `distribution`, `gender-gap` against ~12 hand-picked employees (even-count median, gap < 5 → null)
+- [x] 🔴 `stats`, `distribution`, `gender-gap` against ~12 hand-picked employees (even-count median, gap < 5 → null)
 
 ## M9 – Web (`apps/web`)
 
