@@ -12,6 +12,7 @@ const app = buildApp({
   logger: { level: 'info' },
   cookieSecure: env.NODE_ENV === 'production',
   trustProxy: env.NODE_ENV === 'production',
+  version: env.RENDER_GIT_COMMIT,
 });
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {

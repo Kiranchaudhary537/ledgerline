@@ -23,6 +23,7 @@ pnpm dev          # API on :3000 and web on :5173, together
 | `pnpm start` | API in production mode + built web app via `vite preview` |
 | `pnpm db:migrate` / `db:seed` / `db:setup` | Migrate, seed, or both |
 | `pnpm check` | Typecheck, lint, format, DB types up to date, all tests |
+| `pnpm ship` | Deploy: check + build, push `main`, wait until production runs this commit, smoke-test it (see [deploy](docs/deploy.md)) |
 
 After changing a migration: `pnpm db:migrate && pnpm --filter @acme/db db:types`.
 

@@ -28,6 +28,16 @@ On a paid web service you can use the Render Shell instead.
 2. Vercel, Add New Project, import the repo, set **Project Name** to `ledgerline` (the URL becomes `https://ledgerline.vercel.app`) and **Root Directory** to `apps/web`. Leave the build settings alone: `vercel.json` sets them. Keep "Include source files outside of the Root Directory" on (default) so the workspace install works.
 3. Deploy.
 
+## Every later deploy: `pnpm ship`
+
+One command after the one-time setup above:
+
+1. Refuses unless you are on a clean `main`.
+2. Runs `pnpm check` and `pnpm build`; stops on any failure.
+3. Pushes `main` (Render and Vercel auto-deploy it; if you turned auto-deploy off, set `RENDER_DEPLOY_HOOK_URL` / `VERCEL_DEPLOY_HOOK_URL` in `.env`).
+4. Waits until `/api/health` (through Vercel) and `/version.json` report this commit.
+5. Smoke-tests production: `/api/employees` → 401, `/employees` → 200, and a real login with cookie flags if `SHIP_SMOKE_EMAIL` / `SHIP_SMOKE_PASSWORD` are set.
+
 ## 4. Smoke checks
 
 - `https://ledgerline.vercel.app/api/health` returns 200 (proves the rewrite).

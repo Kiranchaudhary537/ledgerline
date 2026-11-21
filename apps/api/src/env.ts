@@ -5,6 +5,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().default(3000),
   HOST: z.string().default('0.0.0.0'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  // Set by Render on every deploy; `pnpm ship` waits until /api/health reports it.
+  RENDER_GIT_COMMIT: z.string().default('dev'),
 });
 
 export type Env = z.infer<typeof envSchema>;

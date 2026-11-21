@@ -30,6 +30,8 @@ export interface AppOptions {
   cookieSecure?: boolean;
   /** Trust X-Forwarded-* headers. True in production (behind proxies). */
   trustProxy?: boolean;
+  /** Deployed git commit, reported by /api/health. */
+  version?: string;
 }
 
 declare module 'fastify' {
@@ -44,6 +46,7 @@ export function buildApp({
   logger = true,
   cookieSecure = false,
   trustProxy = false,
+  version = 'dev',
 }: AppOptions) {
   const app = Fastify({
     logger,
@@ -83,7 +86,7 @@ export function buildApp({
   const employees = new EmployeeService(new EmployeeRepository(db));
   const insights = new InsightsService(new InsightsRepository(db));
   const meta = new MetaService(new DepartmentRepository(db));
-  const health = new HealthService(db);
+  const health = new HealthService(db, version);
 
   app.register(cookie);
   app.register(rateLimit, { global: false }); // limits are applied by authPlugin and the login route

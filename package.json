@@ -19,7 +19,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm --filter @acme/db db:types:check && pnpm test"
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm --filter @acme/db db:types:check && pnpm test",
+    "ship": "node --env-file-if-exists=.env scripts/ship.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
