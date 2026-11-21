@@ -152,7 +152,7 @@ describe('insights page', () => {
     stubApi();
     renderApp('/insights?country=IN');
     const line = await screen.findByRole('status', { name: 'Scorecard' });
-    expect(within(line).getByText('50 people')).toBeInTheDocument();
+    expect(await within(line).findByText('50 people')).toBeInTheDocument();
     expect(within(line).getByText(/Average compa-ratio 1\.02/)).toBeInTheDocument();
     // 3 of 50 outside band
     expect(within(line).getByText(/6% outside their band/)).toBeInTheDocument();
@@ -162,7 +162,7 @@ describe('insights page', () => {
     const fetch = stubApi();
     renderApp('/insights?country=IN&department=Engineering');
     const below = await screen.findByRole('region', { name: 'Furthest below band' });
-    expect(within(below).getByRole('link', { name: /Asha Rao/ })).toHaveAttribute(
+    expect(await within(below).findByRole('link', { name: /Asha Rao/ })).toHaveAttribute(
       'href',
       '/employees/11',
     );
@@ -193,7 +193,7 @@ describe('insights page', () => {
     });
     renderApp('/insights?country=IN');
     const below = await screen.findByRole('region', { name: 'Furthest below band' });
-    expect(within(below).getByText('Nobody is below their band.')).toBeInTheDocument();
+    expect(await within(below).findByText('Nobody is below their band.')).toBeInTheDocument();
   });
 
   test('pay by role shows people outside band and flags a wide compa-ratio spread', async () => {
@@ -233,6 +233,8 @@ describe('insights page', () => {
       if (u.pathname === '/api/meta/filters') return Response.json(filterOptions);
       if (u.pathname === '/api/insights/distribution')
         return Response.json({ currency: null, buckets: [] });
+      if (u.pathname === '/api/employees')
+        return Response.json({ data: [], page: 1, pageSize: 5, total: 0 });
       return Response.json([]);
     });
     renderApp('/insights?country=IN&level=junior');

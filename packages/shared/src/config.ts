@@ -68,6 +68,7 @@ export const config = deepFreeze({
     defaultBuckets: 20, // buckets: readable histogram on a normal chart width
     maxBuckets: 50, // buckets: more than this is noise
     maxGroupByDimensions: 2, // fields: a third dimension leaves groups too small to mean anything
+    attentionCount: 5, // people per side: a short list HR can act on, the rest is one click away
     genderGapMinGroupSize: 5, // people per gender: one person would swing the percentage
   },
 
