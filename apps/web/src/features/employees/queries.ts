@@ -35,7 +35,6 @@ export const useSalaryHistory = (id: string) =>
     queryFn: () => api<SalaryChange[]>(`/api/employees/${id}/salary-history`),
   });
 
-/** The pay band of this person's country, title, level and employment type. */
 export function useBand(e: Employee | undefined) {
   const params = new URLSearchParams(
     e

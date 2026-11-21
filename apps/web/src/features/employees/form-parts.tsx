@@ -5,7 +5,6 @@ import { Label } from '@/components/ui/label';
 import { ApiError } from '@/lib/api';
 import { parseMoney } from '@/lib/format';
 
-/** Props that tie a control to its label-less error message. */
 export const fieldProps = (id: string, error?: string) => ({
   id,
   'aria-invalid': !!error,

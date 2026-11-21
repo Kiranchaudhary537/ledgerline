@@ -7,7 +7,6 @@ import { goToLogin, routes } from '@/router';
 
 type Handler = (url: string, init?: RequestInit) => Response | Promise<Response>;
 
-/** Stubs fetch: calls `handler(url, init)`. */
 export function stubFetch(handler: Handler) {
   const fn = vi.fn(async (url: string, init?: RequestInit) => handler(url, init));
   vi.stubGlobal('fetch', fn);

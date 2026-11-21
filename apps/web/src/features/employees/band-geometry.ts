@@ -21,7 +21,6 @@ export function railScale(bands: Band[], values: number[] = []): RailScale {
   return { lo: min - pad, hi: max + pad };
 }
 
-/** Position 0..100 of one money value on a scale. */
 export const railPosition = (scale: RailScale, v: number) =>
   clamp(((v - scale.lo) / (scale.hi - scale.lo || 1)) * 100);
 

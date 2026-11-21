@@ -21,7 +21,6 @@ export const routes: RouteObject[] = [
 
 export const router = createBrowserRouter(routes);
 
-/** Send the user to login and bring them back here afterwards. */
 export function goToLogin(r: Pick<typeof router, 'state' | 'navigate'>) {
   if (r.state.location.pathname !== '/login') {
     void r.navigate(loginUrl(r.state.location), { replace: true });
