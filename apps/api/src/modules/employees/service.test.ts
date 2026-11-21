@@ -19,7 +19,6 @@ const row: Employee = {
   version: 1,
   createdAt: new Date('2024-01-01T00:00:00Z'),
   updatedAt: new Date('2024-01-02T00:00:00Z'),
-  compaRatio: 1.054,
 };
 
 function serviceWith(store: Partial<EmployeeStore>) {
@@ -71,7 +70,7 @@ describe('EmployeeService', () => {
     });
   });
 
-  it('builds a CSV with a header, major-unit salary, currency and 2-decimal compa-ratio', async () => {
+  it('builds a CSV with a header, major-unit salary and currency', async () => {
     const service = serviceWith({
       export: async () => [
         row,
@@ -80,13 +79,13 @@ describe('EmployeeService', () => {
     });
     const lines = (await service.exportCsv({}, 'name:asc')).split('\r\n');
     expect(lines[0]).toBe(
-      'Code,Name,Email,Department,Job title,Level,Country,Employment type,Gender,Hire date,Annual salary,Currency,Compa-ratio',
+      'Code,Name,Email,Department,Job title,Level,Country,Employment type,Gender,Hire date,Annual salary,Currency',
     );
     expect(lines[1]).toBe(
-      'ACME-00001,Priya Sharma,priya@acme.example,Engineering,Software Engineer,senior,IN,full_time,female,2021-04-12,3800000.00,INR,1.05',
+      'ACME-00001,Priya Sharma,priya@acme.example,Engineering,Software Engineer,senior,IN,full_time,female,2021-04-12,3800000.00,INR',
     );
     expect(lines[2]).toContain('"\'=cmd,""x"""');
-    expect(lines[2]).toContain(',9000000,JPY,');
+    expect(lines[2]).toContain(',9000000,JPY');
     expect(lines[3]).toBe('');
   });
 });

@@ -143,45 +143,6 @@ describe('getStats', () => {
   });
 });
 
-describe('stats compa-ratio', () => {
-  it('computes average, spread and out-of-band count against the whole band', async () => {
-    const rows = await insights.stats({ country: ['IN'], groupBy: ['department'] });
-    const by = (d: string) => rows.find((r) => r.group.department === d);
-    // Engineering band median 4000; ratios .25 .5 .5 .75 1 1 1.25 1.75 2 2.5 (sum 11.5)
-    // out of band (<.85 or >1.15): 8; p25 pos 2.25 -> .5625 -> .56; p75 pos 6.75 -> 1.625 -> 1.63
-    expect(by('Engineering')).toMatchObject({
-      avgCompaRatio: 1.15,
-      outOfBandCount: 8,
-      compaP25: 0.56,
-      compaP75: 1.63,
-    });
-    // Sales band median 2000; ratios .75 and 1.25: avg 1, both out, p25 .875 -> .88, p75 1.125 -> 1.13
-    expect(by('Sales')).toMatchObject({
-      avgCompaRatio: 1,
-      outOfBandCount: 2,
-      compaP25: 0.88,
-      compaP75: 1.13,
-    });
-    // 100/101 = .99, then 1, 1: nobody out of band
-    expect(by('Customer Support')).toMatchObject({ outOfBandCount: 0 });
-  });
-
-  it('keeps ratios relative to the whole band when the stats are filtered', async () => {
-    const rows = await insights.stats({
-      country: ['IN'],
-      gender: ['female'],
-      groupBy: ['department'],
-    });
-    // Women in Engineering: 1000..5000 over the band median 4000: .25 .5 .75 1 1.25
-    expect(rows[1]).toMatchObject({
-      avgCompaRatio: 0.75,
-      outOfBandCount: 4,
-      compaP25: 0.5,
-      compaP75: 1,
-    });
-  });
-});
-
 describe('getGenderGap', () => {
   it('computes the gap and nulls it below 5 people per gender', async () => {
     const rows = await insights.genderGap({ country: ['IN'], groupBy: ['department'] });

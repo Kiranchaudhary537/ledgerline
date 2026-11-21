@@ -26,7 +26,7 @@ Full design: [system-design.md](system-design.md)
 | Salary type | `BIGINT`, annual gross base, minor units | `INTEGER` | Some currencies overflow 2.1 billion |
 | Countries | All ISO countries from `countries-list` (currency) + built-in `Intl` (names, currency decimals) | Hand-written 8-country list | Dynamic, maintained data; money formatted as `en-<country>` |
 | Departments, job titles | DB tables (`departments`, `job_titles`), seeded; composite FK `(department, job_title)` on employees | Code constants; a job-title package (O*NET/ESCO) | They are ACME's own structure, no package fits; FK makes Postgres reject a title outside its department |
-| Levels, employment types, genders | Code constants + Postgres enums | Packages / DB tables | Logic depends on them: level order (sort, bands), pay factors and compa bands, gender-gap maths |
+| Levels, employment types, genders | Code constants + Postgres enums | Packages / DB tables | Logic depends on them: level order (sort, bands), pay factors, gender-gap maths |
 | Backend structure | Classes for repositories (SQL) and services (rules), wired in `app.ts`; pure helpers stay functions | All functions | Dependencies injected once; services unit-testable with fake repositories |
 | Gender | `female`, `male` (required) | More options | Kept simple for v1 |
 | List filters | Contract in [api.md](api.md) | Ad hoc params | One schema for API and UI |
@@ -48,7 +48,7 @@ Full design: [system-design.md](system-design.md)
 | Errors | One shared shape + code list ([error-handling.md](error-handling.md)) | Ad hoc errors | Same messages in API and UI |
 | Folder layout | By feature ([structure.md](structure.md)) | By file type | Change one feature in one place |
 | Visual direction | A – Ledger (IBM Plex Sans, verdigris, compact rows, rules not cards) | B – Review | Dense, exact, fits a pay ledger; chosen by user from style tile |
-| Compa-ratio | Salary ÷ band median (country × title × level × type), list column + employee page | Raw salary only | The number HR uses to spot under/over-pay; currency-free, so sortable across countries |
+| Compa-ratio | removed | — | Product decision: not needed for v1 |
 | UI design | `frontend-design` skill | Default shadcn look, `ui-ux-pro-max` | Choices made for this brief, not picked from a preset catalog |
 | UI audit | `web-design-guidelines` (Vercel, rules pinned in repo) | Manual review only | 100+ checks: a11y, focus, forms, states, copy |
 | Insights API | 3 endpoints (`stats`, `distribution`, `gender-gap`) reusing list filters | One endpoint per question | Covers every question with one filter schema |
@@ -96,6 +96,7 @@ The hardest parts (insights, special indexes) would be raw SQL in Prisma anyway,
 | Payroll, tax, payslips | Separate domain with its own rules |
 | Approval workflow | HR edits directly |
 | Bulk Excel import | Own project (error reports); seed script stands in |
+| Compa-ratio, pay-band flags | Product decision: not needed for v1 |
 | Bonus, equity | Base salary answers the core question |
 | Cache, queue, load balancer | 10k rows, ~5 req/s – not needed yet (see Phase 2) |
 | Observability stack | Request logs are enough for ~10 users |

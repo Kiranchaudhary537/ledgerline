@@ -54,7 +54,7 @@ export function getCountry(code: CountryCode): Country {
 export const LEVELS = ['junior', 'mid', 'senior', 'lead', 'principal'] as const;
 export type Level = (typeof LEVELS)[number];
 
-// Code, not a package or table: employment types drive pay factors and compa-ratio bands.
+// Code, not a package or table: employment types drive pay factors.
 export const EMPLOYMENT_TYPES = ['full_time', 'part_time', 'contract'] as const;
 export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
 
