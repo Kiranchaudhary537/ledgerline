@@ -1,4 +1,4 @@
-import type { StatsRow } from '@acme/shared';
+import type { InsightsStatsRow } from '@acme/shared';
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router';
 import { insightsToParams, parseInsightsState, type InsightsState } from './insights-state';
@@ -10,7 +10,7 @@ export function useInsightsUrl() {
   const url = useMemo(() => parseInsightsState(params), [params]);
 
   const overview = useStats({ country: '', department: [], level: [] }, 'country');
-  const biggest = overview.data?.reduce<StatsRow | undefined>(
+  const biggest = overview.data?.reduce<InsightsStatsRow | undefined>(
     (a, r) => (!a || r.count > a.count ? r : a),
     undefined,
   )?.group.country;

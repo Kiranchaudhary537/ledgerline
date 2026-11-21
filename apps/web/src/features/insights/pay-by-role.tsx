@@ -1,4 +1,4 @@
-import type { StatsRow } from '@acme/shared';
+import type { InsightsStatsRow } from '@acme/shared';
 import { Fragment, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { railPosition, railScale, type RailScale } from '@/features/employees/band-geometry';
@@ -94,7 +94,7 @@ function RoleRow({
   );
 }
 
-function LevelRow({ role, scale, country, row }: RowProps & { row: StatsRow }) {
+function LevelRow({ role, scale, country, row }: RowProps & { row: InsightsStatsRow }) {
   const level = row.group.level ?? '';
   return (
     <tr className="hover:[&>td]:bg-band-soft/40">
@@ -127,7 +127,7 @@ function useToggleSet() {
   return [open, toggle] as const;
 }
 
-export function PayByRole({ rows, country }: { rows: StatsRow[]; country: string }) {
+export function PayByRole({ rows, country }: { rows: InsightsStatsRow[]; country: string }) {
   const scale = useMemo(() => railScale(rows), [rows]);
   const roles = useMemo(() => groupByRole(rows), [rows]);
   const [open, toggle] = useToggleSet();

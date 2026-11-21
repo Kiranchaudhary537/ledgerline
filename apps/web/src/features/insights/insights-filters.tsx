@@ -1,4 +1,4 @@
-import type { FilterOptions, StatsRow } from '@acme/shared';
+import type { FilterOptions, InsightsStatsRow } from '@acme/shared';
 import { Button } from '@/components/ui/button';
 import { MultiSelect, type Option } from '@/features/employees/multi-select';
 import { formatCount, label, money } from '@/lib/format';
@@ -57,7 +57,13 @@ export function InsightsFilters({ state, options, set }: FiltersProps) {
   );
 }
 
-export function SummaryLine({ total, country }: { total: StatsRow | undefined; country: string }) {
+export function SummaryLine({
+  total,
+  country,
+}: {
+  total: InsightsStatsRow | undefined;
+  country: string;
+}) {
   return (
     <p className="tnum min-h-6" aria-live="polite">
       {total && (
