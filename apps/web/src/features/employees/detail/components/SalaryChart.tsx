@@ -16,7 +16,11 @@ const config = {
   salaryMinor: { label: 'Salary', color: 'var(--color-chart-1)' },
 } satisfies ChartConfig;
 
-const year = new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'UTC' });
+const monthYear = new Intl.DateTimeFormat('en', {
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
 
 /** Salary over time as a step line: it holds each salary until the next change, then runs to today. */
 export function SalaryChart({
@@ -43,10 +47,11 @@ export function SalaryChart({
         <Failed error={error} retry={onRetry} />
       ) : !rows ? (
         <Skeleton aria-hidden className="m-5 h-52" />
-      ) : steps.length === 0 ? (
+      ) : rows.length < 2 ? (
+        // A single starting salary is a flat line: nothing to read until pay changes.
         <EmptyState
-          title="No salary history to chart"
-          description="Once this salary has a starting entry, its steps over time are drawn here."
+          title="No salary changes since joining"
+          description="The chart appears after the first change."
         />
       ) : (
         <div className="px-3 pb-4">
@@ -63,7 +68,8 @@ export function SalaryChart({
                 type="number"
                 scale="time"
                 domain={['dataMin', 'dataMax']}
-                tickFormatter={(t: number) => year.format(t)}
+                tickFormatter={(t: number) => monthYear.format(t)}
+                minTickGap={48}
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
@@ -71,7 +77,7 @@ export function SalaryChart({
               <YAxis
                 width={88}
                 tickCount={4}
-                domain={([lo, hi]) => [Math.floor(lo * 0.95), Math.ceil(hi * 1.03)]}
+                domain={['auto', 'auto']}
                 tickFormatter={(v: number) => money(v, countryCode)}
                 tickLine={false}
                 axisLine={false}

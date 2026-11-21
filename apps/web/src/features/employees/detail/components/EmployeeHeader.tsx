@@ -84,9 +84,10 @@ export function EmployeeHeader({
         <p className="text-base">
           {e.jobTitle}, {label(e.level)}, {countryName}
         </p>
-        <p className="text-muted-foreground">
-          {tenureText(e.hireDate, new Date())} · Active ·{' '}
-          <span className="font-mono text-xs">{e.employeeCode}</span>
+        <p className="flex flex-wrap gap-x-5 text-muted-foreground">
+          <span>{tenureText(e.hireDate, new Date())}</span>
+          <span>Active</span>
+          <span className="font-mono text-xs leading-6">{e.employeeCode}</span>
         </p>
       </div>
       <div className="flex items-center gap-2 self-end">
