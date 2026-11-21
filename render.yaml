@@ -1,0 +1,27 @@
+# Render Blueprint. Docs: https://render.com/docs/blueprint-spec
+databases:
+  - name: acme-db
+    plan: free # expires 30 days after creation (14-day grace); use a paid plan to keep data
+    region: oregon # must match the API service; cannot be changed later
+    postgresMajorVersion: '18'
+
+services:
+  - type: web
+    name: acme-api # URL becomes https://acme-api.onrender.com (use it in apps/web/vercel.json)
+    runtime: node
+    plan: free # sleeps after 15 min idle; no shell; no preDeployCommand
+    region: oregon
+    buildCommand: npm install -g pnpm@12.16.1 && pnpm install --frozen-lockfile
+    # Free plans have no preDeployCommand, so migrations run before each start. Move
+    # `pnpm --filter @acme/db migrate` to preDeployCommand when on a paid plan.
+    startCommand: pnpm --filter @acme/db migrate && pnpm --filter @acme/api start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '26'
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: acme-db
+          property: connectionString
