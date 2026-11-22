@@ -7,3 +7,7 @@ coverage/
 
 # Agent worktrees
 .claude/worktrees/
+
+# Playwright
+test-results/
+playwright-report/
