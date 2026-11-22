@@ -71,7 +71,6 @@ salary_changes  (employee_id, old_salary_minor, new_salary_minor, reason, change
 | No session | `401` on every route (a test checks every route) |
 | Brute-force login | `429` + `Retry-After` |
 | Mixing currencies | Salary sort and insights need exactly one country |
-| Small groups | Gender gap hidden below 5 people |
 | Database down | `503`, and nothing is half-written |
 | CSV formula injection | Cells starting with `= + - @` get escaped |
 

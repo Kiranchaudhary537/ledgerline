@@ -11,13 +11,7 @@ A web app that replaces ACME's Excel sheets. The HR Manager uses it to manage sa
 
 ## What it does
 
-- Log in and log out. A sixth failed login within a minute gets blocked.
-- Employee list: search, filter, sort and page through 10k rows in under 200 ms. Filters live in the URL, so a view can be shared as a link.
-- Add, view, edit and soft-delete employees. A duplicate email gets a clear error.
-- Salary change with a reason. The new salary and its history row (who, when, old, new) are saved in one transaction.
-- Concurrent edits: if a second HR user saves over an edit, they're told to reload instead of overwriting it (version check).
-- CSV export of the current filtered list, streamed from the database.
-- Pay insights per country: median and range, distribution, and gender gap by role.
+Login, an employee list (search, filter, sort, paging, under 200 ms), employee CRUD, salary changes with history, CSV export, and pay insights (median, range, distribution by country, role and level). Scope and what's left out, with reasons: [requirements](docs/requirements.md).
 
 ## Run locally
 
@@ -40,25 +34,24 @@ apps/web  (React SPA)  ──/api/*──►  apps/api  (Fastify: routes → ser
 ```
 
 - Modular monolith, split by feature. Routes validate input, services hold the rules, repositories in `packages/db` are the only place that writes SQL.
-- Money is stored as integer minor units (`BIGINT`) in the local currency. There's no FX conversion, so salaries in different currencies are never mixed.
-- Auth is an httpOnly session cookie stored in Postgres. Every route needs a session, and a test checks that each one returns 401 without it.
+- Every route needs a session by default, and a test checks that each one returns 401 without it.
 - Vercel proxies `/api/*` to Render, so the browser sees a single origin. Details: [docs/deploy.md](docs/deploy.md).
 
 More: [diagram](https://excalidraw.com/#json=qXfSBfsghaeuzmqknR7Ai,SjkORtY0JrrfZWGS1sFmmA) · [system design](docs/system-design.md) · [API](docs/api.md) · [errors](docs/error-handling.md) · [folder structure](docs/structure.md)
 
-## Key decisions
+## Design decisions and trade-offs
 
-| Decision | Why |
-|---|---|
-| Kysely over Prisma | Partial unique indexes, generated employee codes and medians would all need raw SQL in Prisma ([comparison](docs/decisions.md#why-kysely-over-prisma)) |
-| Salary change has its own endpoint | Reason and history rules stay in one place, in one transaction |
-| Optimistic locking (`version`) | No lost updates, and no locks held |
-| Salary sort only when one country is filtered | ₹ and € can't be compared without FX |
-| Gender gap hidden for groups under 5 | One person would swing the % |
-| Live SQL with indexes, no cache or queue | 10k rows at ~5 req/s. Queries run in a few ms and results are always fresh |
-| Seed data is realistic and deterministic | Salaries fit country × role × level bands, so the insights mean something |
+| Chose | Over | Why | Trade-off |
+|---|---|---|---|
+| Modular monolith: routes → services → repositories | Microservices | One team, ~5 req/s. Clear layers keep it testable and easy to split later | Parts can't scale on their own |
+| One TypeScript monorepo, Zod schemas shared by API and UI | Separate repos, per-app validation | Same rules and types on both sides, so they never drift | The packages are coupled through `shared` |
+| PostgreSQL + Kysely (SQL migrations, generated types) | Prisma, MongoDB | Relational data and real transactions. Partial unique indexes and medians would be raw SQL in Prisma anyway ([comparison](docs/decisions.md#why-kysely-over-prisma)) | Migrations are written by hand |
+| Salary change in one transaction + optimistic locking (`version`) | Updating salary inside `PATCH`, row locks | Never half-saved, and no lost updates without holding locks | The client must send `version` and handle `409` |
+| httpOnly session cookie stored in Postgres | JWT in localStorage | Safe from XSS, and logout really ends the session | One DB read per request |
+| Money as integer minor units (`BIGINT`), local currency | Floats, FX conversion | No rounding errors, no external rate dependency | No cross-country salary comparison |
+| No cache, queue or load balancer | Redis, workers, N instances | 10k rows: queries take a few ms, so fewer moving parts | Needs adding at scale ([when](docs/system-design.md#trade-offs)) |
 
-All decisions with the alternatives I turned down: [docs/decisions.md](docs/decisions.md). What I left out on purpose, and why: [requirements](docs/requirements.md#deliberately-left-out).
+All decisions with alternatives: [docs/decisions.md](docs/decisions.md).
 
 ## Code quality
 
@@ -78,3 +71,11 @@ Claude Code was the pair programmer. I made the product and design decisions. AI
 - **Where I overruled it:** MUI → shadcn, USD conversion → local currency only, `int` → `bigint` ids, and more.
 
 Full write-up, including the AI's mistakes and how they were caught: [docs/ai-prompts.md](docs/ai-prompts.md)
+
+## What I'd improve next
+
+- Hosted CI (GitHub Actions with a Postgres service). Today `pnpm ship` gates each deploy locally.
+- Playwright end-to-end tests for the critical path: login → find employee → change salary.
+- Roles and SSO with row-level security, once managers and employees use it.
+- Observability (OpenTelemetry metrics, traces, alerts) instead of request logs only.
+- At scale: cursor pagination, a read replica and a cache for insights ([scaling plan](docs/system-design.md#scaling-later-designed-not-built)).
