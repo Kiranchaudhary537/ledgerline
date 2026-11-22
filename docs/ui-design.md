@@ -1,6 +1,6 @@
 # UI design
 
-Status: **built** (replaces the Cobalt direction). History of earlier directions: [design/style-tile.html](design/style-tile.html) and `docs/decisions.md`.
+Status: **built**. Earlier directions are noted in [decisions.md](decisions.md).
 
 ## Brief
 
@@ -41,7 +41,7 @@ Type: IBM Plex Sans (already installed, tabular figures) for everything; weight 
 | **Person** (one page, no tabs) | Name, role, level, country, tenure · salary big + **pay band** + "Change salary" inline | Salary over time (line/step chart from history) · history timeline (who, when, why) · profile fields. Prev/next stays in the header. |
 | **Insights** | "What do we pay for **[role]** **[level]** in **[country]**?" inline pickers → the band answer | Pay by level per role (range chart) · distribution (histogram) · gender gap (dot/bar per role) · countries table |
 
-## Rules (from Hallmark, app scope)
+## Rules
 
 - No stat-card grid with trend badges; figures shown are real and current-filter only.
 - Accent only for primary action, selection and the person's point.

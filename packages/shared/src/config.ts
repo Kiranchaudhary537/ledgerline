@@ -84,7 +84,7 @@ export const config = deepFreeze({
     promotionRaise: [0.12, 0.2], // fraction range of a promotion raise
     annualRaise: [0.03, 0.08], // fraction range of a yearly review raise
     batchSize: 1_000, // rows per INSERT: well under Postgres' 65,535 parameter limit
-    adminPasswordMinLength: 12, // characters: the seeded admin is a real login on a deployed app
+    adminPasswordMinLength: 12, // characters: the seeded admin is a real login on a deployed app (the live demo login is deliberately shorter for reviewers, see README)
     adminName: 'HR Manager', // display name of the seeded login user
   },
 } as const);

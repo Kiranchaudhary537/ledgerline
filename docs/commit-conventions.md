@@ -15,7 +15,7 @@
 
 ## Rules
 
-- Commit straight to `main`; one small, working step per commit.
+- One small, working step per commit; parallel work happens on short-lived worktree branches merged into `main`.
 - Core logic shows TDD: a `test:` commit (new test fails) followed by a `feat:` commit (it passes).
 - Apart from a `test:` red step, every commit passes typecheck, lint and tests.
 - Never commit secrets or `.env`.

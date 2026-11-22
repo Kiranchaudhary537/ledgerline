@@ -20,7 +20,7 @@ Tool: Claude Code. The human made every product and design decision; AI proposed
 | USD conversion with static FX rates | No FX: local currency only |
 | GitHub Actions CI | Not built (roll out later) |
 | Four gender options | `female`, `male` |
-| Insights after v1 | Insights in v1 (after re-reading the assignment) |
+| Insights after v1 | Insights in v1: answering "how does the org pay people" is the core of the brief |
 | Prisma considered | Kept Kysely, added `kysely-codegen` for generated types |
 | `int` ids | `bigint` ids, plus "every route returns 401 without login" test |
 | `shared/schemas` | `shared/validation` (clearer vs DB schema) |

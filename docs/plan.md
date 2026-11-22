@@ -79,15 +79,15 @@ Reference: [decisions](decisions.md) · [structure](structure.md) · [api](api.m
 
 ## M10 – Deploy
 
-- [ ] Render: Postgres + API (same region), run migrations + seed
-- [ ] Vercel: web + `/api/*` rewrite to Render
-- [ ] Smoke check on live URL
+- [x] Render: Postgres + API (same region), run migrations + seed
+- [x] Vercel: web + `/api/*` rewrite to Render
+- [x] Smoke check on live URL (`pnpm ship`)
 
 ## M11 – Finish
 
-- [ ] Edge cases from [system-design.md §9](system-design.md)
-- [ ] `docs/ai-prompts.md` (how AI was used)
-- [ ] Demo video
+- [x] Edge cases from [system-design.md](system-design.md#edge-cases)
+- [x] `docs/ai-prompts.md` (how AI was used)
+- [x] Demo video ([link](https://drive.google.com/file/d/17tsxsk26Fb6Bz4_AvJNQNc19jYaQf4q3/view?usp=drive_link))
 
 ## Seed: realistic and connected
 
