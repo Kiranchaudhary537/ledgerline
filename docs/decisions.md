@@ -36,7 +36,8 @@ Full design: [system-design.md](system-design.md)
 | Seed | Realistic, connected data, fixed random seed | Random fake data | Insights must make sense; same data every run |
 | Rate limit | `@fastify/rate-limit`, in memory | Redis | One server; counts are correct |
 | Config | Env checked by Zod at boot | Read env ad hoc | Missing config fails at start, not later |
-| Testing | Vitest only; real Postgres via `docker compose`; tables reset before each DB test, DB test files run one at a time | Jest, Testcontainers, Playwright; rollback per test | One light tool, real DB, no mocks; services keep real transactions in tests |
+| Testing | Vitest for unit, API and DB tests; real Postgres via `docker compose`; tables reset before each DB test, DB test files run one at a time. One Playwright smoke test for the critical path | Jest, Testcontainers, a full browser suite; rollback per test | One light tool, real DB, no mocks; services keep real transactions in tests. The browser covers only what unit tests can't: the screens wired together |
+| CI | GitHub Actions with a Postgres 17 service: `pnpm check`, `pnpm build`, the smoke test, the list benchmark | Only `pnpm ship` checking locally | Every push and PR is checked, not only deploys |
 | Local dev | `docker compose up db` + `pnpm dev` | Local Postgres install | Same DB for everyone |
 | Job title + level | Two fields (`Software Engineer` + `Senior`) | One string | Insights can group by title, level or both |
 | Employee fields | Name, email, code, title, level, dept, country, type, gender, hire date, salary | Manager, city, DOB | Enough for pay questions |
@@ -92,7 +93,6 @@ The hardest parts (insights, special indexes) would be raw SQL in Prisma anyway,
 | Sign-up, password reset, SSO | HR users are seeded; one persona |
 | Roles / permissions (RBAC) | One persona (HR Manager) |
 | FX / USD conversion | Needs external rates; salaries shown in local currency only |
-| CI pipeline (GitHub Actions) | `pnpm ship` runs the full `pnpm check` before every deploy; hosted CI is the next step |
 | Payroll, tax, payslips | Separate domain with its own rules |
 | Approval workflow | HR edits directly |
 | Bulk Excel import | Own project (error reports); seed script stands in |
@@ -100,7 +100,6 @@ The hardest parts (insights, special indexes) would be raw SQL in Prisma anyway,
 | Bonus, equity | Base salary answers the core question |
 | Cache, queue, load balancer | 10k rows, ~5 req/s – not needed yet (see [scaling later](system-design.md#scaling-later-designed-not-built)) |
 | Observability stack | Request logs are enough for ~10 users |
-| End-to-end browser tests (Playwright) | Heavy; unit + API tests cover the logic |
 | Full audit log (non-salary edits) | Salary history covers the core need |
 | Restore deleted employee | Rare; data is kept, can be added later |
 | Mobile layout | HR works on desktop |
