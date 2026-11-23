@@ -57,8 +57,8 @@ All decisions with alternatives: [docs/decisions.md](docs/decisions.md).
 
 ## Code quality
 
-- Tests come first: a `test:` commit, then a `feat:` commit ([conventions](docs/commit-conventions.md)).
-- About 275 tests in 53 files. They run against a real Postgres, with no mocked database. Services are also tested with fake repositories.
+- Spec, then a failing test, then code: a `test:` commit, then a `feat:` or `fix:` commit. How we work, and a guided read of one feature end to end: [CONTRIBUTING.md](CONTRIBUTING.md).
+- About 310 tests in 56 files, plus one Playwright run of the critical path. Coverage is 95% of lines, and `pnpm check` fails below the floor in `vitest.config.ts`. They run against a real Postgres, with no mocked database. Services are also tested with fake repositories.
 - Strict TypeScript. DB types are generated from the migrated schema, and `pnpm check` fails if they're stale.
 - `pnpm ship` runs every check, deploys, then smoke-tests production.
 - CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs on every push and PR against Postgres 17: `pnpm check`, `pnpm build`, `pnpm e2e` (Playwright: log in, search, change a salary, see it in history) and `pnpm bench` (list p95 vs the 200 ms target on 10k rows).
@@ -73,7 +73,7 @@ Claude Code was the pair programmer. I made the product and design decisions. AI
 - **UI:** a design skill for the direction, then an accessibility and UX audit of each screen.
 - **Where I overruled it:** MUI → shadcn, USD conversion → local currency only, `int` → `bigint` ids, and more.
 
-Full write-up, including the AI's mistakes and how they were caught: [docs/ai-prompts.md](docs/ai-prompts.md)
+Full write-up, including the AI's mistakes and how they were caught: [docs/ai-prompts.md](docs/ai-prompts.md). What surprised us while building, written up so others don't repeat it: [docs/lessons.md](docs/lessons.md).
 
 ## What I'd improve next
 

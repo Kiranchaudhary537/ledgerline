@@ -25,14 +25,17 @@ const history = [
   },
 ];
 
-function stubApi(onWrite?: (url: string, init?: RequestInit) => Response) {
+function stubApi(
+  onWrite?: (url: string, init?: RequestInit) => Response,
+  current: () => typeof employee = () => employee,
+) {
   return stubFetch((url, init) => {
     if (init?.method && init.method !== 'GET') {
       return onWrite?.(url, init) ?? new Response(null, { status: 204 });
     }
     if (url === '/api/auth/me') return Response.json(session);
     if (url === '/api/meta/filters') return Response.json(filterOptions);
-    if (url === '/api/employees/7') return Response.json(employee);
+    if (url === '/api/employees/7') return Response.json(current());
     if (url === '/api/employees/7/salary-history') return Response.json(history);
     if (url.startsWith('/api/insights/stats?')) return Response.json([bandRow]);
     if (url.startsWith('/api/employees?')) {
@@ -165,6 +168,38 @@ describe('employee detail', () => {
     const body = JSON.parse(patch[1]!.body as string) as Record<string, unknown>;
     expect(body).not.toHaveProperty('countryCode');
     expect(body).toMatchObject({ version: 3 });
+  });
+
+  test('edit details: a 409 shows the banner; Reload loads the latest and saves on its version', async () => {
+    let current = employee;
+    const fetch = stubApi(
+      () => {
+        if (current === employee) {
+          current = { ...employee, fullName: 'Sandeep K. Singh', version: 4 }; // saved by someone else
+          return Response.json(
+            { code: 'STALE_VERSION', message: 'Someone else changed this employee. Reload.' },
+            { status: 409 },
+          );
+        }
+        return Response.json(current);
+      },
+      () => current,
+    );
+    const user = userEvent.setup();
+    renderApp('/employees/7');
+    await openMenu(user, 'Edit details');
+    const dialog = await screen.findByRole('dialog', { name: 'Edit details' });
+    await user.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+    await user.click(await within(dialog).findByRole('button', { name: 'Reload' }));
+
+    await waitFor(() =>
+      expect(within(dialog).getByLabelText('Full name')).toHaveValue('Sandeep K. Singh'),
+    );
+    expect(within(dialog).queryByRole('button', { name: 'Reload' })).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    const patches = fetch.mock.calls.filter(([, init]) => init?.method === 'PATCH');
+    expect(patches.map(([, init]) => JSON.parse(init!.body as string).version)).toEqual([3, 4]);
   });
 
   test('change salary: a 409 shows the conflict banner with Reload', async () => {

@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
 // jsdom lacks what Radix menus and scrolling lists call.
@@ -21,5 +21,8 @@ globalThis.ResizeObserver ??= class {
   unobserve() {}
   disconnect() {}
 };
+
+// The first render in a file waits on module transforms, slower still under coverage; 1 s flakes.
+configure({ asyncUtilTimeout: 5000 });
 
 afterEach(cleanup);
