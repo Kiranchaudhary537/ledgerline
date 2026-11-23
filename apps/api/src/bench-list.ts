@@ -7,6 +7,7 @@ import { createDb, SessionRepository } from '@acme/db';
 import { config } from '@acme/shared';
 import { buildApp } from './app.ts';
 import { loadEnv } from './env.ts';
+import { percentile } from './percentile.ts';
 
 const TARGET_MS = 200;
 const SAMPLES = 200;
@@ -30,9 +31,6 @@ const env = loadEnv();
 const db = createDb(env.DATABASE_URL);
 const app = buildApp({ db, logger: false });
 const sessions = new SessionRepository(db);
-
-const percentile = (sorted: number[], p: number) =>
-  sorted[Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1)]!;
 
 // The API allows `apiMax` requests per user per minute, so the run spreads over throwaway users.
 const perUser = config.rateLimit.apiMax - 1;
@@ -82,7 +80,6 @@ try {
       await get(url);
       times.push(performance.now() - start);
     }
-    times.sort((a, b) => a - b);
     const [p50, p95, p99] = [50, 95, 99].map((p) => percentile(times, p));
     const ok = p95! <= TARGET_MS;
     if (!ok) failed++;
