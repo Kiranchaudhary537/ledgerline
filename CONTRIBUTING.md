@@ -36,7 +36,7 @@ A bug fix always starts with a test that fails on `main`. Example: `test(db): re
 
 ## 3. Before you push
 
-`pnpm check` (typecheck, lint, format, DB types, every test) must pass. CI runs it again with `pnpm build`, `pnpm e2e` and `pnpm bench` on Postgres 17. Commit format: [docs/commit-conventions.md](docs/commit-conventions.md). Code rules: [docs/coding-standards.md](docs/coding-standards.md).
+`pnpm check` (typecheck, lint, format, DB types, every test) must pass. It also enforces a coverage floor (`vitest.config.ts`: lines 93%, branches 86%), so code that lands without tests fails the check. `pnpm test:coverage` writes a browsable report to `coverage/index.html`; raise the floor when coverage grows. CI runs it again with `pnpm build`, `pnpm e2e` and `pnpm bench` on Postgres 17. Commit format: [docs/commit-conventions.md](docs/commit-conventions.md). Code rules: [docs/coding-standards.md](docs/coding-standards.md).
 
 ## Reading the code
 

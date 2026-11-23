@@ -58,7 +58,7 @@ All decisions with alternatives: [docs/decisions.md](docs/decisions.md).
 ## Code quality
 
 - Spec, then a failing test, then code: a `test:` commit, then a `feat:` or `fix:` commit. How we work, and a guided read of one feature end to end: [CONTRIBUTING.md](CONTRIBUTING.md).
-- About 300 tests in 54 files, plus one Playwright run of the critical path. They run against a real Postgres, with no mocked database. Services are also tested with fake repositories.
+- About 310 tests in 56 files, plus one Playwright run of the critical path. Coverage is 95% of lines, and `pnpm check` fails below the floor in `vitest.config.ts`. They run against a real Postgres, with no mocked database. Services are also tested with fake repositories.
 - Strict TypeScript. DB types are generated from the migrated schema, and `pnpm check` fails if they're stale.
 - `pnpm ship` runs every check, deploys, then smoke-tests production.
 - CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs on every push and PR against Postgres 17: `pnpm check`, `pnpm build`, `pnpm e2e` (Playwright: log in, search, change a salary, see it in history) and `pnpm bench` (list p95 vs the 200 ms target on 10k rows).
