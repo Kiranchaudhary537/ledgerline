@@ -98,6 +98,22 @@ describe('employees page', () => {
     );
   });
 
+  test('Next and Previous page through the list via the URL, keeping filters', async () => {
+    const fetch = stubApi();
+    const user = userEvent.setup();
+    const router = renderApp('/employees?country=IN');
+    const pages = await screen.findByRole('navigation', { name: 'Pages' });
+    expect(within(pages).getByRole('button', { name: 'Previous' })).toBeDisabled();
+    expect(within(pages).getByText('1 to 25 of 2,812')).toBeInTheDocument();
+
+    await user.click(within(pages).getByRole('button', { name: 'Next' }));
+    await vi.waitFor(() => expect(router.state.location.search).toBe('?country=IN&page=2'));
+    await vi.waitFor(() => expect(listCalls(fetch).at(-1)).toMatch(/country=IN.*page=2/));
+
+    await user.click(within(pages).getByRole('button', { name: 'Previous' }));
+    await vi.waitFor(() => expect(router.state.location.search).toBe('?country=IN'));
+  });
+
   test('shows an empty state with a way out', async () => {
     stubFetch((url) => {
       if (url === '/api/auth/me') return Response.json(session);
