@@ -37,7 +37,7 @@ One error shape, defined once in `packages/shared/src/errors.ts`, used by API an
   - Postgres foreign key violation on `employees_department_job_title_fkey` → `VALIDATION_FAILED` with `fields.jobTitle`; on the country key → `fields.countryCode`
   - DB connection error → `SERVICE_UNAVAILABLE`
   - Malformed JSON body → `VALIDATION_FAILED`; unknown URL → `ROUTE_NOT_FOUND`
-  - anything else → `INTERNAL` (full error logged with `requestId`, never sent)
+  - anything else → `INTERNAL` (logged with `requestId`: type, message, code and stack only, because Postgres `detail` can contain salaries; never sent)
 
 ## UI side
 

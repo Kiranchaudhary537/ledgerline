@@ -55,7 +55,7 @@ Allowed literals: `0`, `1`, array indexes, test fixtures.
 - Test behaviour through the public interface (HTTP for routes, methods for services/repositories).
 - Services get unit tests with fake repositories; repositories and routes get DB tests (`*.db.test.ts`) against real Postgres.
 - Deterministic: fixed seeds, no `Date.now()` in assertions, no sleeps.
-- Test first for new logic: `test:` commit (red) then `feat:` commit (green).
+- Test first for new logic and every bug fix: `test:` commit (red) then `feat:`/`fix:` commit (green). What must be red first, and the watch commands: [CONTRIBUTING.md](../CONTRIBUTING.md#2-red-green-refactor).
 
 ## Frontend
 
