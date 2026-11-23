@@ -5,6 +5,12 @@ import { vi } from 'vitest';
 import { createQueryClient } from '@/app/query-client';
 import { goToLogin, routes } from '@/app/router';
 
+// Warms the lazy route modules so tests wait on the app, not on the first module transform.
+await Promise.all([
+  import('@/features/employees/detail/EmployeeDetailPage'),
+  import('@/features/insights/InsightsPage'),
+]);
+
 type Handler = (url: string, init?: RequestInit) => Response | Promise<Response>;
 
 export function stubFetch(handler: Handler) {

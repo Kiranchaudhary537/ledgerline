@@ -42,6 +42,5 @@ ACME's HR team manages salaries for 10,000 employees across several countries in
 | Bonus, equity | Base salary answers the core question |
 | Cache, queue, load balancer | 10k rows at ~5 req/s don't need them |
 | Mobile layout | HR works on desktop |
-| Browser E2E tests | Unit and API tests against a real DB cover the logic at lower cost |
 
 All decisions, with alternatives: [decisions.md](decisions.md).

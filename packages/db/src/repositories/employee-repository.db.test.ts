@@ -230,6 +230,25 @@ describe('changeSalary', () => {
     expect(await employees.history(id!)).toHaveLength(0);
   });
 
+  it('lets exactly one of two simultaneous edits of the same version win', async () => {
+    const [id] = await seed([{ salaryMinor: 100 }]);
+    const changedBy = await makeUser();
+    const edit = (newSalaryMinor: number) =>
+      employees.changeSalary({ id: id!, newSalaryMinor, reason: 'Raise', version: 1, changedBy });
+
+    // Both start before either commits; the pool gives each its own connection.
+    const results = await Promise.all([edit(150), edit(200)]);
+
+    expect(results.map((r) => r.status).sort()).toEqual(['ok', 'stale']);
+    const winner = results.find((r) => r.status === 'ok');
+    const saved = await employees.get(id!);
+    expect(saved).toMatchObject({ version: 2 });
+    if (winner?.status === 'ok') expect(saved?.salaryMinor).toBe(winner.employee.salaryMinor);
+    expect(await employees.history(id!)).toMatchObject([
+      { oldSalaryMinor: 100, newSalaryMinor: saved?.salaryMinor },
+    ]);
+  });
+
   it('leaves the salary unchanged when the history insert fails', async () => {
     const [id] = await seed([{ salaryMinor: 100 }]);
     await expect(

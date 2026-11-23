@@ -18,7 +18,7 @@ Tool: Claude Code. The human made every product and design decision; AI proposed
 | MUI component library | shadcn/ui + TanStack Table + Recharts |
 | Frontend served by the API | Separate hosting (Vercel) |
 | USD conversion with static FX rates | No FX: local currency only |
-| GitHub Actions CI | Not built (roll out later) |
+| GitHub Actions CI, browser tests | Left out for v1, then added: CI with Postgres 17 and one Playwright smoke test (login, search, salary change) |
 | Four gender options | `female`, `male` |
 | Insights after v1 | Insights in v1: answering "how does the org pay people" is the core of the brief |
 | Prisma considered | Kept Kysely, added `kysely-codegen` for generated types |

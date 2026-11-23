@@ -24,6 +24,8 @@ pnpm install
 pnpm db:setup   # migrate, then seed 10,000 employees (same data every run)
 pnpm dev        # API on :3000, web on :5173
 pnpm check      # typecheck, lint, format, DB types up to date, all tests
+pnpm e2e        # browser smoke test (own DB and ports; first run: pnpm exec playwright install chromium)
+pnpm bench      # employee-list latency on the seeded DB
 ```
 
 ## How it works
@@ -59,6 +61,7 @@ All decisions with alternatives: [docs/decisions.md](docs/decisions.md).
 - About 275 tests in 53 files. They run against a real Postgres, with no mocked database. Services are also tested with fake repositories.
 - Strict TypeScript. DB types are generated from the migrated schema, and `pnpm check` fails if they're stale.
 - `pnpm ship` runs every check, deploys, then smoke-tests production.
+- CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs on every push and PR against Postgres 17: `pnpm check`, `pnpm build`, `pnpm e2e` (Playwright: log in, search, change a salary, see it in history) and `pnpm bench` (list p95 vs the 200 ms target on 10k rows).
 - Standards: [docs/coding-standards.md](docs/coding-standards.md)
 
 ## How I used AI
@@ -74,8 +77,6 @@ Full write-up, including the AI's mistakes and how they were caught: [docs/ai-pr
 
 ## What I'd improve next
 
-- Hosted CI (GitHub Actions with a Postgres service). Today `pnpm ship` gates each deploy locally.
-- Playwright end-to-end tests for the critical path: login → find employee → change salary.
 - Roles and SSO with row-level security, once managers and employees use it.
 - Observability (OpenTelemetry metrics, traces, alerts) instead of request logs only.
 - At scale: cursor pagination, a read replica and a cache for insights ([scaling plan](docs/system-design.md#scaling-later-designed-not-built)).

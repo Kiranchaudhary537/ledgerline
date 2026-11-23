@@ -1,9 +1,7 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import { loginUrl } from '@/features/auth/model/redirect';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
-import { EmployeeDetailPage } from '@/features/employees/detail/EmployeeDetailPage';
 import { EmployeesPage } from '@/features/employees/list/EmployeesPage';
-import { InsightsPage } from '@/features/insights/InsightsPage';
 import { ProtectedLayout } from './ProtectedLayout';
 
 export const routes: RouteObject[] = [
@@ -13,8 +11,20 @@ export const routes: RouteObject[] = [
     children: [
       { path: '/', element: <EmployeesPage /> },
       { path: '/employees', element: <EmployeesPage /> },
-      { path: '/employees/:id', element: <EmployeeDetailPage /> },
-      { path: '/insights', element: <InsightsPage /> },
+      // Charts (Recharts) are most of the bundle, so the two chart pages load on first visit.
+      {
+        path: '/employees/:id',
+        lazy: async () => ({
+          Component: (await import('@/features/employees/detail/EmployeeDetailPage'))
+            .EmployeeDetailPage,
+        }),
+      },
+      {
+        path: '/insights',
+        lazy: async () => ({
+          Component: (await import('@/features/insights/InsightsPage')).InsightsPage,
+        }),
+      },
     ],
   },
 ];
