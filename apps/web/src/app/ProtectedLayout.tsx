@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate, Outlet, useLocation, useMatch, useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WakingHint } from '@/components/ui/states';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useLogout, useSession } from '@/features/auth/api/session';
@@ -18,6 +19,9 @@ function ShellSkeleton() {
     <div aria-busy="true">
       <div className="h-14 border-b" />
       <Skeleton className="m-6 h-8 w-48" />
+      <div className="px-6">
+        <WakingHint pending />
+      </div>
       <span className="sr-only">Loading…</span>
     </div>
   );

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Field, fieldProps } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { WakingHint } from '@/components/ui/states';
 
 interface Props {
   pending: boolean;
@@ -56,6 +57,7 @@ export function LoginForm({ pending, fieldErrors, formError, onSubmit }: Props) 
       <Button type="submit" className="w-full" disabled={pending}>
         {pending ? 'Logging in…' : 'Log in'}
       </Button>
+      <WakingHint pending={pending} />
     </form>
   );
 }

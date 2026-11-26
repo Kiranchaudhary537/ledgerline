@@ -1,5 +1,6 @@
+import { config } from '@acme/shared';
 import { CircleAlert } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/lib/api';
@@ -16,6 +17,22 @@ export function Failed({ error, retry }: { error: unknown; retry: () => void }) 
         Try again
       </Button>
     </div>
+  );
+}
+
+/** The free API host sleeps when idle; a long wait gets an explanation instead of a silent spinner. */
+export function WakingHint({ pending }: { pending: boolean }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (!pending) return setSlow(false);
+    const timer = setTimeout(() => setSlow(true), config.ui.slowRequestMs);
+    return () => clearTimeout(timer);
+  }, [pending]);
+  if (!pending || !slow) return null;
+  return (
+    <p role="status" className="text-sm text-muted-foreground">
+      Waking the server… the free host can take up to a minute after a quiet spell.
+    </p>
   );
 }
 
