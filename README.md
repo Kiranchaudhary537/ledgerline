@@ -14,7 +14,7 @@ A web app that replaces ACME's Excel sheets. The HR Manager uses it to manage sa
 | | |
 |---|---|
 | **Live app** | https://ledgerline-theta-bice.vercel.app. The free API sleeps when idle: the first visit can take a minute, and the app says so while it waits |
-| **Login** | `hr@acme.example` / `hr@123`. Short on purpose so reviewers log in fast. It skips the 12-character rule the seed enforces (`config.seed.adminPasswordMinLength`) and would be rotated after the review |
+| **Login** | `hr@acme.example` / `hr@123`, also on the login page with a **Use demo account** button. Short on purpose so reviewers log in fast. It skips the 12-character rule the seed enforces (`config.seed.adminPasswordMinLength`) and would be rotated after the review |
 | **Demo video** | [Google Drive](https://drive.google.com/file/d/17tsxsk26Fb6Bz4_AvJNQNc19jYaQf4q3/view?usp=drive_link) |
 | **Stack** | TypeScript everywhere · React + Vite + shadcn/ui · Fastify · PostgreSQL + Kysely · Zod shared by API and UI · Vitest + Playwright |
 
