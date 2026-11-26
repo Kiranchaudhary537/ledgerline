@@ -15,6 +15,8 @@ export function LoginPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const login = useLogin();
+  const { VITE_DEMO_EMAIL: email, VITE_DEMO_PASSWORD: password } = import.meta.env;
+  const demo = email && password ? { email, password } : undefined;
 
   const submit = (values: Parameters<typeof login.mutate>[0]) =>
     login.mutate(values, {
@@ -30,6 +32,7 @@ export function LoginPage() {
           fieldErrors={login.error instanceof ApiError ? login.error.fields : undefined}
           formError={formErrorOf(login.error)}
           onSubmit={submit}
+          demo={demo}
         />
       </Card>
     </main>
