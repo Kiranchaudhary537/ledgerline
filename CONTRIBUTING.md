@@ -52,6 +52,25 @@ Then read the tests for the same feature; they are the spec in code: `describe('
 
 Wiring starts in [apps/api/src/app.ts](apps/api/src/app.ts) (repositories → services → routes). The folder map is [docs/structure.md](docs/structure.md).
 
+## Reading the commit history
+
+`git log --reverse --oneline` reads as the build in order: shared rules, database, API, web, then hardening. Commit types on `main`: 39 `feat`, 36 `test`, 26 `docs`, 19 `refactor`, 17 `chore`, 7 `fix`, 2 `perf`, 1 `ci`, plus merges.
+
+**Two pairs worth opening:**
+
+| Red | Green | Shows |
+|---|---|---|
+| `edbf299` test(db): specify employee queries, optimistic locking and salary history | `12ea64c` feat(db): add employee queries with optimistic locking and atomic salary changes | A feature: the spec as tests, then the code |
+| `f2c6ee2` test(db): reproduce API crash when Postgres closes an idle connection | `b6f76f8` fix(db): keep the API alive when Postgres drops pooled connections | A bug: reproduced on `main` first, then fixed |
+
+**Where the history doesn't follow its own rules:**
+
+| Commits | What | Why |
+|---|---|---|
+| The first `feat(shared)` constants, and scaffolding | Landed with no failing test first | No behaviour to drive. Test-first starts with money parsing (`955be47`) |
+| `421fd87`, `723b13c` → `e841ce1`, `fc1dddc` | API tests and their code were built on parallel worktree branches, then joined by merge commits | Each `test:` still comes before its `feat:` on its branch, but in `main`'s log the pairs are interleaved |
+| `e617b8a`, `a065d10` | Whole screens in one large `feat(web)` commit, with their tests | Layout and styling may land with their tests (see the table in section 2). Logic in `model/` was still test-first |
+
 ## Share what you learn
 
 When something surprises you (a bug, a slow path, a tool that misbehaves), add it to [docs/lessons.md](docs/lessons.md): what happened, why, and what we do now.
