@@ -3,7 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { renderApp, stubFetch } from '@/test/render-app';
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});
 
 const user = { id: 'u1', email: 'hr@acme.test', name: 'Hana HR' };
 
@@ -54,5 +57,23 @@ describe('login page', () => {
     await fill('hr@acme.test', 'pw');
     await waitFor(() => expect(router.state.location.pathname).toBe('/insights'));
     expect(await screen.findByRole('heading', { name: 'Insights' })).toBeInTheDocument();
+  });
+
+  test('a deployed demo shows why login exists and fills the reviewer account', async () => {
+    vi.stubEnv('VITE_DEMO_EMAIL', 'hr@acme.example');
+    vi.stubEnv('VITE_DEMO_PASSWORD', 'hr@123');
+    renderApp('/login');
+    const note = screen.getByRole('note', { name: 'Demo account' });
+    expect(note).toHaveTextContent(/salary data is private/i);
+    expect(note).toHaveTextContent('hr@acme.example');
+    expect(note).toHaveTextContent('hr@123');
+    await userEvent.click(screen.getByRole('button', { name: 'Use demo account' }));
+    expect(screen.getByLabelText('Email')).toHaveValue('hr@acme.example');
+    expect(screen.getByLabelText('Password')).toHaveValue('hr@123');
+  });
+
+  test('shows no demo account unless one is configured', () => {
+    renderApp('/login');
+    expect(screen.queryByRole('note', { name: 'Demo account' })).not.toBeInTheDocument();
   });
 });
