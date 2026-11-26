@@ -14,15 +14,23 @@ interface Props {
   /** Failure with no field to blame. */
   formError: string | null;
   onSubmit: (values: LoginInput) => void;
+  /** Reviewer account on the deployed demo; absent locally and in tests. */
+  demo?: LoginInput;
 }
 
-export function LoginForm({ pending, fieldErrors, formError, onSubmit }: Props) {
+export function LoginForm({ pending, fieldErrors, formError, onSubmit, demo }: Props) {
   const {
     register,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+
+  const useDemo = (account: LoginInput) => {
+    setValue('email', account.email, { shouldValidate: true });
+    setValue('password', account.password, { shouldValidate: true });
+  };
 
   useEffect(() => {
     for (const [name, message] of Object.entries(fieldErrors ?? {})) {
@@ -32,6 +40,23 @@ export function LoginForm({ pending, fieldErrors, formError, onSubmit }: Props) 
 
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {demo && (
+        <div
+          role="note"
+          aria-label="Demo account"
+          className="space-y-2 border bg-muted p-3 text-sm"
+        >
+          <p>
+            Salary data is private, so the app asks for a login. Reviewers can use the demo account:
+          </p>
+          <p className="font-mono">
+            {demo.email} / {demo.password}
+          </p>
+          <Button type="button" variant="secondary" size="sm" onClick={() => useDemo(demo)}>
+            Use demo account
+          </Button>
+        </div>
+      )}
       <Field id="email" label="Email" error={errors.email?.message}>
         <Input
           {...fieldProps('email', errors.email?.message)}
